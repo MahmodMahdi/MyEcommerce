@@ -9,7 +9,7 @@ namespace MyEcommerce.DomainLayer.Interfaces
 	{
 		// here i made this because if i want to use where or include with query
 		IEnumerable<T> GetAll(Expression<Func<T,bool>>? predicate=null,string? Includeword=null);
-		T GetById(Expression<Func<T, bool>> predicate, string? Includeword);
+		T GetById(Expression<Func<T, bool>>? predicate=null, string? Includeword=null);
 		void Add (T entity);
 		void Remove (T entity);
 		void RemoveRange(IEnumerable<T> entities);
