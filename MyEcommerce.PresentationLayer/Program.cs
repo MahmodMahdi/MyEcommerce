@@ -1,5 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using MyEcommerce.DataAccessLayer.Data;
+using MyEcommerce.DataAccessLayer.Repositories;
+using MyEcommerce.DomainLayer.Interfaces;
+using MyEcommerce.DomainLayer.Models;
 
 namespace MyEcommerce.PresentationLayer
 {
@@ -16,6 +19,7 @@ namespace MyEcommerce.PresentationLayer
 				options => options.UseSqlServer(
 				builder.Configuration.GetConnectionString("DB")
 				));
+			builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 			var app = builder.Build();
 
 			// Configure the HTTP request pipeline.
@@ -34,7 +38,7 @@ namespace MyEcommerce.PresentationLayer
 			app.MapStaticAssets();
 			app.MapControllerRoute(
 				name: "default",
-				pattern: "{controller=Home}/{action=Index}/{id?}")
+				pattern: "{area=Admin}/{controller=Home}/{action=Index}/{id?}")
 				.WithStaticAssets();
 
 			app.Run();
