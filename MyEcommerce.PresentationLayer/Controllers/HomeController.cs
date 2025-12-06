@@ -1,11 +1,18 @@
-using Microsoft.AspNetCore.Mvc;
-using MyEcommerce.PresentationLayer.Models;
+﻿using Microsoft.AspNetCore.Mvc;
+using MyEcommerce.DomainLayer.Models;
 using System.Diagnostics;
 
 namespace MyEcommerce.PresentationLayer.Controllers
 {
 	public class HomeController : Controller
 	{
+		private readonly ILogger<HomeController> _logger;
+
+		public HomeController(ILogger<HomeController> logger)
+		{
+			_logger = logger;
+		}
+
 		public IActionResult Index()
 		{
 			return View();
