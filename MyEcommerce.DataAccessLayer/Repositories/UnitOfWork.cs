@@ -13,9 +13,11 @@ namespace MyEcommerce.DataAccessLayer.Repositories
 		{
 			_context = context;
 			CategoryRepository = new CategoryRepository(context);
+			ProductRepository = new ProductRepository(context);
 		}
 
 		public ICategoryRepository CategoryRepository {  get;private set; }
+		public IProductRepository ProductRepository { get; private set; }
 
 		public int complete()
 		{
