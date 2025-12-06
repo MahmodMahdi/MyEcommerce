@@ -23,7 +23,7 @@ namespace MyEcommerce.DataAccessLayer.Repositories
 			_dbset.Add(entity);
 		}
 
-		public IEnumerable<T> GetAll(Expression<Func<T, bool>> predicate, string? Includeword)
+		public IEnumerable<T> GetAll(Expression<Func<T, bool>>? predicate = null, string? Includeword = null)
 		{
 			IQueryable<T> query = _dbset;
 			// here if user need using where 
@@ -42,7 +42,7 @@ namespace MyEcommerce.DataAccessLayer.Repositories
 			return query.ToList();
 		}
 
-		public T GetById(Expression<Func<T, bool>> predicate, string? Includeword)
+		public T GetById(Expression<Func<T, bool>>? predicate = null, string? Includeword=null)
 		{
 
 			IQueryable<T> query = _dbset;
