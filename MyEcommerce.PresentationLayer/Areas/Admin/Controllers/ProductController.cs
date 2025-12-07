@@ -128,5 +128,24 @@ namespace MyEcommerce.PresentationLayer.Areas.Admin.Controllers
 			ViewBag.CategoryDropDownList = _unitOfWork.CategoryRepository.GetAll();
 
 		}
+		[HttpDelete]
+		public IActionResult Delete(int? id)
+		{
+			var product = _unitOfWork.ProductRepository.GetById(c => c.Id == id);
+			if (product == null)
+			{
+				{
+					return Json(new { success = false, message = "Error While Deleting" });
+				}
+			}
+			_unitOfWork.ProductRepository.Remove(product);
+			var oldImg = Path.Combine(_webHostEnvironment.WebRootPath, product.Image.TrimStart('\\'));
+			if (System.IO.File.Exists(oldImg))
+			{
+				System.IO.File.Delete(oldImg);
+			}
+			_unitOfWork.complete();
+			return Json(new { success = true, message = "file has been Deleted" });
+		}
 	}
 }
