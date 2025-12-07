@@ -26,6 +26,7 @@ namespace MyEcommerce.DataAccessLayer.Repositories
 				productItem.Price = product.Price;
 				productItem.Image = product.Image;
 				productItem.CreatedAt = DateTime.Now;
+				productItem.CategoryId = product.CategoryId;
 			}
 		}
 	}
