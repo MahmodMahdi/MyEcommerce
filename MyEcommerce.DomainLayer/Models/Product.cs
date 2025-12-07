@@ -14,7 +14,6 @@ namespace MyEcommerce.DomainLayer.Models
 		public string Name { get; set; }
 		public string Description { get; set; }
 		[ValidateNever]
-		[Required]
 		public string Image {  get; set; }
 		[Required]
 		public decimal Price { get; set; }
