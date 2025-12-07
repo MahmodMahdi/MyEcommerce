@@ -15,15 +15,12 @@ namespace MyEcommerce.DataAccessLayer.Repositories
 			CategoryRepository = new CategoryRepository(context);
 			ProductRepository = new ProductRepository(context);
 		}
-
 		public ICategoryRepository CategoryRepository {  get;private set; }
 		public IProductRepository ProductRepository { get; private set; }
-
 		public int complete()
 		{
 			return _context.SaveChanges();
 		}
-
 		public void Dispose()
 		{
 			 _context?.Dispose();
