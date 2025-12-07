@@ -25,5 +25,23 @@ namespace MyEcommerce.PresentationLayer.Areas.Admin.Controllers
 			var Users = _context.ApplicationUsers.Where(u=>u.Id!= userId).ToList(); // here i bring all users except me(because i am admin)
 			return View(Users);
 		}
+		public IActionResult LockUnlock(string? id)
+		{
+			var user = _context.ApplicationUsers.FirstOrDefault(u => u.Id==id);
+			if (user == null)
+			{
+				return NotFound();
+			}
+			if (user.LockoutEnd == null || user.LockoutEnd < DateTime.Now)
+			{
+				user.LockoutEnd = DateTime.Now.AddYears(1);
+			}
+			else
+			{
+				user.LockoutEnd = DateTime.Now;
+			}
+			_context.SaveChanges();
+		    return RedirectToAction("Index", "Users", new {area ="Admin"});
+		}
 	}
 }
