@@ -60,7 +60,7 @@ namespace MyEcommerce.PresentationLayer.Areas.Admin.Controllers
 					{
 						file.CopyTo(filestream);
 					}
-					productvm.Product.Image = @"Images\Products\" + filename + extension;
+					productvm.Product.Image = @"Image\Products\" + filename + extension;
 				}
 				_unitOfWork.ProductRepository.Add(productvm.Product);
 				_unitOfWork.complete();
@@ -87,7 +87,7 @@ namespace MyEcommerce.PresentationLayer.Areas.Admin.Controllers
 		}
 		[HttpPost]
 		[ValidateAntiForgeryToken]
-		public IActionResult Edit(ProductViewModel productvm, IFormFile file)
+		public IActionResult Edit(ProductViewModel productvm, IFormFile? file)
 		{
 			if (ModelState.IsValid)
 			{
@@ -122,6 +122,7 @@ namespace MyEcommerce.PresentationLayer.Areas.Admin.Controllers
 			PopulateCategoryDropDownList();
 			return View(productvm);
 		}
+
 		public void PopulateCategoryDropDownList()
 		{
 			ViewBag.CategoryDropDownList = _unitOfWork.CategoryRepository.GetAll();
