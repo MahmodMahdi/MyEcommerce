@@ -34,7 +34,29 @@ namespace MyEcommerce.PresentationLayer.Areas.Customer.Controllers
 			}
 			return View(shoppingCartViewModel);
 		}
-	
+		public IActionResult Plus(int cartId)
+		{
+			var ShoppingCart = _unitOfWork.ShoppingCartRepository.GetById(c => c.Id == cartId);
+			_unitOfWork.ShoppingCartRepository.IncreaseCount(ShoppingCart, 1);
+			_unitOfWork.complete();
+			return RedirectToAction(nameof(Index));
+		}
+		public IActionResult Minus(int cartId)
+		{
+			var ShoppingCart = _unitOfWork.ShoppingCartRepository.GetById(c => c.Id == cartId);
+			if (ShoppingCart.Count <= 1)
+			{
+				_unitOfWork.ShoppingCartRepository.Remove(ShoppingCart);
+				_unitOfWork.complete();
+				return RedirectToAction(nameof(Index), "Home");
+			}
+			else
+			{
+				_unitOfWork.ShoppingCartRepository.DecreaseCount(ShoppingCart, 1);
+			}
+			_unitOfWork.complete();
+			return RedirectToAction(nameof(Index));
+		}
 
 	
 	}
