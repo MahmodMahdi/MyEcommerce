@@ -49,6 +49,10 @@ namespace MyEcommerce.PresentationLayer
 				name: "default",
 				pattern: "{area=Admin}/{controller=Home}/{action=Index}/{id?}")
 				.WithStaticAssets();
+			app.MapControllerRoute(
+				name: "Customer",
+				pattern: "{area=Customer}/{controller=Home}/{action=Index}/{id?}")
+				.WithStaticAssets();
 
 			app.Run();
 		}
