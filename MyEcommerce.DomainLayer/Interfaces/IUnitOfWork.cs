@@ -8,6 +8,7 @@ namespace MyEcommerce.DomainLayer.Interfaces
 	{
 		ICategoryRepository CategoryRepository { get; }
 		IProductRepository ProductRepository { get; }
+		IShoppingCartRepository ShoppingCartRepository { get; }
 		int complete();
 	}
 }
