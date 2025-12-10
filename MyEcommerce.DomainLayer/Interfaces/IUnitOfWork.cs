@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MyEcommerce.DomainLayer.Interfaces.Order;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -9,6 +10,8 @@ namespace MyEcommerce.DomainLayer.Interfaces
 		ICategoryRepository CategoryRepository { get; }
 		IProductRepository ProductRepository { get; }
 		IShoppingCartRepository ShoppingCartRepository { get; }
+		IOrderHeaderRepository OrderHeaderRepository { get; }
+		IOrderDetailRepository OrderDetailRepository { get; }
 		int complete();
 	}
 }

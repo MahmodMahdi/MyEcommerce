@@ -39,7 +39,7 @@ namespace MyEcommerce.DataAccessLayer.Repositories
 					query = query.Include(item);
 				}
 			}
-			return query.ToList();
+			return query.AsNoTracking().ToList();
 		}
 
 		public T GetById(Expression<Func<T, bool>>? predicate = null, string? Includeword=null)
@@ -59,7 +59,7 @@ namespace MyEcommerce.DataAccessLayer.Repositories
 					query = query.Include(item);
 				}
 			}
-			return query.SingleOrDefault();
+			return query.AsNoTracking().SingleOrDefault();
 		}
 
 		public void Remove(T entity)
