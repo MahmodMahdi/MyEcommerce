@@ -2,4 +2,5 @@
   <Project Path="MyEcommerce.DataAccessLayer/MyEcommerce.DataAccessLayer.csproj" Id="455dab33-4696-45c3-af4a-27711785934c" />
   <Project Path="MyEcommerce.DomainLayer/MyEcommerce.DomainLayer.csproj" Id="7318ee50-3db5-4323-abb1-4f43634adfc1" />
   <Project Path="MyEcommerce.PresentationLayer/MyEcommerce.PresentationLayer.csproj" Id="53952c5f-0213-440c-b35c-4467b9f4f85e" />
+  <Project Path="Utilities/Utilities.csproj" Id="7acc85c4-05a5-4656-8ae7-2bd36ac39f5a" />
 </Solution>

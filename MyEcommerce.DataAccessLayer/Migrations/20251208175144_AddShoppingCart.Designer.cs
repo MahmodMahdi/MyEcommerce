@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MyEcommerce.DataAccessLayer.Data;
 
@@ -11,9 +12,11 @@ using MyEcommerce.DataAccessLayer.Data;
 namespace MyEcommerce.DataAccessLayer.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251208175144_AddShoppingCart")]
+    partial class AddShoppingCart
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -250,7 +253,7 @@ namespace MyEcommerce.DataAccessLayer.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Categories", (string)null);
+                    b.ToTable("Categories");
                 });
 
             modelBuilder.Entity("MyEcommerce.DomainLayer.Models.Product", b =>
@@ -287,7 +290,7 @@ namespace MyEcommerce.DataAccessLayer.Migrations
 
                     b.HasIndex("CategoryId");
 
-                    b.ToTable("Products", (string)null);
+                    b.ToTable("Products");
                 });
 
             modelBuilder.Entity("MyEcommerce.DomainLayer.Models.ShoppingCart", b =>
@@ -305,16 +308,16 @@ namespace MyEcommerce.DataAccessLayer.Migrations
                     b.Property<int>("Count")
                         .HasColumnType("int");
 
-                    b.Property<int>("ProductId")
+                    b.Property<int>("ProdcutId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
                     b.HasIndex("ApplicationUserId");
 
-                    b.HasIndex("ProductId");
+                    b.HasIndex("ProdcutId");
 
-                    b.ToTable("ShoppingCarts", (string)null);
+                    b.ToTable("ShoppingCarts");
                 });
 
             modelBuilder.Entity("MyEcommerce.DomainLayer.Models.ApplicationUser", b =>
@@ -408,7 +411,7 @@ namespace MyEcommerce.DataAccessLayer.Migrations
 
                     b.HasOne("MyEcommerce.DomainLayer.Models.Product", "Product")
                         .WithMany()
-                        .HasForeignKey("ProductId")
+                        .HasForeignKey("ProdcutId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
