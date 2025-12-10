@@ -11,18 +11,17 @@ namespace MyEcommerce.DomainLayer.Models
 	public class ShoppingCart
 	{
 		public int Id { get; set; }
-		public int ProdcutId { get; set; }
-
-		[Range(1,100,ErrorMessage ="you must enter value between 1 to 100")]
+		[Range(1, 100, ErrorMessage = "you must enter value between 1 to 100")]
 		public int Count { get; set; }
+		public int ProductId { get; set; }
+		
+		[ValidateNever]
+		[ForeignKey("ProductId")]
+		public Product Product { get; set; }
 		public string ApplicationUserId { get; set; }
 
 		[ValidateNever]
-		[ForeignKey(nameof(ProdcutId))]
-		public Product Product { get; set; }
-
-		[ValidateNever]
-		[ForeignKey(nameof(ApplicationUserId))]
+		[ForeignKey("ApplicationUserId")]
 		public ApplicationUser ApplicationUser { get; set; }
 
 	}
