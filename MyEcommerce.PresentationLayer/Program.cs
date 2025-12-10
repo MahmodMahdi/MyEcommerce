@@ -39,20 +39,18 @@ namespace MyEcommerce.PresentationLayer
 			}
 
 			app.UseHttpsRedirection();
-			app.UseRouting();
+			app.UseStaticFiles();
 
+			app.UseRouting();
 			app.UseAuthorization();
 
 			app.MapRazorPages();
-			app.MapStaticAssets();
 			app.MapControllerRoute(
 				name: "default",
-				pattern: "{area=Admin}/{controller=Home}/{action=Index}/{id?}")
-				.WithStaticAssets();
+				pattern: "{area=Admin}/{controller=Home}/{action=Index}/{id?}");
 			app.MapControllerRoute(
 				name: "Customer",
-				pattern: "{area=Customer}/{controller=Home}/{action=Index}/{id?}")
-				.WithStaticAssets();
+				pattern: "{area=Customer}/{controller=Home}/{action=Index}/{id?}");
 
 			app.Run();
 		}
