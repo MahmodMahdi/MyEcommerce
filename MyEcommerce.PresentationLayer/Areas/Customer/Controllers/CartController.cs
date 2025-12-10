@@ -58,6 +58,12 @@ namespace MyEcommerce.PresentationLayer.Areas.Customer.Controllers
 			return RedirectToAction(nameof(Index));
 		}
 
-	
+		public IActionResult Remove(int cartId)
+		{
+			var ShoppingCart = _unitOfWork.ShoppingCartRepository.GetById(c => c.Id == cartId);
+			_unitOfWork.ShoppingCartRepository.Remove(ShoppingCart);
+			_unitOfWork.complete();
+			return RedirectToAction(nameof(Index));
+		}
 	}
 }
