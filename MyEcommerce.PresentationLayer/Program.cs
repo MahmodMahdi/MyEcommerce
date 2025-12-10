@@ -2,7 +2,9 @@ using Microsoft.EntityFrameworkCore;
 using MyEcommerce.DataAccessLayer.Data;
 using MyEcommerce.DataAccessLayer.Repositories;
 using MyEcommerce.DomainLayer.Interfaces;
-using MyEcommerce.DomainLayer.Models;
+using Microsoft.AspNetCore.Identity;
+using Utilities;
+using Microsoft.AspNetCore.Identity.UI.Services;
 
 namespace MyEcommerce.PresentationLayer
 {
@@ -18,8 +20,14 @@ namespace MyEcommerce.PresentationLayer
 			builder.Services.AddDbContext<ApplicationDbContext>(
 				options => options.UseSqlServer(
 				builder.Configuration.GetConnectionString("DB")
-				));
+			));
+
+			builder.Services.AddIdentity<IdentityUser, IdentityRole>(options=>options.Lockout.DefaultLockoutTimeSpan=TimeSpan.FromDays(1))
+				.AddDefaultUI()
+				.AddDefaultTokenProviders()
+				.AddEntityFrameworkStores<ApplicationDbContext>();
 			builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+			builder.Services.AddSingleton<IEmailSender,EmailSender>();
 			var app = builder.Build();
 
 			// Configure the HTTP request pipeline.
@@ -35,6 +43,7 @@ namespace MyEcommerce.PresentationLayer
 
 			app.UseAuthorization();
 
+			app.MapRazorPages();
 			app.MapStaticAssets();
 			app.MapControllerRoute(
 				name: "default",
