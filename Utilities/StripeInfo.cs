@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace Utilities
 {
-	internal class stripeData
+	public class StripeInfo
 	{
 		public string secretkey { get; set; }
-        public string publishablekey { get; set; }
+		public string publishablekey { get; set; }
 	}
 }
