@@ -1,12 +1,13 @@
 ﻿@model ShoppingCart
 @* from Layout Tempelete(item) of Premium Bootstrap site *@
 
- <form method="post" asp-action="Details" > 
+ <form method="post" > 
     <section class="py-5">
         <div class="container px-4 px-lg-5 my-5">
+            <input hidden asp-for="ProductId" value="@Model.ProductId" />
+              <input hidden asp-for="Id" value="@Model.Id" />
             <div class="row gx-4 gx-lg-5 align-items-center">
-                   <input hidden asp-for="ProductId" value="@Model.ProductId"/>
-                   <input hidden asp-for="Id" value="@Model.Id" />
+                  
                 <div class="col-md-6"><img class="card-img-top mb-5 mb-md-0" src="~/@Model.Product.Image" width="400" height="500" alt="..." /></div>
                 <div class="col-md-6">
                     <div class="small mb-1">@Model.Product.Category.Name</div>
@@ -22,7 +23,7 @@
                             <i class="bi-cart-fill me-1"></i>
                             Add to cart
                         </button>
-                        <button class="btn btn-outline-primary flex-shrink-0" type="submit" asp-controller="Home" asp-action="Index">
+                         <button class="btn btn-outline-primary flex-shrink-0 me-3" type="submit" asp-controller="Home" asp-action="Index">
                             <i style="font-style: normal; font-size: 24px;">🏠</i>
                             Return to Home
                         </button>

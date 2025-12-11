@@ -146,7 +146,6 @@ namespace MyEcommerce.PresentationLayer.Areas.Customer.Controllers
 			_UnitOfWork.complete();
 			Response.Headers.Add("Location", session.Url);
 			#endregion
-			// ShoppingCartViewModel.OrderHeader.PaymentIntendId = session.PaymentIntentId;
 
 			return new StatusCodeResult(303);
 
