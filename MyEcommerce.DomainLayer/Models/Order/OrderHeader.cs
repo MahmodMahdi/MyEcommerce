@@ -1,12 +1,14 @@
 ﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
 
 namespace MyEcommerce.DomainLayer.Models.Order
 {
 	public class OrderHeader
 	{
+		// details of order
 		public int Id { get; set; }
 		public DateTime OrderDate { get; set; }
 		public DateTime ShippingDate { get; set; }
@@ -28,6 +30,7 @@ namespace MyEcommerce.DomainLayer.Models.Order
 		public string PhoneNumber { get; set; }
 
 		public string ApplicationUserId { get; set; }
+		[ForeignKey(nameof(ApplicationUserId))]
 		[ValidateNever]
 		public ApplicationUser ApplicationUser { get; set; }
 	}
