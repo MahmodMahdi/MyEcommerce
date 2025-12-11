@@ -1,10 +1,11 @@
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using MyEcommerce.DataAccessLayer.Data;
 using MyEcommerce.DataAccessLayer.Repositories;
 using MyEcommerce.DomainLayer.Interfaces;
-using Microsoft.AspNetCore.Identity;
+using Stripe;
 using Utilities;
-using Microsoft.AspNetCore.Identity.UI.Services;
 
 namespace MyEcommerce.PresentationLayer
 {
@@ -44,6 +45,9 @@ namespace MyEcommerce.PresentationLayer
 			app.UseStaticFiles();
 
 			app.UseRouting();
+
+			StripeConfiguration.ApiKey = builder.Configuration.GetSection("stripe:Secretkey").Get<string>();
+
 			app.UseAuthorization();
 
 			app.MapRazorPages();
