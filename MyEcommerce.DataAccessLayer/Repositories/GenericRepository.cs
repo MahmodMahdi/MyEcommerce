@@ -19,7 +19,6 @@ namespace MyEcommerce.DataAccessLayer.Repositories
 		}
 		public void Add(T entity)
 		{
-			// Categories.Add(category);
 			_dbset.Add(entity);
 		}
 
@@ -59,7 +58,7 @@ namespace MyEcommerce.DataAccessLayer.Repositories
 					query = query.Include(item);
 				}
 			}
-			return query.AsNoTracking().SingleOrDefault();
+			return query.SingleOrDefault();
 		}
 
 		public void Remove(T entity)
