@@ -111,11 +111,11 @@ namespace MyEcommerce.PresentationLayer.Areas.Identity.Pages.Account
 
         public async Task OnGetAsync(string returnUrl = null)
         {
-            if (!_roleManager.RoleExistsAsync(RoleNames.AdminRole).GetAwaiter().GetResult())
+            if (!_roleManager.RoleExistsAsync(Helper.AdminRole).GetAwaiter().GetResult())
             {
-				_roleManager.CreateAsync(new IdentityRole(RoleNames.AdminRole)).GetAwaiter().GetResult();
-				_roleManager.CreateAsync(new IdentityRole(RoleNames.EditorRole)).GetAwaiter().GetResult();
-				_roleManager.CreateAsync(new IdentityRole(RoleNames.CustomerRole)).GetAwaiter().GetResult();
+				_roleManager.CreateAsync(new IdentityRole(Helper.AdminRole)).GetAwaiter().GetResult();
+				_roleManager.CreateAsync(new IdentityRole(Helper.EditorRole)).GetAwaiter().GetResult();
+				_roleManager.CreateAsync(new IdentityRole(Helper.CustomerRole)).GetAwaiter().GetResult();
 			}
   
 			ReturnUrl = returnUrl;
@@ -143,7 +143,7 @@ namespace MyEcommerce.PresentationLayer.Areas.Identity.Pages.Account
                     // here i made this when any one register => customer or when admin don't choose => customer else it talk the value of radio input
                     string role = HttpContext.Request.Form["RoleRadio"].ToString();
                     if (string.IsNullOrEmpty(role)) {
-                        await _userManager.AddToRoleAsync(user, RoleNames.CustomerRole);
+                        await _userManager.AddToRoleAsync(user, Helper.CustomerRole);
 						await _signInManager.SignInAsync(user, isPersistent: false);
 						return LocalRedirect(returnUrl);
 					}
@@ -154,7 +154,7 @@ namespace MyEcommerce.PresentationLayer.Areas.Identity.Pages.Account
                     RedirectToAction("Index", "Users", new {area="Admin"});
                     _logger.LogInformation("User created a new account with password.");
 
-                    await _userManager.AddToRoleAsync(user, RoleNames.CustomerRole);
+                    await _userManager.AddToRoleAsync(user, Helper.CustomerRole);
 
                     var userId = await _userManager.GetUserIdAsync(user);
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);

@@ -5,81 +5,102 @@
     <title>Shopping Cart</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" ">
-    <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
+
+    <!-- Bootstrap & Google Font -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <link href="https://fonts.googleapis.com/css?family=Poppins:400,500,600" rel="stylesheet">
+
+    <!-- Custom CSS -->
     <link rel="stylesheet" href="~/shoppingcart/style.css">
 </head>
-<body>
-    <main class="page">
-        <section class="shopping-cart dark">
-            <div class="container">
-                <div class="block-heading">
-                    <h2>Shopping Cart</h2>
 
-                </div>
-                <div class="content">
+<body>
+    <form method="post">
+       
+        <main class="page">
+            <section class="shopping-cart">
+                <div class="container">
+
+                    <div class="block-heading">
+                        <h2>Shopping Cart</h2>
+                    </div>
+
                     <div class="row">
+
+                        <!-- LEFT SIDE -->
                         <div class="col-md-12 col-lg-8">
                             <div class="items">
-                                @foreach (var item in Model.Carts)
+                                @if (Model.Carts.Count() < 1)
                                 {
-                                    <div class="product">
-                                        <div class="row">
-                                            <div class="col-md-3">
-                                                <img class="img-fluid mx-auto d-block image" src="~/@item.Product.Image">
-                                            </div>
-                                            <div class="col-md-8">
-                                                <div class="info">
-                                                    <div class="row">
-                                                        <div class="col-md-5 product-name">
-                                                            <div class="product-name">
-                                                                <a href="#">@item.Product.Name</a>
-                                                                <div class="product-info">
-                                                                    <div>Discription: <div class="value">@item.Product.Description</div></div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                        <div class="col-md-4 quantity">
-                                                            <label for="quantity">Quantity:</label>
-                                                            <div class="btn-group" role="group">
-                                                                <a class="btn btn-primary" asp-action="Plus" asp-route-cartid="@item.Id">+</a>
-                                                                <span style="margin:6px">@item.Count</span>
-                                                                <a class="btn btn-primary" asp-action="Minus" asp-route-cartid="@item.Id">-</a>
-                                                            </div>
-                                                        </div>
-                                                        <div class="col-md-3 price">
-                                                            <span>@item.Product.Price</span>
-                                                        </div>
-                                                        <div class="col-md-3 price">
-                                                            <span class="btn btn-danger"><a asp-action="Remove" asp-route-cartid="@item.Id">X</a></span>
+                                    <h4>There is no Items in Your Cart</h4>
+                                }
+                                else
+                                {
+                                    @foreach (var item in Model.Carts)
+                                    {
+                                        <div class="product row align-items-center py-3">
 
-                                                        </div>
-                                                    </div>
-                                                   
-                                                </div>
-                                              
+                                            <!-- Image -->
+                                            <div class="col-md-2 text-center">
+                                                <img class="img-fluid image" src="~/@item.Product.Image" alt="Product Image">
                                             </div>
+
+                                            <!-- Name + Description -->
+                                            <div class="col-md-4">
+                                                <a href="#" class="product-name">@item.Product.Name</a>
+                                                <div class="product-info">@Html.Raw(item.Product.Description)</div>
+                                            </div> 
+
+                                            <!-- Quantity -->
+                                            <div class="col-md-2 text-center">
+                                                <label>Quantity:</label>
+                                                <div class="btn-group" role="group">
+                                                    <a class="btn btn-outline-primary" asp-action="Plus" asp-route-cartId="@item.Id">+</a>
+                                                    <span style="margin:6px">@item.Count</span>
+                                                    <a class="btn btn-outline-primary" asp-action="Minus" asp-route-CartId="@item.Id">-</a>
+                                                </div>
+                                            </div>
+
+                                            <!-- Price -->
+                                            <div class="col-md-2 text-center">
+                                                <span class="item-price">@item.Product.Price.ToString("c")</span>
+                                            </div>
+
+                                            <!-- Remove -->
+                                            <div class="col-md-2 text-center">
+                                                <a class="btn btn-danger btn-sm remove-btn" asp-action="Remove" asp-route-cartid="@item.Id">X</a>
+                                            </div>
+
                                         </div>
-                                      
-                                    </div>
+                                    }
                                 }
                             </div>
-                            
                         </div>
+                        @if(Model.Carts.Count()!=0)
+                        {
+                        <!-- RIGHT SIDE -->
                         <div class="col-md-12 col-lg-4">
                             <div class="summary">
                                 <h3>Summary</h3>
-                                <div class="summary-item"><span class="text">Total Price</span><span class="price">$@Model.TotalCarts.ToString()</span></div>
-
-                                <button type="button" class="btn btn-primary btn-lg btn-block">Checkout</button>
+                                <div class="summary-item">
+                                    <span>Total Price</span>
+                                    <span>@Model.TotalCarts.ToString("c")</span>
+                                </div>
+                                <a class="btn btn-dark btn-lg btn-block mt-3" asp-action="Summary">Checkout</a>
                             </div>
                         </div>
-                    </div>
+                        }
+                            else
+                            {
+                            <a class="btn btn-dark btn-lg btn-block mt-3" asp-action="Index" asp-controller="Home">Return to Home</a>
+                            }
+                        </div>
+
                 </div>
-            </div>
-        </section>
-    </main>
-    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+            </section>
+        </main>
+    </form>
 </body>
 </html>
+<script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>

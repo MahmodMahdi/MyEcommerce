@@ -22,13 +22,13 @@ namespace MyEcommerce.PresentationLayer.Areas.Customer.Controllers
 			var products = _unitOfWork.ProductRepository.GetAll();
 			return View(products);
 		}
-		public IActionResult Details(int id) // question here (don't forget)
+		public IActionResult Details(int Productid) 
 		{
 			var shoppingCart = new ShoppingCart()
 			{
 				
-				Product = _unitOfWork.ProductRepository.GetById(x => x.Id == id, Includeword: "Category"),
-				ProductId = id,
+				Product = _unitOfWork.ProductRepository.GetById(x => x.Id == Productid, Includeword: "Category"),
+				ProductId = Productid,
 				Count = 1 // here when customer need to add item to cart
 			};
 			return View(shoppingCart);
