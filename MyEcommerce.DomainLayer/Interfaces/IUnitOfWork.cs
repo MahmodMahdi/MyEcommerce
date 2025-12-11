@@ -12,6 +12,7 @@ namespace MyEcommerce.DomainLayer.Interfaces
 		IShoppingCartRepository ShoppingCartRepository { get; }
 		IOrderHeaderRepository OrderHeaderRepository { get; }
 		IOrderDetailRepository OrderDetailRepository { get; }
+		IApplicationUserRepository ApplicationUserRepository { get; }
 		int complete();
 	}
 }

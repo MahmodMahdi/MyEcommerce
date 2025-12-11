@@ -14,8 +14,10 @@ namespace MyEcommerce.DataAccessLayer.Repositories
 		public ICategoryRepository CategoryRepository { get; private set; }
 		public IProductRepository ProductRepository { get; private set; }
 		public IShoppingCartRepository ShoppingCartRepository { get; private set; }
-		public OrderHeaderRepository OrderHeaderRepository { get; private set; }
+		public IOrderHeaderRepository OrderHeaderRepository { get; private set; }
 		public IOrderDetailRepository OrderDetailRepository { get; private set; }
+		public IApplicationUserRepository ApplicationUserRepository { get; private set; }
+
 		public UnitOfWork(ApplicationDbContext context)
 		{
 			_context = context;
@@ -24,6 +26,7 @@ namespace MyEcommerce.DataAccessLayer.Repositories
 			ShoppingCartRepository = new ShoppingCartRepository(context);
 			OrderHeaderRepository = new OrderHeaderRepository(context);
 			OrderDetailRepository = new OrderDetailRepository(context);
+			ApplicationUserRepository = new ApplicationUserRepository(context);
 		}
 		public int complete()
 		{
