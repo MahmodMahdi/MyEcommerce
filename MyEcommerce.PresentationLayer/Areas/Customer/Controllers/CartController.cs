@@ -151,7 +151,24 @@ namespace MyEcommerce.PresentationLayer.Areas.Customer.Controllers
 			return new StatusCodeResult(303);
 
 		}
-		
+		public IActionResult OrderConfirmation(int id)
+		{
+			var OrderHeader = _UnitOfWork.OrderHeaderRepository.GetById(u => u.Id == id);
+			// check my session in stripe
+			var service = new SessionService();
+			var session = service.Get(OrderHeader.SissionId);
+			if (session.PaymentStatus.ToLower() == "paid")
+			{
+				_UnitOfWork.OrderHeaderRepository.UpdateOrderStatus(id, Helper.Approve, Helper.Approve);
+				OrderHeader.PaymentDate = DateTime.Now;
+				_UnitOfWork.complete();
+			}
+			// if status is paid then i need to remove items from cart 
+			var shoppingCart = _UnitOfWork.ShoppingCartRepository.GetAll(u=>u.ApplicationUserId == OrderHeader.ApplicationUserId).ToList();
+			_UnitOfWork.ShoppingCartRepository.RemoveRange(shoppingCart);
+			_UnitOfWork.complete();
+			return RedirectToAction(nameof(Index), "Home");
+		}
 		public IActionResult Plus(int CartId)
 		{
 			var ShoppingCart = _UnitOfWork.ShoppingCartRepository.GetById(c => c.Id == CartId);
