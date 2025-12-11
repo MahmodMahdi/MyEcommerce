@@ -22,13 +22,13 @@ namespace MyEcommerce.PresentationLayer.Areas.Customer.Controllers
 			var products = _unitOfWork.ProductRepository.GetAll();
 			return View(products);
 		}
-		public IActionResult Details(int Productid) 
+		public IActionResult Details(int ProductId)
 		{
 			var shoppingCart = new ShoppingCart()
 			{
-				
-				Product = _unitOfWork.ProductRepository.GetById(x => x.Id == Productid, Includeword: "Category"),
-				ProductId = Productid,
+
+				Product = _unitOfWork.ProductRepository.GetById(x => x.Id == ProductId, Includeword: "Category"),
+				ProductId = ProductId,
 				Count = 1 // here when customer need to add item to cart
 			};
 			return View(shoppingCart);
@@ -45,8 +45,8 @@ namespace MyEcommerce.PresentationLayer.Areas.Customer.Controllers
 
 			// here i want to check if customer has previous order of same product (count of order)
 			var Cart = _unitOfWork.ShoppingCartRepository.GetById(
-				u => u.ApplicationUserId==Claim.Value && u.ProductId == shoppingCart.ProductId);
-			if(Cart == null)
+				u => u.ApplicationUserId == Claim.Value && u.ProductId == shoppingCart.ProductId);
+			if (Cart == null)
 			{
 				// if this is first one it only add it to DB
 				_unitOfWork.ShoppingCartRepository.Add(shoppingCart);
@@ -54,7 +54,7 @@ namespace MyEcommerce.PresentationLayer.Areas.Customer.Controllers
 			else
 			{
 				// if he had previous order with same order
-					_unitOfWork.ShoppingCartRepository.IncreaseCount(Cart, shoppingCart.Count);
+				_unitOfWork.ShoppingCartRepository.IncreaseCount(Cart, shoppingCart.Count);
 			}
 			_unitOfWork.complete();
 			return RedirectToAction(nameof(Index));
