@@ -5,6 +5,8 @@ using MyEcommerce.DomainLayer.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Utilities;
 using Microsoft.AspNetCore.Identity.UI.Services;
+using Stripe;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace MyEcommerce.PresentationLayer
 {
@@ -22,6 +24,9 @@ namespace MyEcommerce.PresentationLayer
 				builder.Configuration.GetConnectionString("DB")
 			));
 
+			// configure stripe
+			//builder.Services.Configure<stripeData>(builder.Configuration.GetSection("stripe"));
+			//builder.Services.Configure<stripeData>(builder.Configuration.GetSection("stripe"));
 			builder.Services.AddIdentity<IdentityUser, IdentityRole>(options=>options.Lockout.DefaultLockoutTimeSpan=TimeSpan.FromDays(1))
 				.AddDefaultUI()
 				.AddDefaultTokenProviders()
@@ -42,6 +47,10 @@ namespace MyEcommerce.PresentationLayer
 			app.UseStaticFiles();
 
 			app.UseRouting();
+
+			// stripe
+			StripeConfiguration.ApiKey = builder.Configuration.GetSection("stripe:SecretKey").Get<string>();
+
 			app.UseAuthorization();
 
 			app.MapRazorPages();
