@@ -160,7 +160,7 @@ namespace MyEcommerce.PresentationLayer.Areas.Customer.Controllers
 			{
 				_UnitOfWork.OrderHeaderRepository.UpdateOrderStatus(id, Helper.Approve, Helper.Approve);
 				// when order done it will fill the paymentIntentId of Db with PII with stripe
-				// shoppingCartViewModel.OrderHeader.PaymentIntentId = session.PaymentIntentId;
+				OrderHeader.PaymentIntentId = session.PaymentIntentId;
 				_UnitOfWork.complete();
 			}
 			// if status is paid then i need to remove items from cart 
