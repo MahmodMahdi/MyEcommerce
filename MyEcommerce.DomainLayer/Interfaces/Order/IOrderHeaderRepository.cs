@@ -8,6 +8,6 @@ namespace MyEcommerce.DomainLayer.Interfaces.Order
 	public interface IOrderHeaderRepository : IGenericRepository<OrderHeader>
 	{
 		void Update(OrderHeader orderHeader);
-		void UpdateOrderStatus (int id, string OrderStatus,string PaymentStatus);
+		void UpdateOrderStatus (int id, string? OrderStatus,string? PaymentStatus);
 	}
 }
