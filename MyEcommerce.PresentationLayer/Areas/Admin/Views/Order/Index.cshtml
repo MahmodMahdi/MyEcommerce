@@ -1,4 +1,5 @@
-﻿@{
+﻿@model OrderViewModel
+@{
     ViewBag.PageTitle = "Orders Management";
     ViewBag.CardTitle = "Orders";
     // Layout = "~/Views/Shared/_Dashboard.cshtml";
@@ -14,12 +15,12 @@
             <td>Email</td>
             <td>OrderStates</td>
             <td>Total</td>
-            <td>Actions</td>
+            <td>Action</td>
         </tr>
     </thead>
 
 </table>
 
 @section Scripts {
-    <script src="~/js/Orders.js"></script>
+    <script src="~/js/Order.js"></script>
 }
