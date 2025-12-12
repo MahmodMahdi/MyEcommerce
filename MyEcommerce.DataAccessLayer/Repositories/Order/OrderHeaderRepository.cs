@@ -21,7 +21,7 @@ namespace MyEcommerce.DataAccessLayer.Repositories.Order
 			_context.OrderHeaders.Update(orderHeader);
 		}
 
-		public void UpdateOrderStatus(int id, string OrderStatus, string PaymentStatus)
+		public void UpdateOrderStatus(int id, string? OrderStatus, string? PaymentStatus)
 		{
 			var orderFromDb =_context.OrderHeaders.FirstOrDefault(o => o.Id == id);
 			if (orderFromDb != null)
