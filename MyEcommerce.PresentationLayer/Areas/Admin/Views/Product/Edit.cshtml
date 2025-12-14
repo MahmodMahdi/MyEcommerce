@@ -1,77 +1,177 @@
-﻿@model ProductViewModel
+﻿
+@model ProductViewModel
 @{
-    SelectList items = new SelectList(ViewBag.CategoryDropDownList, "Id", "Name");
+    SelectList items = new SelectList(ViewBag.CategoryDropDownList, "Id", "Name", Model.Product.CategoryId);
+    ViewBag.PageTitle = "Product Management";
+    ViewBag.CardTitle = "Edit Product";
+}
+
+<div class="row justify-content-center mt-4">
+    <div class="col-lg-8">
+        <div class="card shadow-sm border-0 rounded-4">
+            <div class="card-header bg-gradient-primary text-white rounded-top-4">
+                <h3 class="mb-0">@ViewBag.CardTitle</h3>
+            </div>
+            <div class="card-body p-4">
+                <form asp-action="Edit" method="post" enctype="multipart/form-data" novalidate>
+                    <input type="hidden" asp-for="Product.Id" />
+                    <input type="hidden" asp-for="Product.Image" />
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <div class="form-group mb-4">
+                        <label asp-for="Product.Name" class="form-label fw-bold"></label>
+                        <input asp-for="Product.Name" class="form-control form-control-lg shadow-sm" style="border-radius: 0.5rem;" />
+                        <span asp-validation-for="Product.Name" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group mb-4">
+                        <label asp-for="Product.Description" class="form-label fw-bold"></label>
+                        <textarea id="mytextarea" asp-for="Product.Description" class="form-control shadow-sm" style="border-radius: 0.5rem;" placeholder="Enter product description..."></textarea>
+                        <span asp-validation-for="Product.Description" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group mb-4">
+                        <label asp-for="Product.Image" class="form-label fw-bold"></label>
+                        <input asp-for="Product.Image" type="file" name="file" id="file" class="form-control shadow-sm" style="border-radius: 0.5rem;" />
+                    </div>
+
+                    <div class="form-group mb-4">
+                        <label asp-for="Product.Price" class="form-label fw-bold"></label>
+                        <input asp-for="Product.Price" class="form-control shadow-sm" style="border-radius: 0.5rem;" />
+                        <span asp-validation-for="Product.Price" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group mb-4">
+                        <label asp-for="Product.CategoryId" class="form-label fw-bold">Category</label>
+                        <select class="form-control shadow-sm" asp-for="Product.CategoryId" asp-items="items" style="border-radius: 0.5rem;">
+                            <option disabled>-- Select Category --</option>
+                        </select>
+                        <span asp-validation-for="Product.CategoryId" class="text-danger"></span>
+                    </div>
+
+                    <div class="d-flex justify-content-between mt-4">
+                        <button type="submit" class="btn btn-success btn-lg shadow-sm" style="border-radius: 2rem; width: 48%;">Save</button>
+                        <a asp-action="Index" asp-controller="Product" class="btn btn-outline-secondary btn-lg shadow-sm" style="border-radius: 2rem; width: 48%;">Back To List</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4 mt-4 mt-lg-0">
+        <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+            <img id="preview" src="~/@Model.Product.Image" class="img-fluid" style="object-fit: cover; max-height: 500px; transition: transform 0.3s;" />
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        tinymce.init({
+            selector: 'textarea',
+            height: 250,
+            menubar: false,
+            plugins: 'lists link image media table wordcount',
+            toolbar: 'undo redo | formatselect | bold italic underline | bullist numlist | link image media',
+            placeholder: "Enter product description here...",
+        });
+
+        document.getElementById("file").addEventListener("change", function(event){
+            var img = document.getElementById("preview");
+            img.src = URL.createObjectURL(event.target.files[0]);
+            img.style.transform = "scale(1.05)";
+            setTimeout(()=> img.style.transform = "scale(1)", 300);
+    });
+    </script>
+}
+@* @model ProductViewModel
+@{
+    SelectList items = new SelectList(ViewBag.CategoryDropDownList, "Id", "Name", Model.Product.CategoryId);
     ViewBag.PageTitle = "Product Management";
     ViewBag.CardTitle = "Edit Product";
     // Layout = "~/Views/Shared/_Dashboard.cshtml";
 }
+
 <div class="row">
     <div class="col-md-6">
         <form asp-action="Edit" method="post" enctype="multipart/form-data" novalidate>
             <input type="hidden" asp-for="Product.Id" />
             <input type="hidden" asp-for="Product.Image" />
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="Product.Name"></label>
+
+            <div class="form-group mb-3">
+                <label asp-for="Product.Name" class="form-label"></label>
                 <input asp-for="Product.Name" class="form-control" />
                 <span asp-validation-for="Product.Name" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="Product.Description"></label>
+
+            <div class="form-group mb-3">
+                <label asp-for="Product.Description" class="form-label"></label>
                 <textarea id="mytextarea" asp-for="Product.Description" class="form-control"></textarea>
                 <span asp-validation-for="Product.Description" class="text-danger"></span>
             </div>
 
-            <div class="form-group">
-                <label asp-for="Product.Image"></label>
+            <div class="form-group mb-3">
+                <label asp-for="Product.Image" class="form-label"></label>
                 <input asp-for="Product.Image" type="file" name="file" id="file" class="form-control" />
             </div>
-            <div class="form-group">
-                <label asp-for="Product.Price"></label>
+
+            <div class="form-group mb-3">
+                <label asp-for="Product.Price" class="form-label"></label>
                 <input asp-for="Product.Price" class="form-control" />
                 <span asp-validation-for="Product.Price" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="Product.CategoryId">Category</label>
-                <select class="form-control" asp-for="Product.CategoryId" asp-items="items"><option selected disabled>-- Select Category --</option></select>
+
+            <div class="form-group mb-3">
+                <label asp-for="Product.CategoryId" class="form-label">Category</label>
+                <select class="form-control" asp-for="Product.CategoryId" asp-items="items">
+                    <option disabled>-- Select Category --</option>
+                </select>
                 <span asp-validation-for="Product.CategoryId" class="text-danger"></span>
             </div>
+
             <div class="form-group">
                 <button type="submit" class="btn btn-success">Save</button>
             </div>
         </form>
     </div>
+
     <div class="col-md-4">
         <div class="container">
-            <img src="~/@Model.Product.Image" width="300" height="450"/>
+            <img id="preview" src="~/@Model.Product.Image" class="img-fluid" style="max-height:450px; object-fit:contain;" />
         </div>
     </div>
 </div>
-<div>
-    <a asp-action="Index" asp-controller="Product">Back To List</a>
+
+<div class="mt-3">
+    <a asp-action="Index" asp-controller="Product" class="btn btn-secondary">Back To List</a>
 </div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
     <script>
-             tinymce.init({
-          selector: 'textarea',
-          plugins: [
-            // Core editing features
-            'anchor', 'autolink', 'charmap', 'codesample', 'emoticons', 'link', 'lists', 'media', 'searchreplace', 'table', 'visualblocks', 'wordcount',
-            // Your account includes a free trial of TinyMCE premium features
-            // Try the most popular premium features until Dec 27, 2025:
-            'checklist', 'mediaembed', 'casechange', 'formatpainter', 'pageembed', 'a11ychecker', 'tinymcespellchecker', 'permanentpen', 'powerpaste', 'advtable', 'advcode', 'advtemplate', 'ai', 'uploadcare', 'mentions', 'tinycomments', 'tableofcontents', 'footnotes', 'mergetags', 'autocorrect', 'typography', 'inlinecss', 'markdown','importword', 'exportword', 'exportpdf'
-          ],
-          toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link media table mergetags | addcomment showcomments | spellcheckdialog a11ycheck typography uploadcare | align lineheight | checklist numlist bullist indent outdent | emoticons charmap | removeformat',
-          tinycomments_mode: 'embedded',
-          tinycomments_author: 'Author name',
-          mergetags_list: [
-            { value: 'First.Name', title: 'First Name' },
-            { value: 'Email', title: 'Email' },
-          ],
-          ai_request: (request, respondWith) => respondWith.string(() => Promise.reject('See docs to implement AI Assistant')),
-          uploadcare_public_key: 'acc93600506c14ebad60',
+        tinymce.init({
+            selector: 'textarea',
+            plugins: [
+                'anchor autolink charmap codesample emoticons link lists media searchreplace table visualblocks wordcount',
+                'checklist mediaembed casechange formatpainter pageembed a11ychecker tinymcespellchecker permanentpen powerpaste advtable advcode advtemplate ai uploadcare mentions tinycomments tableofcontents footnotes mergetags autocorrect typography inlinecss markdown importword exportword exportpdf'
+            ],
+            toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link media table mergetags | addcomment showcomments | spellcheckdialog a11ycheck typography uploadcare | align lineheight | checklist numlist bullist indent outdent | emoticons charmap | removeformat',
+            tinycomments_mode: 'embedded',
+            tinycomments_author: 'Author name',
+            mergetags_list: [
+                { value: 'First.Name', title: 'First Name' },
+                { value: 'Email', title: 'Email' }
+            ],
+            ai_request: (request, respondWith) => respondWith.string(() => Promise.reject('See docs to implement AI Assistant')),
+            uploadcare_public_key: 'acc93600506c14ebad60',
+        });
+
+        document.getElementById("file").addEventListener("change", function(event){
+            var img = document.getElementById("preview");
+            img.src = URL.createObjectURL(event.target.files[0]);
         });
     </script>
 }
+ *@
