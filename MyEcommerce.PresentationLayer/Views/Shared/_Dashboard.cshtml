@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>MyEcommerce</title>
+    <title>ShopSphere</title>
 
     <!-- Google Font: Source Sans Pro -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
@@ -11,14 +11,96 @@
     <link rel="stylesheet" href="/plugins/fontawesome-free/css/all.min.css">
     <!-- Theme style -->
     <link rel="stylesheet" href="/css/adminlte.min.css">
-    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css"/>@*  ده علشان Toaster  *@
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css" />@*  ده علشان Toaster  *@
     @* <link rel="stylesheet" href="//cdn.datatables.net/2.3.5/css/dataTables.dataTables.min.css"/>  *@@* here to make a perfect Table *@
     <link rel="stylesheet" href="//cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css" />
-   @*  ده بيجيب شكل كويس فى textArea علشان description of category or product (TinyMce)*@
+    @*  ده بيجيب شكل كويس فى textArea علشان description of category or product (TinyMce)*@
     <script src="https://cdn.tiny.cloud/1/9tu81lwfmtpla765d0qupnf3uac6v1ex1sx10uih8degb0nc/tinymce/8/tinymce.min.js" referrerpolicy="origin" crossorigin="anonymous"></script>
+    <!-- Custom Styles for a modern look -->
+    <style>
+        /* Sidebar gradient & hover effect */
+        .main-sidebar {
+            background: linear-gradient(180deg, #1f2d3d, #243a52);
+        }
+
+        .nav-sidebar .nav-link {
+            color: #cfd8dc;
+            transition: all 0.3s ease;
+        }
+
+            .nav-sidebar .nav-link:hover {
+                background-color: #0d6efd !important;
+                color: #fff;
+            }
+
+            .nav-sidebar .nav-link.active {
+                background-color: #0d6efd !important;
+                color: #fff;
+            }
+
+        /* Navbar blur & shadow */
+        .main-header {
+            background-color: rgba(255,255,255,0.95);
+            backdrop-filter: blur(8px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        /* Cards shadow & hover lift */
+        .card {
+            border-radius: 0.8rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+            .card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            }
+
+        /* Card tools buttons rounded & hover effect */
+        .card-tools .btn-tool {
+            border-radius: 50%;
+            transition: background-color 0.2s, color 0.2s;
+        }
+
+            .card-tools .btn-tool:hover {
+                background-color: #0d6efd;
+                color: #fff;
+            }
+
+        /* Footer gradient */
+        .main-footer {
+            background: linear-gradient(90deg, #343a40, #1f2d3d);
+            color: #f1f1f1;
+            font-weight: 500;
+        }
+
+            .main-footer a {
+                color: #0d6efd;
+            }
+
+        /* Toaster & DataTable padding fix */
+        .dataTables_wrapper {
+            padding: 10px;
+        }
+
+        /* Sidebar user panel */
+        .user-panel .info a {
+            color: #fff;
+            font-weight: 500;
+        }
+
+        /* Minor tweaks for smoother icons */
+        .nav-icon, .fas, .far {
+            transition: all 0.2s ease;
+        }
+
+            .nav-icon:hover, .fas:hover, .far:hover {
+                color: #0d6efd;
+            }
+    </style>
 </head>
 <body class="hold-transition sidebar-mini">
-    <!-- Site wrapper -->
     <div class="wrapper">
         <!-- Navbar -->
         <nav class="main-header navbar navbar-expand navbar-white navbar-light">
@@ -59,15 +141,15 @@
                     </div>
                 </li>
 
-                <!-- Messages Dropdown Menu -->
+                <!-- Messages Dropdown -->
                 <li class="nav-item dropdown">
                     <a class="nav-link" data-toggle="dropdown" href="#">
                         <i class="far fa-comments"></i>
                         <span class="badge badge-danger navbar-badge">3</span>
                     </a>
                     <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
+                        <!-- Example messages -->
                         <a href="#" class="dropdown-item">
-                            <!-- Message Start -->
                             <div class="media">
                                 <img src="/img/user1-128x128.jpg" alt="User Avatar" class="img-size-50 mr-3 img-circle">
                                 <div class="media-body">
@@ -79,45 +161,13 @@
                                     <p class="text-sm text-muted"><i class="far fa-clock mr-1"></i> 4 Hours Ago</p>
                                 </div>
                             </div>
-                            <!-- Message End -->
-                        </a>
-                        <div class="dropdown-divider"></div>
-                        <a href="#" class="dropdown-item">
-                            <!-- Message Start -->
-                            <div class="media">
-                                <img src="/img/user8-128x128.jpg" alt="User Avatar" class="img-size-50 img-circle mr-3">
-                                <div class="media-body">
-                                    <h3 class="dropdown-item-title">
-                                        John Pierce
-                                        <span class="float-right text-sm text-muted"><i class="fas fa-star"></i></span>
-                                    </h3>
-                                    <p class="text-sm">I got your message bro</p>
-                                    <p class="text-sm text-muted"><i class="far fa-clock mr-1"></i> 4 Hours Ago</p>
-                                </div>
-                            </div>
-                            <!-- Message End -->
-                        </a>
-                        <div class="dropdown-divider"></div>
-                        <a href="#" class="dropdown-item">
-                            <!-- Message Start -->
-                            <div class="media">
-                                <img src="/img/user3-128x128.jpg" alt="User Avatar" class="img-size-50 img-circle mr-3">
-                                <div class="media-body">
-                                    <h3 class="dropdown-item-title">
-                                        Nora Silvester
-                                        <span class="float-right text-sm text-warning"><i class="fas fa-star"></i></span>
-                                    </h3>
-                                    <p class="text-sm">The subject goes here</p>
-                                    <p class="text-sm text-muted"><i class="far fa-clock mr-1"></i> 4 Hours Ago</p>
-                                </div>
-                            </div>
-                            <!-- Message End -->
                         </a>
                         <div class="dropdown-divider"></div>
                         <a href="#" class="dropdown-item dropdown-footer">See All Messages</a>
                     </div>
                 </li>
-                <!-- Notifications Dropdown Menu -->
+
+                <!-- Notifications Dropdown -->
                 <li class="nav-item dropdown">
                     <a class="nav-link" data-toggle="dropdown" href="#">
                         <i class="far fa-bell"></i>
@@ -126,58 +176,35 @@
                     <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
                         <span class="dropdown-item dropdown-header">15 Notifications</span>
                         <div class="dropdown-divider"></div>
-                        <a href="#" class="dropdown-item">
-                            <i class="fas fa-envelope mr-2"></i> 4 new messages
-                            <span class="float-right text-muted text-sm">3 mins</span>
-                        </a>
-                        <div class="dropdown-divider"></div>
-                        <a href="#" class="dropdown-item">
-                            <i class="fas fa-users mr-2"></i> 8 friend requests
-                            <span class="float-right text-muted text-sm">12 hours</span>
-                        </a>
-                        <div class="dropdown-divider"></div>
-                        <a href="#" class="dropdown-item">
-                            <i class="fas fa-file mr-2"></i> 3 new reports
-                            <span class="float-right text-muted text-sm">2 days</span>
-                        </a>
-                        <div class="dropdown-divider"></div>
-                        <a href="#" class="dropdown-item dropdown-footer">See All Notifications</a>
+                        <a href="#" class="dropdown-item">See all notifications</a>
                     </div>
                 </li>
+
                 <li class="nav-item">
                     <a class="nav-link" data-widget="fullscreen" href="#" role="button">
                         <i class="fas fa-expand-arrows-alt"></i>
                     </a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link" data-widget="control-sidebar" data-slide="true" href="#" role="button">
-                        <i class="fas fa-th-large"></i>
-                    </a>
-                </li>
             </ul>
         </nav>
-        <!-- /.navbar -->
-        <!-- Main Sidebar Container -->
+
+        <!-- Sidebar -->
         <aside class="main-sidebar sidebar-dark-primary elevation-4">
-            <!-- Brand Logo -->
             <a href="/index3.html" class="brand-link">
-                <img src="/img/AdminLTELogo.png" alt="AdminLTE Logo" class="brand-image img-circle elevation-3" style="opacity: .8">
-                <span class="brand-text font-weight-light">AdminLTE 3</span>
+                <img src="/img/AdminLTELogo.png" alt="Logo" class="brand-image img-circle elevation-3" style="opacity: .8">
+                <span class="brand-text font-weight-light">ShopSphere</span>
             </a>
 
-            <!-- Sidebar -->
             <div class="sidebar">
-                <!-- Sidebar user (optional) -->
                 <div class="user-panel mt-3 pb-3 mb-3 d-flex">
                     <div class="image">
                         <img src="/img/user2-160x160.jpg" class="img-circle elevation-2" alt="User Image">
                     </div>
                     <div class="info">
-                        <a href="#" class="d-block">Alexander Pierce</a>
+                        <a href="#" class="d-block">Mahmoud Amin</a>
                     </div>
                 </div>
 
-                <!-- SidebarSearch Form -->
                 <div class="form-inline">
                     <div class="input-group" data-widget="sidebar-search">
                         <input class="form-control form-control-sidebar" type="search" placeholder="Search" aria-label="Search">
@@ -189,61 +216,20 @@
                     </div>
                 </div>
 
-                <!-- Sidebar Menu -->
                 <nav class="mt-2">
                     <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
-                        <!-- Add icons to the links using the .nav-icon class
-                             with font-awesome or any other icon font library -->
-                        <li class="nav-item">
-                            <a href="#" class="nav-link">
-                                <i class="nav-icon fas fa-tachometer-alt"></i>
-                                <p>
-                                    Dashboard
-                                </p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="/Admin/Users/Index" class="nav-link">
-                                <i class="nav-icon fas fa-tachometer-alt"></i>
-                                <p>
-                                    Users
-                                </p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="/Admin/Category/Index" class="nav-link">
-                                <i class="nav-icon fas fa-tachometer-alt"></i>
-                                <p>
-                                    Categories
-                                </p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="/Admin/Product/Index" class="nav-link">
-                                <i class="nav-icon fas fa-tachometer-alt"></i>
-                                <p>
-                                    Products
-                                </p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="/Admin/Order/Index" class="nav-link">
-                                <i class="nav-icon fas fa-tachometer-alt"></i>
-                                <p>
-                                    Orders
-                                </p>
-                            </a>
-                        </li>
+                        <li class="nav-item"><a href="#" class="nav-link"><i class="nav-icon fas fa-tachometer-alt"></i><p>Dashboard</p></a></li>
+                        <li class="nav-item"><a href="/Admin/Users/Index" class="nav-link"><i class="nav-icon fas fa-users"></i><p>Users</p></a></li>
+                        <li class="nav-item"><a href="/Admin/Category/Index" class="nav-link"><i class="nav-icon fas fa-th"></i><p>Categories</p></a></li>
+                        <li class="nav-item"><a href="/Admin/Product/Index" class="nav-link"><i class="nav-icon fas fa-box"></i><p>Products</p></a></li>
+                        <li class="nav-item"><a href="/Admin/Order/Index" class="nav-link"><i class="nav-icon fas fa-shopping-cart"></i><p>Orders</p></a></li>
                     </ul>
                 </nav>
-                <!-- /.sidebar-menu -->
             </div>
-            <!-- /.sidebar -->
         </aside>
 
-        <!-- Content Wrapper. Contains page content -->
+        <!-- Content Wrapper -->
         <div class="content-wrapper">
-            <!-- Content Header (Page header) -->
             <section class="content-header">
                 <div class="container-fluid">
                     <div class="row mb-2">
@@ -251,23 +237,16 @@
                             <h1>@ViewBag.PageTitle</h1>
                         </div>
                     </div>
-                </div><!-- /.container-fluid -->
+                </div>
             </section>
 
-            <!-- Main content -->
             <section class="content">
-                <!-- Default box -->
                 <div class="card">
                     <div class="card-header">
                         <h3 class="card-title">@ViewBag.CardTitle</h3>
-
                         <div class="card-tools">
-                            <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
-                                <i class="fas fa-minus"></i>
-                            </button>
-                            <button type="button" class="btn btn-tool" data-card-widget="remove" title="Remove">
-                                <i class="fas fa-times"></i>
-                            </button>
+                            <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse"><i class="fas fa-minus"></i></button>
+                            <button type="button" class="btn btn-tool" data-card-widget="remove" title="Remove"><i class="fas fa-times"></i></button>
                         </div>
                     </div>
                     <div class="card-body">
@@ -275,36 +254,25 @@
                         @RenderBody()
                     </div>
                 </div>
-                <!-- /.card -->
-
             </section>
-            <!-- /.content -->
         </div>
-        <!-- /.content-wrapper -->
 
+        <!-- Footer -->
         <footer class="main-footer">
-            <div class="float-right d-none d-sm-block">
-                <b>Version</b> 3.2.0
-            </div>
+            <div class="float-right d-none d-sm-block"><b>Version</b> 3.2.0</div>
+            <strong>&copy; 2026 ShopSphere</strong>
         </footer>
 
-        <!-- Control Sidebar -->
-        <aside class="control-sidebar control-sidebar-dark">
-            <!-- Control sidebar content goes here -->
-        </aside>
-        <!-- /.control-sidebar -->
+        <aside class="control-sidebar control-sidebar-dark"></aside>
     </div>
-    <!-- ./wrapper -->
-    <!-- jQuery -->
+
+    <!-- Scripts -->
     <script src="/plugins/jquery/jquery.min.js"></script>
-    <!-- Bootstrap 4 -->
     <script src="/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
-    <!-- AdminLTE App -->
     <script src="/dist/js/adminlte.min.js"></script>
-    <script src="//cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script> @* code of DataTable *@
-@*     <script src="//cdn.datatables.net/2.3.5/js/dataTables.min.js"></script>*@    
+    <script src="//cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> @* sweet alert for delete button *@
-       @await RenderSectionAsync("Scripts", required: false)
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

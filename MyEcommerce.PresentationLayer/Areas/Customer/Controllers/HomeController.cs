@@ -4,8 +4,6 @@ using MyEcommerce.DomainLayer.Interfaces;
 using MyEcommerce.DomainLayer.Models;
 using System.Security.Claims;
 using Utilities;
-using X.PagedList;
-
 namespace MyEcommerce.PresentationLayer.Areas.Customer.Controllers
 {
 	[Area("Customer")]
@@ -58,13 +56,18 @@ namespace MyEcommerce.PresentationLayer.Areas.Customer.Controllers
 			{
 				// if this is first one it only add it to DB
 				_unitOfWork.ShoppingCartRepository.Add(shoppingCart);
+				_unitOfWork.complete();
+				// here it set a session when user go to add product to cart
+				var count = _unitOfWork.ShoppingCartRepository.GetAll(s => s.ApplicationUserId == Claim.Value).ToList().Count();
+				HttpContext.Session.SetInt32(Helper.SessionKey,count);
+				
 			}
 			else
 			{
 				// if he had previous order with same order
 				_unitOfWork.ShoppingCartRepository.IncreaseCount(Cart, shoppingCart.Count);
+				_unitOfWork.complete();
 			}
-			_unitOfWork.complete();
 			return RedirectToAction(nameof(Index));
 		}
 	}

@@ -167,7 +167,7 @@ namespace MyEcommerce.PresentationLayer.Areas.Customer.Controllers
 			var shoppingCart = _UnitOfWork.ShoppingCartRepository.GetAll(u=>u.ApplicationUserId == OrderHeader.ApplicationUserId).ToList();
 			_UnitOfWork.ShoppingCartRepository.RemoveRange(shoppingCart);
 			_UnitOfWork.complete();
-			return RedirectToAction(nameof(Index), "Home");
+			return View();
 		}
 		public IActionResult Plus(int CartId)
 		{
@@ -182,6 +182,8 @@ namespace MyEcommerce.PresentationLayer.Areas.Customer.Controllers
 			if (ShoppingCart.Count <= 1)
 			{
 				_UnitOfWork.ShoppingCartRepository.Remove(ShoppingCart);
+				var count = _UnitOfWork.ShoppingCartRepository.GetAll(s => s.ApplicationUserId == ShoppingCart.ApplicationUserId).ToList().Count()-1;
+				HttpContext.Session.SetInt32(Helper.SessionKey, count);
 				_UnitOfWork.complete();
 				return RedirectToAction(nameof(Index), "Home");
 			}
@@ -198,6 +200,8 @@ namespace MyEcommerce.PresentationLayer.Areas.Customer.Controllers
 			var ShoppingCart = _UnitOfWork.ShoppingCartRepository.GetById(c => c.Id == cartId);
 			_UnitOfWork.ShoppingCartRepository.Remove(ShoppingCart);
 			_UnitOfWork.complete();
+			var count = _UnitOfWork.ShoppingCartRepository.GetAll(s => s.ApplicationUserId == ShoppingCart.ApplicationUserId).ToList().Count();
+			HttpContext.Session.SetInt32(Helper.SessionKey, count);
 			return RedirectToAction(nameof(Index));
 		}
 		

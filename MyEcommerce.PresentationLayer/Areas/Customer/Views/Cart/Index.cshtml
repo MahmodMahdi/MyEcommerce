@@ -1,4 +1,75 @@
 ﻿@model ShoppingCartViewModel
+@{
+    ViewBag.Title = "Shopping Cart";
+}
+<div class="container py-5">
+    <div class="row gx-5">
+        <!-- LEFT SIDE: Cart Items -->
+        <div class="col-lg-8">
+            <div class="card p-4 rounded-5 shadow-lg" style="background: linear-gradient(145deg,#f8f9fa,#e9ecef);">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 class="text-gradient fw-bold" style="background: linear-gradient(90deg,#6a11cb,#2575fc); -webkit-background-clip: text; color: transparent;">Shopping Cart</h2>
+                    <a asp-area="Customer" asp-controller="Home" asp-action="Index" class="btn btn-outline-primary btn-sm">
+                        Continue Shopping
+                    </a>
+                </div>
+
+                @if (!Model.Carts.Any())
+                {
+                    <div class="text-center py-5">
+                        <div class="display-1 text-secondary mb-3">&#128722;</div>
+                        <h3 class="fw-bold">Your Cart is Empty!</h3>
+                        <p class="text-muted mb-3">Add some products and spice up your cart!</p>
+                        <a href="/Customer/Home/Index" class="btn btn-lg btn-primary px-5 py-2 rounded-pill shadow">Go Shopping</a>
+                    </div>
+                }
+                else
+                {
+                    @foreach (var item in Model.Carts)
+                    {
+                        <div class="d-flex align-items-center justify-content-between border-bottom py-3">
+                            <img src="~/@item.Product.Image" class="rounded shadow-sm" style="width:90px; height:90px; object-fit:cover; transition: transform .3s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'"/>
+                            <div class="flex-grow-1 mx-3">
+                                <h5 class="fw-bold mb-1">@item.Product.Name</h5>
+                                <small class="text-muted">@Html.Raw(item.Product.Description)</small>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <a class="btn btn-sm btn-outline-primary me-1" asp-action="Plus" asp-route-cartId="@item.Id"><i class="bi bi-plus"></i></a>
+                                <span class="mx-2 fw-bold">@item.Count</span>
+                                <a class="btn btn-sm btn-outline-primary ms-1" asp-action="Minus" asp-route-cartId="@item.Id"><i class="bi bi-dash"></i></a>
+                            </div>
+                            <div class="fw-bold mx-3 text-gradient" style="background: linear-gradient(90deg,#ff512f,#dd2476); -webkit-background-clip: text; color: black;">@item.Product.Price.ToString("c")</div>
+                            <a class="btn btn-sm btn-danger ms-2 shadow" asp-action="Remove" asp-route-cartid="@item.Id"><i class="bi bi-trash-fill"></i></a>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+
+        <!-- RIGHT SIDE: Summary -->
+        @if (Model.Carts.Any())
+        {
+            <div class="col-lg-4">
+                <div class="card p-4 rounded-5 shadow-lg" style="background: linear-gradient(145deg,#f1f1f1,#e3e3e3);">
+                    <h3 class="fw-bold text-primary mb-4">Order Summary</h3>
+                    <div class="d-flex justify-content-between mb-3">
+                        <span class="fw-semibold">Total Price</span>
+                        <span class="fw-bold text-gradient" style="background: linear-gradient(90deg,#ff512f,#dd2476); -webkit-background-clip: text; color: transparent;">@Model.TotalCarts.ToString("c")</span>
+                    </div>
+                    <a asp-action="Summary" class="btn btn-primary btn-lg w-100 rounded-pill shadow">Checkout</a>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts
+{
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+}
+
+@* Old Code Before Enhancement *@
+@*
 <!DOCTYPE html>
 <html>
 <head>
@@ -16,7 +87,7 @@
 
 <body>
     <form method="post">
-       
+
         <main class="page">
             <section class="shopping-cart">
                 <div class="container">
@@ -49,7 +120,7 @@
                                             <div class="col-md-4">
                                                 <a href="#" class="product-name">@item.Product.Name</a>
                                                 <div class="product-info">@Html.Raw(item.Product.Description)</div>
-                                            </div> 
+                                            </div>
 
                                             <!-- Quantity -->
                                             <div class="col-md-2 text-center">
@@ -76,25 +147,25 @@
                                 }
                             </div>
                         </div>
-                        @if(Model.Carts.Count()!=0)
+                        @if (Model.Carts.Count() != 0)
                         {
-                        <!-- RIGHT SIDE -->
-                        <div class="col-md-12 col-lg-4">
-                            <div class="summary">
-                                <h3>Summary</h3>
-                                <div class="summary-item">
-                                    <span>Total Price</span>
-                                    <span>@Model.TotalCarts.ToString("c")</span>
+                            <!-- RIGHT SIDE -->
+                            <div class="col-md-12 col-lg-4">
+                                <div class="summary">
+                                    <h3>Summary</h3>
+                                    <div class="summary-item">
+                                        <span>Total Price</span>
+                                        <span>@Model.TotalCarts.ToString("c")</span>
+                                    </div>
+                                    <a class="btn btn-dark btn-lg btn-block mt-3" asp-action="Summary">Checkout</a>
                                 </div>
-                                <a class="btn btn-dark btn-lg btn-block mt-3" asp-action="Summary">Checkout</a>
                             </div>
-                        </div>
                         }
-                            else
-                            {
+                        else
+                        {
                             <a class="btn btn-dark btn-lg btn-block mt-3" asp-action="Index" asp-controller="Home">Return to Home</a>
-                            }
-                        </div>
+                        }
+                    </div>
 
                 </div>
             </section>
@@ -104,3 +175,4 @@
 </html>
 <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+*@
