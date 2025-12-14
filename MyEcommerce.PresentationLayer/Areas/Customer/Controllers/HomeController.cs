@@ -4,6 +4,7 @@ using MyEcommerce.DomainLayer.Interfaces;
 using MyEcommerce.DomainLayer.Models;
 using System.Security.Claims;
 using Utilities;
+using X.PagedList;
 
 namespace MyEcommerce.PresentationLayer.Areas.Customer.Controllers
 {
@@ -17,9 +18,16 @@ namespace MyEcommerce.PresentationLayer.Areas.Customer.Controllers
 			_unitOfWork = unitOfWork;
 		}
 
-		public IActionResult Index()
+		public IActionResult Index(int pageNumber = 1)
 		{
 			var products = _unitOfWork.ProductRepository.GetAll();
+			// Add Pagination
+			int PageSize = 8;
+			int NumberOfPages = Convert.ToInt32(Math.Ceiling(Convert.ToDouble(products.Count()) / Convert.ToDouble(PageSize)));
+			int NumberOfItemToSkip = (pageNumber - 1) * PageSize;
+			ViewBag.PageNo = pageNumber;
+			ViewBag.NoOfPages = NumberOfPages;
+			products =products.Skip(NumberOfItemToSkip).Take(PageSize).ToList() ;
 			return View(products);
 		}
 		public IActionResult Details(int ProductId)
