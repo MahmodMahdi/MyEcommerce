@@ -6,8 +6,8 @@
     // Layout = "~/Views/Shared/_Dashboard.cshtml";
 }
 <div class="row">
-    <div class="col-md-4">
-        <form asp-action="Create" method="post" enctype="multipart/form-data" novalidate>
+    <div class="col-md-6">
+        <form method="post" enctype="multipart/form-data">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
                 <label asp-for="Product.Name"></label>
@@ -16,12 +16,12 @@
             </div>
             <div class="form-group">
                 <label asp-for="Product.Description"></label>
-                <input asp-for="Product.Description" class="form-control" />
+                <textarea id="mytextarea" asp-for="Product.Description" class="form-control"></textarea>
                 <span asp-validation-for="Product.Description" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="Product.Image"></label>
-                <input asp-for="Product.Image" type="file" name="file" id="file" class="form-control" />
+                <input  type="file" name="file" id="file" class="form-control" onchange="Preview(event);"/>
 
             </div>
             <div class="form-group">
@@ -40,11 +40,44 @@
             </div>
         </form>
     </div>
+    <div class="col-md-6">
+        <div class="container">
+            <img id="preview" src="~/@Model.Product.Image" width="350" height="450" />
+        </div>
+    </div>
 </div>
+
 <div>
     <a asp-action="Index" asp-controller="Product">Back To List</a>
 </div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+             tinymce.init({
+          selector: 'textarea',
+          plugins: [
+            // Core editing features
+            'anchor', 'autolink', 'charmap', 'codesample', 'emoticons', 'link', 'lists', 'media', 'searchreplace', 'table', 'visualblocks', 'wordcount',
+            // Your account includes a free trial of TinyMCE premium features
+            // Try the most popular premium features until Dec 27, 2025:
+            'checklist', 'mediaembed', 'casechange', 'formatpainter', 'pageembed', 'a11ychecker', 'tinymcespellchecker', 'permanentpen', 'powerpaste', 'advtable', 'advcode', 'advtemplate', 'ai', 'uploadcare', 'mentions', 'tinycomments', 'tableofcontents', 'footnotes', 'mergetags', 'autocorrect', 'typography', 'inlinecss', 'markdown','importword', 'exportword', 'exportpdf'
+          ],
+          toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link media table mergetags | addcomment showcomments | spellcheckdialog a11ycheck typography uploadcare | align lineheight | checklist numlist bullist indent outdent | emoticons charmap | removeformat',
+          tinycomments_mode: 'embedded',
+          tinycomments_author: 'Author name',
+          mergetags_list: [
+            { value: 'First.Name', title: 'First Name' },
+            { value: 'Email', title: 'Email' },
+          ],
+          ai_request: (request, respondWith) => respondWith.string(() => Promise.reject('See docs to implement AI Assistant')),
+          uploadcare_public_key: 'acc93600506c14ebad60',
+        });
+    </script>
+    <script>
+        var Preview = function(event){
+            var img = document.getElementById("preview");
+            img.src = URL.createObjectURL(event.target.files[0]);
+        }
+    </script>
 }
