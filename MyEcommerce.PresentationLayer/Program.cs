@@ -31,6 +31,8 @@ namespace MyEcommerce.PresentationLayer
 				.AddEntityFrameworkStores<ApplicationDbContext>();
 			builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 			builder.Services.AddSingleton<IEmailSender,EmailSender>();
+			builder.Services.AddSession();
+			builder.Services.AddDistributedMemoryCache();
 			var app = builder.Build();
 
 			// Configure the HTTP request pipeline.
@@ -48,8 +50,9 @@ namespace MyEcommerce.PresentationLayer
 
 			StripeConfiguration.ApiKey = builder.Configuration.GetSection("stripe:Secretkey").Get<string>();
 
+			app.UseAuthentication();
 			app.UseAuthorization();
-
+			app.UseSession();
 			app.MapRazorPages();
 			app.MapControllerRoute(
 				name: "default",
