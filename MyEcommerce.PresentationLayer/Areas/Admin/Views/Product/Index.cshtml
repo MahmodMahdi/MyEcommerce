@@ -1,4 +1,5 @@
-﻿@{
+﻿@model ProductViewModel
+@{
 	ViewBag.PageTitle = "Product Management";
 	ViewBag.CardTitle = "Products";
 	// Layout = "~/Views/Shared/_Dashboard.cshtml";
@@ -9,12 +10,12 @@
 </div>
 <br />
 <table id="mytable" class="table table-hover" width="100%">
-	<thead>
+	<thead class="text-bold">
         <tr>
             <td>Name</td>
             <td>Description</td>
             <td>Price</td>
-            <td>Date Created</td>
+            <td>Created At</td>
             <td>Category</td>
             <td>Action</td>
         </tr>
