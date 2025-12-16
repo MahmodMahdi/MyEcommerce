@@ -9,6 +9,6 @@ namespace MyEcommerce.DomainLayer.Interfaces.Order
 	{
 		void Update(OrderHeader orderHeader);
 		void UpdateOrderStatus (int id, string? OrderStatus,string? PaymentStatus);
-		string MostPurchasedUser();
+		string TopPurchasedBuyer();
 	}
 }

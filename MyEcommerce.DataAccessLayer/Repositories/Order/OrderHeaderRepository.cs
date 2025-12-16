@@ -35,7 +35,7 @@ namespace MyEcommerce.DataAccessLayer.Repositories.Order
 				}
 			}
 		}
-		public string MostPurchasedUser()
+		public string TopPurchasedBuyer()
 		{
 			var TopBuyer = _context.OrderHeaders
 				.GroupBy(P => P.ApplicationUser.Name)
