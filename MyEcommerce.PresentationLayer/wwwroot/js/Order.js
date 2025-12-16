@@ -20,7 +20,6 @@ function loaddata(){
                 "render": function (data) {
                     return `
                     <a href="/Admin/Order/Details?OrderId=${data}" class="btn btn-success">Details</a>
-                  
                     `
                 }
             }
