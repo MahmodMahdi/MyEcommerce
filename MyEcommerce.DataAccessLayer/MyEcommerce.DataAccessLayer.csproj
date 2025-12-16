@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\MyEcommerce.DomainLayer\MyEcommerce.DomainLayer.csproj" />
+    <ProjectReference Include="..\Utilities\Utilities.csproj" />
   </ItemGroup>
 
 </Project>
