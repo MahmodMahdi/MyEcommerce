@@ -17,7 +17,6 @@ namespace MyEcommerce.DomainLayer.Models
 		public string Image {  get; set; }
 		[Required]
 		public decimal Price { get; set; }
-		public DateTime CreatedAt { get; set; } = DateTime.Now;
 		[DisplayName("Category")]
 		[Required(ErrorMessage = "*")]
 		public int CategoryId { get; set; }
