@@ -63,7 +63,7 @@ namespace MyEcommerce.PresentationLayer.Areas.Admin.Controllers
 			_unitOfWork.OrderHeaderRepository.Update(order);
 			_unitOfWork.complete();
 			TempData["Update"] = "Data has Updated succesfully";
-			return RedirectToAction("Details", "Order", new { orderid = order.Id });
+			return RedirectToAction("Details", "Order", new { OrderId = order.Id });
 		}
 		#endregion
 		#region Order Status
