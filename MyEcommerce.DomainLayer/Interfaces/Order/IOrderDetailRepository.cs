@@ -8,5 +8,7 @@ namespace MyEcommerce.DomainLayer.Interfaces.Order
 	public interface IOrderDetailRepository:IGenericRepository<OrderDetail>
 	{
 		void Update(OrderDetail orderDetail);
+		string MostPurchasedProduct();
+
 	}
 }
