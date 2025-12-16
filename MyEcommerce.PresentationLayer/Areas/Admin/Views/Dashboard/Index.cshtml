@@ -1,0 +1,312 @@
+﻿@{
+    ViewBag.PageTitle = "Admin Area";
+    ViewBag.CardTitle = "Dashboard";
+}
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+<style>
+    body {
+        background: #f0f2f7;
+        font-family: 'Roboto', sans-serif;
+    }
+
+    h1, h2 {
+        font-weight: 600;
+        color: #333;
+    }
+    /* Container للـ Dashboard */
+    .dashboard-container {
+        background: #ffffff;
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+    }
+
+    .dashboard-card {
+        border-radius: 12px;
+        height: 180px; /* نفس الحجم لكل البطاقات */
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        padding: 20px;
+        color: #fff;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        font-family: 'Roboto', sans-serif;
+    }
+
+        .dashboard-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 25px rgba(0,0,0,0.1);
+        }
+
+        .dashboard-card .icon {
+            font-size: 60px;
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            opacity: 0.2;
+        }
+
+        .dashboard-card h2 {
+            font-size: 2rem;
+            margin-bottom: 0.2rem;
+            color: #fff;
+        }
+
+        .dashboard-card p {
+            font-size: 1rem;
+            margin: 0;
+            color: #f4f4f5;
+        }
+
+    .small-box-footer {
+        color: #fff;
+        font-weight: 500;
+        text-decoration: none;
+    }
+    /* ألوان مريحة لكل بطاقة */
+    .bg-products {
+        background: linear-gradient(135deg, #6EC1E4, #4A90E2);
+    }
+
+    .bg-orders {
+        background: linear-gradient(135deg, #7ED957, #4CAF50);
+    }
+
+    .bg-users {
+        background: linear-gradient(135deg, #FDE68A, #FBBF24);
+    }
+
+    .bg-mostbuyer {
+        background: linear-gradient(135deg, #D8B4FE, #FBB6CE);
+    }
+
+    .bg-approved {
+        background: linear-gradient(135deg, #A7F3D0, #34D399);
+    }
+
+    .bg-shipped {
+        background: linear-gradient(135deg, #93C5FD, #3B82F6);
+    }
+
+    .bg-pending {
+        background: linear-gradient(135deg, #FDBA74, #FB923C);
+    }
+
+    .bg-mostpurchased {
+        background: linear-gradient(135deg, #67E8F9, #22D3EE);
+    }
+</style>
+
+<div class="container py-5">
+    <div class="dashboard-container">
+        <!-- الصف الأول -->
+        <div class="row g-4">
+            <!-- Products -->
+            <div class="col-lg-3 col-md-6">
+                <div class="dashboard-card bg-products">
+                    <h2>@ViewBag.Products</h2>
+                    <p>Products</p>
+                    <i class="ion ion-bag icon"></i>
+                    <a href="/Admin/Product/Index" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
+                </div>
+            </div>
+            <!-- Orders -->
+            <div class="col-lg-3 col-md-6">
+                <div class="dashboard-card bg-orders">
+                    <h2>@ViewBag.Orders</h2>
+                    <p>Orders</p>
+                    <i class="ion ion-stats-bars icon"></i>
+                    <a href="/Admin/Order/Index" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
+                </div>
+            </div>
+            <!-- Users -->
+            <div class="col-lg-3 col-md-6">
+                <div class="dashboard-card bg-users">
+                    <h2>@ViewBag.Users</h2>
+                    <p>Registered Users</p>
+                    <i class="ion ion-person-add icon"></i>
+                    <a href="/Admin/Users/Index" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
+                </div>
+            </div>
+            <!-- Most Buyer -->
+            <div class="col-lg-3 col-md-6">
+                <div class="dashboard-card bg-mostbuyer">
+                    <h2>@ViewBag.MostBuyer</h2>
+                    <p>Most Buyer</p>
+                    <i class="ion ion-star icon"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- الصف الثاني -->
+        <div class="row g-4 mt-4">
+            <!-- Approved Orders -->
+            <div class="col-lg-3 col-md-6">
+                <div class="dashboard-card bg-approved">
+                    <h2>@ViewBag.ApprovedOrders</h2>
+                    <p>Approved Orders</p>
+                    <i class="ion ion-checkmark icon"></i>
+                    <a href="/Admin/Order/Index" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
+                </div>
+            </div>
+            <!-- Shipped Orders -->
+            <div class="col-lg-3 col-md-6">
+                <div class="dashboard-card bg-shipped">
+                    <h2>@ViewBag.ShippedOrders</h2>
+                    <p>Shipped Orders</p>
+                    <i class="ion ion-paper-airplane icon"></i>
+                    <a href="/Admin/Order/Index" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
+                </div>
+            </div>
+            <!-- Pending Orders -->
+            <div class="col-lg-3 col-md-6">
+                <div class="dashboard-card bg-pending">
+                    <h2>@ViewBag.PendingOrders</h2>
+                    <p>Pending Orders</p>
+                    <i class="ion ion-alert-circled icon"></i>
+                    <a href="/Admin/Order/Index" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
+                </div>
+            </div>
+            <!-- Most Purchased Product -->
+            <div class="col-lg-3 col-md-6">
+                <div class="dashboard-card bg-mostpurchased">
+                    <h2>@ViewBag.MostPurchasedProduct</h2>
+                    <p>Most Purchased</p>
+                    <i class="ion ion-trophy icon"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* Simple *@ 
+@* @{
+    ViewBag.PageTitle = "Admin Area";
+    ViewBag.CardTitle = "Dashboard";
+}
+<link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
+<div class="row">
+    <div class="col-lg-3 col-6">
+        <!-- small box -->
+        <div class="small-box bg-info">
+            <div class="inner">
+                <h3>@ViewBag.Products</h3>
+
+                <p>Products</p>
+            </div>
+            <div class="icon">
+                <i class="ion ion-bag"></i>
+            </div>
+            <a href="/Admin/Product/Index" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
+        </div>
+    </div>
+    <!-- ./col -->
+    <div class="col-lg-3 col-6">
+        <!-- small box -->
+        <div class="small-box bg-success">
+            <div class="inner">
+                <h3>@ViewBag.Orders<sup style="font-size: 20px"></sup></h3>
+
+                <p>Orders</p>
+            </div>
+            <div class="icon">
+                <i class="ion ion-stats-bars"></i>
+            </div>
+            <a href="/Admin/Order/Index" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
+        </div>
+    </div>
+    <!-- ./col -->
+    <div class="col-lg-3 col-6">
+        <!-- small box -->
+        <div class="small-box bg-warning">
+            <div class="inner">
+                <h3>@ViewBag.Users</h3>
+
+                <p>Registured Users</p>
+            </div>
+            <div class="icon">
+                <i class="ion ion-person-add"></i>
+            </div>
+            <a href="/Admin/Users/Index" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
+        </div>
+    </div>
+    <!-- ./col -->
+    <div class="col-lg-3 col-6">
+        <!-- small box -->
+        <div class="small-box bg-warning">
+            <div class="inner">
+                <h3>@ViewBag.MostBuyer</h3>
+
+                <p>Most Buyer</p>
+            </div>
+            <div class="icon">
+                <i class="ion ion-person-add"></i>
+            </div>
+        </div>
+    </div>
+    <!-- ./col -->
+</div>
+<div class="row">
+    
+    <!-- ./col -->
+    <div class="col-lg-3 col-6">
+        <!-- small box -->
+        <div class="small-box bg-danger">
+            <div class="inner">
+                <h3>@ViewBag.ApprovedOrders</h3>
+
+                <p>Approved Order</p>
+            </div>
+            <div class="icon">
+                <i class="ion ion-pie-graph"></i>
+            </div>
+            <a href="/Admin/Order/Index" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
+        </div>
+    </div>
+    <!-- ./col -->
+    <div class="col-lg-3 col-6">
+        <!-- small box -->
+        <div class="small-box bg-danger">
+            <div class="inner">
+                <h3>@ViewBag.ShippedOrders</h3>
+
+                <p>Shipped Order</p>
+            </div>
+            <div class="icon">
+                <i class="ion ion-pie-graph"></i>
+            </div>
+            <a href="/Admin/Order/Index" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
+        </div>
+    </div>
+    <!-- ./col -->
+    <div class="col-lg-3 col-6">
+        <!-- small box -->
+        <div class="small-box bg-danger">
+            <div class="inner">
+                <h3>@ViewBag.PendingOrders</h3>
+                <p>Pending Order</p>
+            </div>
+            <div class="icon">
+                <i class="ion ion-pie-graph"></i>
+            </div>
+            <a href="/Admin/Order/Index" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
+        </div>
+    </div>
+    <div class="col-lg-3 col-6">
+        <!-- small box -->
+        <div class="small-box bg-info">
+            <div class="inner">
+                <h3>@ViewBag.MostPurchasedProduct</h3>
+
+                <p>Most Purchased</p>
+            </div>
+            <div class="icon">
+                <i class="ion ion-bag"></i>
+            </div>
+        </div>
+    </div>
+</div> *@
