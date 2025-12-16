@@ -3,11 +3,10 @@ namespace Utilities
 {
 	public class Helper
 	{
+		// Roles
 		public const string AdminRole = "Admin";
 		public const string EditorRole = "Editor";
 		public const string CustomerRole = "Customer";
-
-
 
 		//order header
 		public const string Pending = "Pending";
@@ -18,6 +17,7 @@ namespace Utilities
 		public const string Refund = "Refund";
 		public const string Rejected = "Rejected";
 
+		// Shopping Cart session
 		public const string SessionKey = "ShoppingCartSession";
 	}
 }
