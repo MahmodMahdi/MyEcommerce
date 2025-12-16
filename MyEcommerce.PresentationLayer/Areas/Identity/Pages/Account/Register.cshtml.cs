@@ -83,6 +83,7 @@ namespace MyEcommerce.PresentationLayer.Areas.Identity.Pages.Account
 			public string Name { get; set; }
 			public string Address { get; set; }
 			public string City { get; set; }
+            public string PhoneNumber { get; set; }
 			[Required]
             [EmailAddress]
             [Display(Name = "Email")]
@@ -111,12 +112,13 @@ namespace MyEcommerce.PresentationLayer.Areas.Identity.Pages.Account
 
         public async Task OnGetAsync(string returnUrl = null)
         {
-            if (!_roleManager.RoleExistsAsync(Helper.AdminRole).GetAwaiter().GetResult())
-            {
-				_roleManager.CreateAsync(new IdentityRole(Helper.AdminRole)).GetAwaiter().GetResult();
-				_roleManager.CreateAsync(new IdentityRole(Helper.EditorRole)).GetAwaiter().GetResult();
-				_roleManager.CreateAsync(new IdentityRole(Helper.CustomerRole)).GetAwaiter().GetResult();
-			}
+            // here i don't want this anymore because i make DbInitializer
+   //         if (!_roleManager.RoleExistsAsync(Helper.AdminRole).GetAwaiter().GetResult())
+   //         {
+			//	_roleManager.CreateAsync(new IdentityRole(Helper.AdminRole)).GetAwaiter().GetResult();
+			//	_roleManager.CreateAsync(new IdentityRole(Helper.EditorRole)).GetAwaiter().GetResult();
+			//	_roleManager.CreateAsync(new IdentityRole(Helper.CustomerRole)).GetAwaiter().GetResult();
+			//}
   
 			ReturnUrl = returnUrl;
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
@@ -137,6 +139,7 @@ namespace MyEcommerce.PresentationLayer.Areas.Identity.Pages.Account
                 user.Name = Input.Name;
                 user.Address = Input.Address;
                 user.City = Input.City;
+                user.PhoneNumber = Input.PhoneNumber;
             
                 if (result.Succeeded)
                 {
