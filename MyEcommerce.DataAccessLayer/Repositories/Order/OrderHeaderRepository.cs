@@ -1,4 +1,5 @@
-﻿using MyEcommerce.DataAccessLayer.Data;
+﻿using Microsoft.EntityFrameworkCore;
+using MyEcommerce.DataAccessLayer.Data;
 using MyEcommerce.DomainLayer.Interfaces;
 using MyEcommerce.DomainLayer.Interfaces.Order;
 using MyEcommerce.DomainLayer.Models.Order;
@@ -33,6 +34,41 @@ namespace MyEcommerce.DataAccessLayer.Repositories.Order
 					orderFromDb.PaymentStatus = PaymentStatus;
 				}
 			}
+		}
+		public string MostPurchasedUser()
+		{
+			var TopBuyer = _context.OrderHeaders
+				.GroupBy(P => P.ApplicationUser.Name)
+				.Select(g => new
+				{
+					UserName = g.Key,
+					count = g.Count()
+				})
+				.OrderByDescending(x => x.count)
+				.Select(x => x.UserName)
+				.FirstOrDefault();
+			return TopBuyer.ToString();
+
+			/// Another way with join
+			//var TopBuyer = _context.OrderHeaders
+			//	.GroupBy(P => P.ApplicationUser.Name)
+			//	.Select(g => new 
+			//	{
+			//		UserId = g.Key,
+			//		count = g.Count()
+			//	})
+			//	.OrderByDescending(x => x.count)
+			//	.Join(_context.ApplicationUsers,
+			//	t=>t.UserId,
+			//	u=>u.Id,
+			//	(t,u)=> new
+			//	{
+			//		UserName = u.Name,
+			//		Count = u.Id
+			//	})
+			//	.Select(x=>x.UserName)
+			//	.FirstOrDefault();
+			//return TopBuyer.ToString();
 		}
 	}
 }
