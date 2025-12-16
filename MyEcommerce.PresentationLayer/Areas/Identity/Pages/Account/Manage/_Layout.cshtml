@@ -8,19 +8,101 @@
         Layout = "/Areas/Identity/Pages/_Layout.cshtml";
     }
 }
+@{
+    ViewData["Title"] = "Manage Account";
+}
 
-<h1>Manage your account</h1>
+<style>
+    body {
+        background-color: #f8fafc;
+        font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+    }
 
-<div>
-    <h2>Change your account settings</h2>
-    <hr />
-    <div class="row">
-        <div class="col-md-3">
-            <partial name="_ManageNav" />
+    /* Card style */
+    .manage-card {
+        border-radius: 14px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        background-color: #fff;
+        padding: 24px;
+    }
+
+    /* Sidebar links */
+    .manage-nav .nav-link {
+        color: #555;
+        padding: 12px 16px;
+        margin-bottom: 6px;
+        border-radius: 10px;
+        font-size: 15px;
+        display: block;
+    }
+
+        /* Hover effect */
+        .manage-nav .nav-link:hover {
+            background-color: #f1f5f9;
+            color: #0d6efd;
+        }
+
+        /* Active / current page (Bootstrap يديرها تلقائي) */
+        .manage-nav .nav-link[aria-current="page"] {
+            background-color: #e7f1ff;
+            color: #0d6efd;
+            font-weight: 600;
+        }
+
+    /* Sidebar border */
+    .border-end {
+        border-color: #eee;
+    }
+
+    /* Page title */
+    .page-title {
+        color: #0d6efd;
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
+
+    /* Page subtitle */
+    .page-subtitle {
+        color: #6c757d;
+        margin-bottom: 20px;
+    }
+</style>
+
+<div class="container mt-5">
+    <div class="manage-card">
+
+        <h3 class="page-title">Manage Your Account</h3>
+        <p class="page-subtitle">
+            Update your personal information and account settings
+        </p>
+
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 border-end">
+                <ul class="nav flex-column manage-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" asp-page="./Index">Profile</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-page="./Email">Email</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-page="./ChangePassword">Password</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-page="./TwoFactorAuthentication">
+                            Two-Factor Authentication
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-9 ps-md-4">
+                @RenderBody()
+            </div>
         </div>
-        <div class="col-md-9">
-            @RenderBody()
-        </div>
+
     </div>
 </div>
 
