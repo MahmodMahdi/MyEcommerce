@@ -17,12 +17,12 @@ namespace MyEcommerce.DataAccessLayer.Repositories
 			_context = context;
 			_dbset = _context.Set<T>();
 		}
-		public void Add(T entity)
+		public async Task AddAsync(T entity)
 		{
-			_dbset.Add(entity);
+			await _dbset.AddAsync(entity);
 		}
 
-		public IEnumerable<T> GetAll(Expression<Func<T, bool>>? predicate = null, string? Includeword = null)
+		public async Task<IEnumerable<T>> GetAllAsync(Expression<Func<T, bool>>? predicate = null, string? IncludeProperties = null)
 		{
 			IQueryable<T> query = _dbset;
 			// here if user need using where 
@@ -30,18 +30,18 @@ namespace MyEcommerce.DataAccessLayer.Repositories
 			{
 				query = query.Where(predicate);
 			}
-			if(Includeword != null)
+			if(IncludeProperties != null)
 			{
 				// _context.Products.Include(// here it may be many words not only one word)
-				foreach (var item in Includeword.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+				foreach (var item in IncludeProperties.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
 				{
 					query = query.Include(item);
 				}
 			}
-			return query.AsNoTracking().ToList();
+			return await query.AsNoTracking().ToListAsync();
 		}
 
-		public T GetById(Expression<Func<T, bool>>? predicate = null, string? Includeword=null)
+		public async Task<T> GetByIdAsync(Expression<Func<T, bool>>? predicate = null, string? Includeword=null)
 		{
 
 			IQueryable<T> query = _dbset;
@@ -58,15 +58,15 @@ namespace MyEcommerce.DataAccessLayer.Repositories
 					query = query.Include(item);
 				}
 			}
-			return query.SingleOrDefault();
+			return await query.SingleOrDefaultAsync();
 		}
 
-		public void Remove(T entity)
+		public async Task RemoveAsync(T entity)
 		{
-			_dbset.Remove(entity);
+			 _dbset.Remove(entity);
 		}
 
-		public void RemoveRange(IEnumerable<T> entities)
+		public async Task RemoveRangeAsync(IEnumerable<T> entities)
 		{
 			_dbset.RemoveRange(entities);
 		}

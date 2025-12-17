@@ -13,6 +13,6 @@ namespace MyEcommerce.DomainLayer.Interfaces
 		IOrderHeaderRepository OrderHeaderRepository { get; }
 		IOrderDetailRepository OrderDetailRepository { get; }
 		IApplicationUserRepository ApplicationUserRepository { get; }
-		int complete();
+		Task<int> CompleteAsync();
 	}
 }

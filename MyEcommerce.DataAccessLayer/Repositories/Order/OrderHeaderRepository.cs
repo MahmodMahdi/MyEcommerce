@@ -17,14 +17,14 @@ namespace MyEcommerce.DataAccessLayer.Repositories.Order
 			_context = context;
 		}
 
-		public void Update(OrderHeader orderHeader)
+		public async Task UpdateAsync(OrderHeader orderHeader)
 		{
-			_context.OrderHeaders.Update(orderHeader);
+			 _context.OrderHeaders.Update(orderHeader);
 		}
 
-		public void UpdateOrderStatus(int id, string? OrderStatus, string? PaymentStatus)
+		public async Task UpdateOrderStatusAsync(int id, string? OrderStatus, string? PaymentStatus)
 		{
-			var orderFromDb =_context.OrderHeaders.FirstOrDefault(o => o.Id == id);
+			var orderFromDb =await _context.OrderHeaders.FirstOrDefaultAsync(o => o.Id == id);
 			if (orderFromDb != null)
 			{
 				orderFromDb.OrderStatus = OrderStatus;
@@ -35,9 +35,9 @@ namespace MyEcommerce.DataAccessLayer.Repositories.Order
 				}
 			}
 		}
-		public string TopPurchasedBuyer()
+		public async Task<string> TopPurchasedBuyerAsync()
 		{
-			var TopBuyer = _context.OrderHeaders
+			var TopBuyer = await _context.OrderHeaders
 				.GroupBy(P => P.ApplicationUser.Name)
 				.Select(g => new
 				{
@@ -46,7 +46,7 @@ namespace MyEcommerce.DataAccessLayer.Repositories.Order
 				})
 				.OrderByDescending(x => x.count)
 				.Select(x => x.UserName)
-				.FirstOrDefault();
+				.FirstOrDefaultAsync();
 			return TopBuyer.ToString();
 
 			/// Another way with join

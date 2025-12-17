@@ -7,6 +7,6 @@ namespace MyEcommerce.DomainLayer.Interfaces
 {
 	public interface IProductRepository : IGenericRepository<Product>
 	{
-		void Update(Product product);
+		Task UpdateAsync(Product product);
 	}
 }

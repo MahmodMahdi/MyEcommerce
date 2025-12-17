@@ -8,11 +8,11 @@ namespace MyEcommerce.DomainLayer.Interfaces
 	public interface IGenericRepository<T> where T : class
 	{
 		// here i made this because if i want to use where or include with query
-		IEnumerable<T> GetAll(Expression<Func<T,bool>>? predicate=null,string? Includeword=null);
-		T GetById(Expression<Func<T, bool>>? predicate=null, string? Includeword=null);
-		void Add (T entity);
-		void Remove (T entity);
-		void RemoveRange(IEnumerable<T> entities);
+		Task<IEnumerable<T>> GetAllAsync(Expression<Func<T,bool>>? predicate=null,string? IncludeProperties=null);
+		Task<T> GetByIdAsync(Expression<Func<T, bool>>? predicate=null, string? IncludeProperties=null);
+		Task AddAsync (T entity);
+		Task RemoveAsync (T entity);
+		Task RemoveRangeAsync(IEnumerable<T> entities);
 
 	}
 }

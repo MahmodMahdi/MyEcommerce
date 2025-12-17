@@ -7,8 +7,8 @@ namespace MyEcommerce.DomainLayer.Interfaces.Order
 {
 	public interface IOrderHeaderRepository : IGenericRepository<OrderHeader>
 	{
-		void Update(OrderHeader orderHeader);
-		void UpdateOrderStatus (int id, string? OrderStatus,string? PaymentStatus);
-		string TopPurchasedBuyer();
+		Task UpdateAsync(OrderHeader orderHeader);
+		Task UpdateOrderStatusAsync (int id, string? OrderStatus,string? PaymentStatus);
+		Task<string> TopPurchasedBuyerAsync();
 	}
 }

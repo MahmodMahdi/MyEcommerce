@@ -7,6 +7,6 @@ namespace MyEcommerce.DomainLayer.Interfaces
 {
 	public interface ICategoryRepository: IGenericRepository<Category>
 	{
-		void Update(Category category);
+		Task UpdateAsync(Category category);
 	}
 }

@@ -15,16 +15,16 @@ namespace MyEcommerce.DataAccessLayer.Repositories.Order
 		{
 			_context = context;
 		}
-		public void Update(OrderDetail orderDetail)
+		public async Task UpdateAsync(OrderDetail orderDetail)
 		{
-			_context.OrderDetails.Update(orderDetail);
+			 _context.OrderDetails.Update(orderDetail);
 		}
-		public string MostPurchasedProduct()
+		public async Task<string> MostPurchasedProductAsync()
 		{
-			var topProduct = _context.OrderDetails.
+			var topProduct =await _context.OrderDetails.
 				OrderByDescending(o => o.Count).
 				Select(x => x.Product.Name).
-				FirstOrDefault();
+				FirstOrDefaultAsync();
 			return topProduct;
 
 			/// another way
