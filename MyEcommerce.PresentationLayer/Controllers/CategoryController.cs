@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using MyEcommerce.DomainLayer.Interfaces;
 using MyEcommerce.DomainLayer.Models;
+using System.Threading.Tasks;
 
 namespace MyEcommerce.PresentationLayer.Controllers
 {
@@ -12,9 +13,9 @@ namespace MyEcommerce.PresentationLayer.Controllers
 		{
 			_unitOfWork = unitOfWork;
 		}
-		public IActionResult Index()
+		public async Task<IActionResult> Index()
 		{
-			var categories = _unitOfWork.CategoryRepository.GetAll();
+			var categories =await _unitOfWork.CategoryRepository.GetAllAsync();
 			return View(categories);
 		}
 		[HttpGet]
@@ -24,39 +25,39 @@ namespace MyEcommerce.PresentationLayer.Controllers
 		}
 		[HttpPost]
 		[ValidateAntiForgeryToken]
-		public IActionResult Create(Category category)
+		public async Task<IActionResult> Create(Category category)
 		{
 			if (ModelState.IsValid)
 			{
 				//_context.Categories.Add(category);
-				_unitOfWork.CategoryRepository.Add(category);
+				await _unitOfWork.CategoryRepository.AddAsync(category);
 				//_context.SaveChanges();
-				_unitOfWork.complete();
+				await _unitOfWork.CompleteAsync();
 				TempData["Create"] = "Data Has Created Successfully";
 				return RedirectToAction("Index");
 			}
 			return View(category);
 		}
 		[HttpGet]
-		public IActionResult Edit(int? id)
+		public async Task<IActionResult> Edit(int? id)
 		{
 			if (id == null | id == 0)
 			{
 				NotFound();
 			}
-			var category = _unitOfWork.CategoryRepository.GetById(c=>c.Id == id);
+			var category =await _unitOfWork.CategoryRepository.GetByIdAsync(c=>c.Id == id);
 			return View(category);
 		}
 		[HttpPost]
 		[ValidateAntiForgeryToken]
-		public IActionResult Edit(Category category)
+		public async Task<IActionResult> Edit(Category category)
 		{
 			if (ModelState.IsValid)
 			{
 				//_context.Categories.Update(category);
-				_unitOfWork.CategoryRepository.Update(category);
+				await _unitOfWork.CategoryRepository.UpdateAsync(category);
 				//_context.SaveChanges();
-				_unitOfWork.complete();
+				await _unitOfWork.CompleteAsync();
 				TempData["Update"] = "Data Has Updated Successfully";
 				return RedirectToAction("Index");
 			}

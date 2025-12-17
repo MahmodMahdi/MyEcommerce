@@ -22,7 +22,7 @@ namespace MyEcommerce.PresentationLayer.Areas.Admin.Controllers
 			var claimsIdentity =(ClaimsIdentity)User.Identity; // here i want to bring claims
 			var claim = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier); // here i filter claim of users
 			string userId = claim.Value; // here i bring user by his id
-			var Users = _context.ApplicationUsers.Where(u=>u.Id!= userId).ToList(); // here i bring all users except me(because i am admin)
+			var Users = _context.ApplicationUsers.Where(u=>u.Id!= userId).ToList(); // here i bring all users except me
 			return View(Users);
 		}
 		public IActionResult LockUnlock(string? id)

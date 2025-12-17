@@ -1,4 +1,5 @@
-﻿using MyEcommerce.DataAccessLayer.Data;
+﻿using Microsoft.EntityFrameworkCore;
+using MyEcommerce.DataAccessLayer.Data;
 using MyEcommerce.DomainLayer.Interfaces;
 using MyEcommerce.DomainLayer.Models;
 using System;
@@ -15,9 +16,9 @@ namespace MyEcommerce.DataAccessLayer.Repositories
 			_context = context;
 		}
 
-		public void Update(Category category)
+		public async Task UpdateAsync(Category category)
 		{
-			var categoryItem = _context.Categories.FirstOrDefault(c=>c.Id == category.Id);
+			var categoryItem =await _context.Categories.FirstOrDefaultAsync(c=>c.Id == category.Id);
 			if (categoryItem != null)
 			{
 				categoryItem.Name = category.Name;

@@ -1,4 +1,5 @@
-﻿using MyEcommerce.DataAccessLayer.Data;
+﻿using Microsoft.EntityFrameworkCore;
+using MyEcommerce.DataAccessLayer.Data;
 using MyEcommerce.DomainLayer.Interfaces;
 using MyEcommerce.DomainLayer.Models;
 using System;
@@ -16,16 +17,15 @@ namespace MyEcommerce.DataAccessLayer.Repositories
 			_context = context;
 		}
 
-		public void Update(Product product)
+		public async Task UpdateAsync(Product product)
 		{
-			var productItem = _context.Products.FirstOrDefault(x=>x.Id == product.Id);
+			var productItem =await _context.Products.FirstOrDefaultAsync(x=>x.Id == product.Id);
 			if (productItem != null)
 			{
 				productItem.Name = product.Name;
 				productItem.Description = product.Description;
 				productItem.Price = product.Price;
 				productItem.Image = product.Image;
-				productItem.CreatedAt = DateTime.Now;
 				productItem.CategoryId = product.CategoryId;
 			}
 		}

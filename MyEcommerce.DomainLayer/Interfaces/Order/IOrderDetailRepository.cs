@@ -7,6 +7,8 @@ namespace MyEcommerce.DomainLayer.Interfaces.Order
 {
 	public interface IOrderDetailRepository:IGenericRepository<OrderDetail>
 	{
-		void Update(OrderDetail orderDetail);
+		Task UpdateAsync(OrderDetail orderDetail);
+		Task<string> MostPurchasedProductAsync();
+
 	}
 }

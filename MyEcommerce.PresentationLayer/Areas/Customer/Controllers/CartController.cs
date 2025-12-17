@@ -167,6 +167,8 @@ namespace MyEcommerce.PresentationLayer.Areas.Customer.Controllers
 			var shoppingCart = _UnitOfWork.ShoppingCartRepository.GetAll(u=>u.ApplicationUserId == OrderHeader.ApplicationUserId).ToList();
 			_UnitOfWork.ShoppingCartRepository.RemoveRange(shoppingCart);
 			_UnitOfWork.complete();
+			var count = _UnitOfWork.ShoppingCartRepository.GetAll(s => s.ApplicationUserId == OrderHeader.ApplicationUserId).ToList().Count();
+			HttpContext.Session.SetInt32(Helper.SessionKey, count);
 			return View();
 		}
 		public IActionResult Plus(int CartId)

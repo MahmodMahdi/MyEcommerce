@@ -21,6 +21,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\MyEcommerce.DataAccessLayer\MyEcommerce.DataAccessLayer.csproj" />
+    <ProjectReference Include="..\MyEcommerce.DomainLayer\MyEcommerce.DomainLayer.csproj" />
     <ProjectReference Include="..\Utilities\Utilities.csproj" />
   </ItemGroup>
 

@@ -16,9 +16,9 @@ namespace MyEcommerce.PresentationLayer.Areas.Customer.Controllers
 			_unitOfWork = unitOfWork;
 		}
 
-		public IActionResult Index(int pageNumber = 1)
+		public async Task<IActionResult> Index(int pageNumber = 1)
 		{
-			var products = _unitOfWork.ProductRepository.GetAll();
+			var products =await _unitOfWork.ProductRepository.GetAllAsync();
 			// Add Pagination
 			int PageSize = 8;
 			int NumberOfPages = Convert.ToInt32(Math.Ceiling(Convert.ToDouble(products.Count()) / Convert.ToDouble(PageSize)));
@@ -28,12 +28,12 @@ namespace MyEcommerce.PresentationLayer.Areas.Customer.Controllers
 			products =products.Skip(NumberOfItemToSkip).Take(PageSize).ToList() ;
 			return View(products);
 		}
-		public IActionResult Details(int ProductId)
+		public async Task<IActionResult> Details(int ProductId)
 		{
 			var shoppingCart = new ShoppingCart()
 			{
 
-				Product = _unitOfWork.ProductRepository.GetById(x => x.Id == ProductId, Includeword: "Category"),
+				Product =await _unitOfWork.ProductRepository.GetByIdAsync(x => x.Id == ProductId,IncludeProperties: "Category"),
 				ProductId = ProductId,
 				Count = 1 // here when customer need to add item to cart
 			};
@@ -42,31 +42,30 @@ namespace MyEcommerce.PresentationLayer.Areas.Customer.Controllers
 		[HttpPost]
 		[ValidateAntiForgeryToken]
 		[Authorize]
-		public IActionResult Details(ShoppingCart shoppingCart)
+		public async Task<IActionResult> Details(ShoppingCart shoppingCart)
 		{
 			// here i bring user who has access (login)
-			var claimsIdentity = (ClaimsIdentity)User.Identity;
-			var Claim = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier);
-			shoppingCart.ApplicationUserId = Claim.Value;
+			var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+			shoppingCart.ApplicationUserId = userId;
 
 			// here i want to check if customer has previous order of same product (count of order)
-			var Cart = _unitOfWork.ShoppingCartRepository.GetById(
-				u => u.ApplicationUserId == Claim.Value && u.ProductId == shoppingCart.ProductId);
-			if (Cart == null)
+			var CartFromDb =await _unitOfWork.ShoppingCartRepository.GetByIdAsync(
+				u => u.ApplicationUserId == userId && u.ProductId == shoppingCart.ProductId);
+			if (CartFromDb == null)
 			{
 				// if this is first one it only add it to DB
-				_unitOfWork.ShoppingCartRepository.Add(shoppingCart);
-				_unitOfWork.complete();
+				await _unitOfWork.ShoppingCartRepository.AddAsync(shoppingCart);
+				await _unitOfWork.CompleteAsync();
 				// here it set a session when user go to add product to cart
-				var count = _unitOfWork.ShoppingCartRepository.GetAll(s => s.ApplicationUserId == Claim.Value).ToList().Count();
-				HttpContext.Session.SetInt32(Helper.SessionKey,count);
+				var CartItems = await _unitOfWork.ShoppingCartRepository.GetAllAsync(s => s.ApplicationUserId == userId);
+				HttpContext.Session.SetInt32(Helper.SessionKey,CartItems.Count());
 				
 			}
 			else
 			{
 				// if he had previous order with same order
-				_unitOfWork.ShoppingCartRepository.IncreaseCount(Cart, shoppingCart.Count);
-				_unitOfWork.complete();
+			    _unitOfWork.ShoppingCartRepository.IncreaseCount(CartFromDb, shoppingCart.Count);
+				await _unitOfWork.CompleteAsync();
 			}
 			return RedirectToAction(nameof(Index));
 		}
