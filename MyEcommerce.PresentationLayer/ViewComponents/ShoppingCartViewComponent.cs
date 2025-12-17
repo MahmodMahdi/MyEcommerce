@@ -29,10 +29,10 @@ namespace MyEcommerce.PresentationLayer.ViewComponents
 				{
 					// here when any user doesn't have any session or didn't log in before
 					// ( it will set session and bring the count of sessions (number of products in cart)
-					HttpContext.Session.SetInt32(Helper.SessionKey, _unitOfWork.ShoppingCartRepository
-						.GetAll(s => s.ApplicationUserId == claim.Value)
-						.ToList()
-						.Count());
+					var UserCarts = await _unitOfWork.ShoppingCartRepository
+						.GetAllAsync(s => s.ApplicationUserId == claim.Value);
+					var count = UserCarts.ToList().Count();
+					HttpContext.Session.SetInt32(Helper.SessionKey, count);
 					return View(HttpContext.Session.GetInt32(Helper.SessionKey));
 				}
 			}

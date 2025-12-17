@@ -4,75 +4,82 @@
 <section class="py-5">
     <div class="container px-4 px-lg-5 mt-5">
         <div class="row gx-4 gx-lg-5 row-cols-2 row-cols-md-3 row-cols-xl-4 justify-content-center">
-            @foreach(var item in Model)
+            @if (!Model.Any())
             {
-                 <div class="col mb-5">
-                <div class="card h-100">
-                    <!-- Product image-->
-                    <a asp-action="Details" asp-route-ProductId="@item.Id"><img class="card-img-top" src="~/@item.Image" alt="..." width="450" height="300"/></a>
-                    <!-- Product details-->
-                    <div class="card-body p-4">
-                        <div class="text-center">
-                            <!-- Product name-->
-                            <h5 class="fw-bolder">@item.Name</h5>
-                            <!-- Product price-->
-                            $@item.Price
+                <h1 class="align-content-center">Nothing Added yet!!!</h1>
+            }
+            @foreach (var item in Model)
+            {
+                <div class="col mb-5">
+                    <div class="card h-100">
+                        <!-- Product image-->
+                        <a asp-action="Details" asp-route-ProductId="@item.Id"><img class="card-img-top" src="~/@item.Image" alt="..." width="450" height="300" /></a>
+                        <!-- Product details-->
+                        <div class="card-body p-4">
+                            <div class="text-center">
+                                <!-- Product name-->
+                                <h5 class="fw-bolder">@item.Name</h5>
+                                <!-- Product price-->
+                                $@item.Price
+                            </div>
+                        </div>
+                        <!-- Product actions-->
+                        <div class="card-footer p-4 pt-0 border-top-0 bg-transparent">
+                            <div class="text-center"><a class="btn btn-outline-dark mt-auto" asp-action="Details" asp-route-ProductId="@item.Id">Details </a></div>
                         </div>
                     </div>
-                    <!-- Product actions-->
-                    <div class="card-footer p-4 pt-0 border-top-0 bg-transparent">
-                        <div class="text-center"><a class="btn btn-outline-dark mt-auto" asp-action="Details" asp-route-ProductId="@item.Id">Details </a></div>
-                    </div>
                 </div>
-            </div>
             }
             @* Pagination *@
         </div>
-		@{
-		int PrevPageNo = ViewBag.PageNo - 1;
-		if (PrevPageNo <= 0)
-		{
-		PrevPageNo = 1;
-		}
-		int NextPageNo = ViewBag.PageNo + 1;
-		if (NextPageNo > ViewBag.NoOfPages)
-		{
-		NextPageNo = ViewBag.NoOfPages;
-		}
-		}
-		<ul class="pagination justify-content-center">
-			<li class="page-item">
-				<a class="page-link"
-				   href="/Customer/Home/index?PageNumber=@PrevPageNo">Previous</a>
-			</li>
-			@for (int j = 0; j < ViewBag.NoOfPages; j++)
-			{
-				if ((j + 1) == ViewBag.PageNo)
-				{
-					<li class="page-item active">
-						<a class="page-link"
-						   href="/Customer/Home/index?PageNumber=@(j + 1)">
-							@(j + 1)
-						</a>
-					</li>
-				}
-				else
-				{
-					<li class="page-item ">
-						<a class="page-link"
-						   href="/Customer/Home/index?PageNumber=@(j + 1)">
-							@(j + 1)
-						</a>
-					</li>
-				}
-			}
-			<li class="page-item">
-				<a class="page-link"
-				   href="/Customer/Home/index?PageNumber=@NextPageNo">
-					Next
-				</a>
-			</li>
-		</ul>
+        @{
+            int PrevPageNo = ViewBag.PageNo - 1;
+            if (PrevPageNo <= 0)
+            {
+                PrevPageNo = 1;
+            }
+            int NextPageNo = ViewBag.PageNo + 1;
+            if (NextPageNo > ViewBag.NoOfPages)
+            {
+                NextPageNo = ViewBag.NoOfPages;
+            }
+        }
+        @if (@Model.Any())
+        {
+            <ul class="pagination justify-content-center">
+                <li class="page-item">
+                    <a class="page-link"
+                       href="/Customer/Home/index?PageNumber=@PrevPageNo">Previous</a>
+                </li>
+                @for (int j = 0; j < ViewBag.NoOfPages; j++)
+                {
+                    if ((j + 1) == ViewBag.PageNo)
+                    {
+                        <li class="page-item active">
+                            <a class="page-link"
+                               href="/Customer/Home/index?PageNumber=@(j + 1)">
+                                @(j + 1)
+                            </a>
+                        </li>
+                    }
+                    else
+                    {
+                        <li class="page-item ">
+                            <a class="page-link"
+                               href="/Customer/Home/index?PageNumber=@(j + 1)">
+                                @(j + 1)
+                            </a>
+                        </li>
+                    }
+                }
+                <li class="page-item">
+                    <a class="page-link"
+                       href="/Customer/Home/index?PageNumber=@NextPageNo">
+                        Next
+                    </a>
+                </li>
+            </ul>
+        }
 
     </div>
 </section>

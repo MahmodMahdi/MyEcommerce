@@ -20,7 +20,7 @@ namespace MyEcommerce.DomainLayer.Models.Order
 		public DateTime PaymentDate { get; set; }
 
 		// Props of Stripe
-		public string? SissionId { get; set; }
+		public string? SessionId { get; set; }
 		public string? PaymentIntentId { get; set; }
 
 		// Date of User 

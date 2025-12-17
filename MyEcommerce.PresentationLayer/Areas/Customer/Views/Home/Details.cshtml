@@ -24,9 +24,7 @@
                         <span class="text-muted text-decoration-line-through me-2">$50.00</span>
                         <span class="text-danger fw-bold fs-3">$@Model.Product.Price</span>
                     </div>
-
-                    <p class="lead mb-4">@Model.Product.Description</p>
-
+                    <p class="lead mb-4">@Html.Raw(Model.Product.Description)</p>
                     <div class="d-flex align-items-center mb-4">
                         <!-- زرار زيادة/نقص الكمية -->
                         <div class="input-group me-3" style="max-width: 120px;">

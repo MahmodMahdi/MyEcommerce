@@ -11,7 +11,7 @@
 
             <!-- FORM CARD -->
             <div class="col-md-6 col-lg-5 d-flex">
-                <div class="register-card p-5 shadow-lg w-100 d-flex flex-column justify-content-center" style="border-radius: 2rem; height: 750px;">
+                <div class="register-card p-5 shadow-lg w-100 d-flex flex-column justify-content-center" style="border-radius: 2rem; height: 780px;">
                     <h2 class="text-center mb-4">Create a new account</h2>
 
                     <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post">
@@ -67,7 +67,7 @@
                             </div>
                         }
 
-                        <button id="registerSubmit" type="submit" class="btn btn-primary btn-lg w-100 mt-3">
+                        <button id="registerSubmit" type="submit" class="btn btn-primary btn-lg w-100 mt-3" >
                             @(User.IsInRole(Helper.AdminRole) ? "Add new User" : "Register")
                         </button>
 

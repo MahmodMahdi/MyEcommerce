@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using Newtonsoft.Json.Serialization;
 
 namespace MyEcommerce.DomainLayer.Models
 {
@@ -15,7 +16,8 @@ namespace MyEcommerce.DomainLayer.Models
 		public string Description { get; set; }
 		[ValidateNever]
 		public string Image {  get; set; }
-		[Required]
+		[Required(ErrorMessage ="*")]
+		[Range(1,100000,ErrorMessage ="Price must be between 1 to 100000")]
 		public decimal Price { get; set; }
 		[DisplayName("Category")]
 		[Required(ErrorMessage = "*")]
