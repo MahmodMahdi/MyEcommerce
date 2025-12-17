@@ -1,11 +1,19 @@
-﻿using MyEcommerce.DomainLayer.Models;
-using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using MyEcommerce.DomainLayer.Models;
+using System.Collections.Generic;
 
 namespace MyEcommerce.DomainLayer.ViewModels
 {
 	public class ProductViewModel
 	{
 		public Product Product { get; set; }
+		[ValidateNever]
+		public List<DropDownItem> Categories { get; set; }
+	}
+
+	public class DropDownItem
+	{
+		public string Value { get; set; }
+		public string Text { get; set; }
 	}
 }
