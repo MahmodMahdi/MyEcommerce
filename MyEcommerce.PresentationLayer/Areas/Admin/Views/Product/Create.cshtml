@@ -1,90 +1,5 @@
-﻿@* @model ProductViewModel
+﻿@model ProductViewModel
 @{
-    SelectList items = new SelectList(ViewBag.CategoryDropDownList,"Id","Name");
-    ViewBag.PageTitle = "Product Management";
-    ViewBag.CardTitle = "Create Product";
-    // Layout = "~/Views/Shared/_Dashboard.cshtml";
-}
-<div class="row">
-    <div class="col-md-6">
-        <form method="post" enctype="multipart/form-data">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="Product.Name"></label>
-                <input asp-for="Product.Name" class="form-control" />
-                <span asp-validation-for="Product.Name" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Product.Description"></label>
-                <textarea id="mytextarea" asp-for="Product.Description" class="form-control"></textarea>
-                <span asp-validation-for="Product.Description" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Product.Image"></label>
-                <input  type="file" name="file" id="file" class="form-control" onchange="Preview(event);"/>
-
-            </div>
-            <div class="form-group">
-                <label asp-for="Product.Price"></label>
-                <input asp-for="Product.Price" class="form-control" />
-                <span asp-validation-for="Product.Price" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Product.CategoryId">Category</label>
-                <select class="form-control" asp-for="Product.CategoryId" asp-items="items"><option selected disabled>-- Select Category --</option></select>
-                <span asp-validation-for="Product.CategoryId" class="text-danger"></span>
-
-            </div>
-            <div class="form-group">
-                <button type="submit" class="btn btn-primary">Create</button>
-            </div>
-        </form>
-    </div>
-    <div class="col-md-6">
-        <div class="container">
-            <img id="preview" src="~/@Model.Product.Image" width="350" height="450" />
-        </div>
-    </div>
-</div>
-
-<div>
-    <a asp-action="Index" asp-controller="Product">Back To List</a>
-</div>
-
-@section Scripts {
-    <partial name="_ValidationScriptsPartial" />
-    <script>
-             tinymce.init({
-          selector: 'textarea',
-          plugins: [
-            // Core editing features
-            'anchor', 'autolink', 'charmap', 'codesample', 'emoticons', 'link', 'lists', 'media', 'searchreplace', 'table', 'visualblocks', 'wordcount',
-            // Your account includes a free trial of TinyMCE premium features
-            // Try the most popular premium features until Dec 27, 2025:
-            'checklist', 'mediaembed', 'casechange', 'formatpainter', 'pageembed', 'a11ychecker', 'tinymcespellchecker', 'permanentpen', 'powerpaste', 'advtable', 'advcode', 'advtemplate', 'ai', 'uploadcare', 'mentions', 'tinycomments', 'tableofcontents', 'footnotes', 'mergetags', 'autocorrect', 'typography', 'inlinecss', 'markdown','importword', 'exportword', 'exportpdf'
-          ],
-          toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link media table mergetags | addcomment showcomments | spellcheckdialog a11ycheck typography uploadcare | align lineheight | checklist numlist bullist indent outdent | emoticons charmap | removeformat',
-          tinycomments_mode: 'embedded',
-          tinycomments_author: 'Author name',
-          mergetags_list: [
-            { value: 'First.Name', title: 'First Name' },
-            { value: 'Email', title: 'Email' },
-          ],
-          ai_request: (request, respondWith) => respondWith.string(() => Promise.reject('See docs to implement AI Assistant')),
-          uploadcare_public_key: 'acc93600506c14ebad60',
-        });
-    </script>
-    <script>
-        var Preview = function(event){
-            var img = document.getElementById("preview");
-            img.src = URL.createObjectURL(event.target.files[0]);
-        }
-    </script>
-}
- *@
-@model ProductViewModel
-@{
-    SelectList items = new SelectList(ViewBag.CategoryDropDownList, "Id", "Name");
     ViewBag.PageTitle = "Product Management";
     ViewBag.CardTitle = "Create Product";
 }
@@ -99,7 +14,7 @@
 
                 <div class="mb-3">
                     <label asp-for="Product.Name" class="form-label fw-semibold">Product Name</label>
-                    <input asp-for="Product.Name" class="form-control form-control-lg shadow-sm" placeholder="Enter product name" />
+                    <input asp-for="Product.Name" class="form-control form-control-lg shadow-sm" placeholder="Enter the product name" />
                     <span asp-validation-for="Product.Name" class="text-danger"></span>
                 </div>
 
@@ -111,17 +26,19 @@
 
                 <div class="mb-3">
                     <label asp-for="Product.Image" class="form-label fw-semibold">Product Image</label>
-                    <input type="file" name="file" id="file" class="form-control shadow-sm" onchange="Preview(event);" />
+                    <input type="file" name="image" id="file" class="form-control shadow-sm" onchange="Preview(event);" />
+                    <span asp-validation-for="Product.Image" class="text-danger"></span>
+
                 </div>
 
                 <div class="mb-3">
                     <label asp-for="Product.Price" class="form-label fw-semibold">Price ($)</label>
-                    <input asp-for="Product.Price" class="form-control form-control-lg shadow-sm" placeholder="0.00" />
+                    <input asp-for="Product.Price" class="form-control form-control-lg shadow-sm" placeholder="Enter the product price" />
                     <span asp-validation-for="Product.Price" class="text-danger"></span>
                 </div>
                 <div class="form-group mb-4">
                     <label asp-for="Product.CategoryId" class="form-label fw-bold">Category</label>
-                    <select class="form-control shadow-sm" asp-for="Product.CategoryId" asp-items="items" style="border-radius: 0.5rem;">
+                    <select class="form-control shadow-sm" asp-for="Product.CategoryId" asp-items="@ViewBag.CategoryDropDownList" style="border-radius: 0.5rem;">
                         <option selected disabled>-- Select Category --</option>
                     </select>
                     <span asp-validation-for="Product.CategoryId" class="text-danger"></span>
