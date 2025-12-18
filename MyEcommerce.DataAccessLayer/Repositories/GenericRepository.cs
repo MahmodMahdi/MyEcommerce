@@ -41,7 +41,7 @@ namespace MyEcommerce.DataAccessLayer.Repositories
 			return await query.AsNoTracking().ToListAsync();
 		}
 
-		public async Task<T> GetByIdAsync(Expression<Func<T, bool>>? predicate = null, string? Includeword=null)
+		public async Task<T> GetByIdAsync(Expression<Func<T, bool>>? predicate = null, string? IncludeProperties=null)
 		{
 
 			IQueryable<T> query = _dbset;
@@ -50,10 +50,10 @@ namespace MyEcommerce.DataAccessLayer.Repositories
 			{
 				query = query.Where(predicate);
 			}
-			if (Includeword != null)
+			if (IncludeProperties != null)
 			{
 				// _context.Products.Include(// here it may be many words not only one word)
-				foreach (var item in Includeword.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+				foreach (var item in IncludeProperties.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
 				{
 					query = query.Include(item);
 				}
