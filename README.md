@@ -1,7 +1,3 @@
-أبشر يا هندسة، الـ README هو واجهة مشروعك، وهو اللي بيخلي أي "Recruiter" أو "Senior Developer" يشوف شغلك يقدر يفهم المجهود الجبار اللي بذلته في الـ Logic الخاص بالمخزون والدفع.
-
-إليك ملف README.md احترافي ومنظم، جاهز لرفعه على GitHub:
-
 🛒 MyEcommerce - Full-Stack ASP.NET Core MVC Project
 A professional E-commerce solution built with ASP.NET Core MVC, focusing on robust inventory management, secure payments, and a seamless user experience.
 
@@ -45,17 +41,5 @@ Security: ASP.NET Core Identity
 Payments: Stripe API
 
 Frontend: HTML5, CSS3, JavaScript, Bootstrap 5
-
-📸 Screenshots
-(Add your screenshots here later)
-
-Tip: Include screenshots of the "Out of Stock" alert and the Stripe Checkout page.
-
-🛠️ Installation & Setup
-Clone the repository: git clone https://github.com/yourusername/MyEcommerce.git
-
-Update appsettings.json with your SQL Connection String and Stripe API Keys.
-
-Run Update-Database in the Package Manager Console.
 
 Press F5 to run the project.
