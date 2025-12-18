@@ -12,6 +12,17 @@ function loaddata() {
             { "data": "name" },
             { "data": "description" },
             { "data": "price" },
+            {
+                "data": "stockQuantity",
+                "render": function (data) {
+                    // لو المخزن أقل من 5 يظهر باللون الأحمر وعريض، وإلا يظهر عادي
+                    if (data < 5) {
+                        return `<span class="text-danger fw-bold">${data}</span>`;
+                    }
+                    return data;
+                },
+                "width": "15%"
+            },
             { "data": "category.name" },
             {
                 "data": "id",
