@@ -33,6 +33,7 @@ namespace MyEcommerce.PresentationLayer.Areas.Customer.Controllers
 				OrderHeader = new()
 
 			};
+			HttpContext.Session.SetInt32(Helper.SessionKey, shoppingCartViewModel.Carts.Count());
 			// here i want to sum the carts which user order
 			shoppingCartViewModel.TotalCarts = shoppingCartViewModel.Carts.Sum(c => c.Count * c.Product.Price);
 
@@ -49,6 +50,34 @@ namespace MyEcommerce.PresentationLayer.Areas.Customer.Controllers
 				OrderHeader = new()
 
 			};
+			// --- منطق التطهير الذكي ---
+			bool isChanged = false;
+			foreach (var cart in shoppingCartViewModel.Carts.ToList()) // ToList عشان م يحصلش Error وقت الحذف
+			{
+				// 1. لو المنتج خلص تماماً والمستخدم لسه عنده منه في السلة
+				if (cart.Product.StockQuantity <= 0)
+				{
+					await _UnitOfWork.ShoppingCartRepository.RemoveAsync(cart);
+					isChanged = true;
+				}
+				// 2. لو المخزن قل وبقى أقل من اللي اليوزر حاطه في السلة
+				else if (cart.Count > cart.Product.StockQuantity)
+				{
+					cart.Count = cart.Product.StockQuantity; // بنعدل الكمية لتناسب المتاح حالياً
+					isChanged = true;
+				}
+			}
+
+			if (isChanged)
+			{
+				await _UnitOfWork.CompleteAsync();
+				var actualCartCount = (await _UnitOfWork.ShoppingCartRepository.GetAllAsync(u => u.ApplicationUserId == userId)).Count();
+				HttpContext.Session.SetInt32(Helper.SessionKey, actualCartCount);
+				TempData["Error"] = "Some items in your cart were updated or removed due to limited stock.";
+				// نعيد جلب البيانات بعد التحديث عشان الحسابات تطلع صح
+				shoppingCartViewModel.Carts = await _UnitOfWork.ShoppingCartRepository.GetAllAsync(u => u.ApplicationUserId == userId, IncludeProperties: "Product");
+			}
+			// --- نهاية منطق التطهير ---
 			// this data that appear when opening the page (Customer info)
 			shoppingCartViewModel.OrderHeader.ApplicationUser = await _UnitOfWork.ApplicationUserRepository.GetByIdAsync(x => x.Id == userId);
 			shoppingCartViewModel.OrderHeader.Name = shoppingCartViewModel.OrderHeader.ApplicationUser.Name;
@@ -72,9 +101,14 @@ namespace MyEcommerce.PresentationLayer.Areas.Customer.Controllers
 
 				// get the carts of that user assigned
 				shoppingCartViewModel.Carts = await _UnitOfWork.ShoppingCartRepository.GetAllAsync(u => u.ApplicationUserId == userId, IncludeProperties: "Product");
-				if (!shoppingCartViewModel.Carts.Any())
+				// التحقق النهائي قبل الدفع
+				foreach (var item in shoppingCartViewModel.Carts)
 				{
-					return RedirectToAction(nameof(Index));
+					if (item.Count > item.Product.StockQuantity)
+					{
+						TempData["Error"] = $"The item '{item.Product.Name}' is no longer available in this quantity. Only {item.Product.StockQuantity} left.";
+						return RedirectToAction(nameof(Index));
+					}
 				}
 				#region Order Header Info 
 				// set a status data info for user
@@ -133,13 +167,25 @@ namespace MyEcommerce.PresentationLayer.Areas.Customer.Controllers
 					await _UnitOfWork.OrderHeaderRepository.UpdateOrderStatusAsync(id, Helper.Approve, Helper.Approve);
 					// when order done it will fill the paymentIntentId of Db with PII with stripe
 					OrderHeader.PaymentIntentId = session.PaymentIntentId;
+					// --- منطق خصم المخزون (Clean & Efficient) ---
+					var orderDetails = await _UnitOfWork.OrderDetailRepository.GetAllAsync(x => x.OrderId == id);
+
+					foreach (var item in orderDetails)
+					{
+						var product = await _UnitOfWork.ProductRepository.GetByIdAsync(p => p.Id == item.ProductId);
+						if (product != null)
+						{
+							product.StockQuantity -= item.Count; // خصم الكمية المباعة من المخزن
+						}
+					}
 					await _UnitOfWork.CompleteAsync();
+
+					// if status is paid then i need to remove items from cart 
+					var shoppingCart = await _UnitOfWork.ShoppingCartRepository.GetAllAsync(u => u.ApplicationUserId == OrderHeader.ApplicationUserId);
+					await _UnitOfWork.ShoppingCartRepository.RemoveRangeAsync(shoppingCart);
+					await _UnitOfWork.CompleteAsync();
+					HttpContext.Session.SetInt32(Helper.SessionKey, 0);
 				}
-				// if status is paid then i need to remove items from cart 
-				var shoppingCart = await _UnitOfWork.ShoppingCartRepository.GetAllAsync(u => u.ApplicationUserId == OrderHeader.ApplicationUserId);
-				await _UnitOfWork.ShoppingCartRepository.RemoveRangeAsync(shoppingCart);
-				await _UnitOfWork.CompleteAsync();
-				HttpContext.Session.SetInt32(Helper.SessionKey, 0);
 				return View(id);
 			}
 			catch (Exception)
@@ -151,10 +197,18 @@ namespace MyEcommerce.PresentationLayer.Areas.Customer.Controllers
 		}
 		public async Task<IActionResult> Plus(int CartId)
 		{
-			var ShoppingCart = await _UnitOfWork.ShoppingCartRepository.GetByIdAsync(c => c.Id == CartId);
-			_UnitOfWork.ShoppingCartRepository.IncreaseCount(ShoppingCart, 1);
-			await _UnitOfWork.CompleteAsync();
-			return RedirectToAction(nameof(Index));
+			var ShoppingCart = await _UnitOfWork.ShoppingCartRepository.GetByIdAsync(c => c.Id == CartId,IncludeProperties:"Product");
+			if (ShoppingCart == null) return NotFound();
+			if (ShoppingCart.Count >= ShoppingCart.Product.StockQuantity)
+			{
+				TempData["Error"] = $"Sorry, only {ShoppingCart.Product.StockQuantity} items available in stock.";
+			}
+			else
+			{
+				_UnitOfWork.ShoppingCartRepository.IncreaseCount(ShoppingCart, 1);
+				await _UnitOfWork.CompleteAsync();
+			}
+				return RedirectToAction(nameof(Index));
 		}
 		public async Task<IActionResult> Minus(int CartId)
 		{
