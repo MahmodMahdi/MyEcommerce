@@ -1,8 +1,6 @@
-# 🛒 MyEcommerce - Scalable N-Tier E-Commerce Solution
+# 🛒 MyEcommerce - Enterprise N-Tier ASP.NET Core Solution
 
-This project is a high-performance, secure, and scalable e-commerce platform built using **ASP.NET Core MVC**. It demonstrates professional software engineering practices, including **Clean Architecture**, **Generic Repository Pattern**, and **Unit of Work**.
-
-
+MyEcommerce is a high-performance, secure, and scalable e-commerce platform built using **ASP.NET Core MVC**. This project is not just a simple CRUD application; it is a feature-rich system designed to handle the complexities of real-world online trading, focusing on **Transactional Integrity**, **Stock Security**, and **Scalability**.
 
 ---
 
@@ -10,58 +8,58 @@ This project is a high-performance, secure, and scalable e-commerce platform bui
 
 The application is built following an **N-Tier Architecture** to ensure separation of concerns and maintainability:
 
-1.  **Domain Layer:** Contains POCO models, interfaces, and business entities.
-2.  **DataAccess Layer:** Implements Entity Framework Core with the **Generic Repository Pattern** to abstract data logic.
-3.  **Presentation Layer:** ASP.NET Core MVC (Area-based) providing a clean UI for both Customers and Admins.
-4.  **Utilities Layer:** Centralized location for constants, helper classes (e.g., Stripe settings, Role names).
-
-### Key Design Patterns:
-* **Unit of Work:** Coordinates the writing of multiple repositories to the database in a single transaction.
-* **Dependency Injection:** Extensively used for decoupling services and improving testability.
-* **View Models:** Used to pass precisely structured data between Controllers and Views.
+* **Domain Layer:** Contains POCO models, interfaces, and business entities.
+* **DataAccess Layer:** Implements Entity Framework Core with the **Generic Repository Pattern** to abstract data logic.
+* **Presentation Layer:** ASP.NET Core MVC (Area-based) providing a clean UI for both Customers and Admins.
+* **Design Patterns:** Extensive use of **Unit of Work** for atomic transactions and **Dependency Injection** for decoupled service management.
 
 ---
 
-## 🛠 Advanced Features & Business Logic
+## 🚀 Key Technical Challenges & Solutions
 
-### 🔐 Multi-Layer Inventory Protection
-One of the most complex parts of this system is the **Stock Management Engine**. It prevents "Overselling" through:
-* **Server-Side Validation:** Double-checking stock availability at the moment of adding to cart and again during the checkout summary.
-* **Atomic Transactions:** Stock is only deducted when Stripe confirms a `Paid` status.
-* **Stale Data Cleanup:** Automatic removal or adjustment of cart items if stock levels change while the user is browsing.
+### 🛡 Intelligent Inventory Safeguard (Stock Guard)
+In high-traffic scenarios, stock levels change rapidly. I implemented a **Multi-Stage Validation Pipeline** to prevent "Overselling":
+1.  **UI Level:** Real-time checking to disable "Add to Cart" and display "Out of Stock" labels.
+2.  **Summary Cleanup:** A specialized service runs before the user reaches Stripe, automatically scrubbing the cart and adjusting quantities if stock was sold to another customer in the interim.
+3.  **Atomic Post-Payment:** Stock is only physically deducted when a verified `Paid` status is returned from the Stripe API.
 
-### 💳 Financial Integration (Stripe)
-* Integrated **Stripe Checkout Sessions** for PCI-compliant payment processing.
-* Metadata tracking to link Stripe sessions with internal Order Headers.
-* Automated post-payment workflow (Status update -> Stock deduction -> Email/UI Confirmation).
+### 💳 Professional Order Workflow
+The order lifecycle mimics enterprise ERP systems:
+* **State Machine:** Orders transition through logical states: `Pending` -> `Approved` -> `Processing` -> `Shipped` -> `Cancelled`.
+* **Financial Integrity:** Every order is linked to a Stripe `PaymentIntentId`, ensuring a 1:1 match between financial transactions and database records.
+
+---
+
+## 💎 Core Features
+
+### 👤 Customer Experience
+* **Smart Shopping Cart:** Hybrid approach where cart counts are persisted in the database and reflected via optimized Session State.
+* **Secure Checkout:** Fully integrated with **Stripe Checkout Sessions** for PCI-compliant payment processing.
+* **Real-time Feedback:** Integrated **Toastr** and **SweetAlert2** for professional notifications.
 
 ### 👮 Admin Control Center
-* **Inventory Management:** Full CRUD for Products/Categories with image upload functionality.
-* **Order Management:** A specialized dashboard to track order lifecycles (Pending -> Approved -> Shipped -> Cancelled).
-* **Stock Alerts:** Visual indicators for low-stock or out-of-stock items.
-
-
+* **Product Management:** Full CRUD with image upload functionality and category hierarchy.
+* **Order Management:** A specialized "Control Tower" dashboard to track and manage order lifecycles and revenue.
+* **Inventory Alerts:** Visual indicators for low-stock items to prompt restock actions.
 
 ---
 
-## 🚀 Tech Stack
+## 🛠 Tech Stack
 
-| Technology | Purpose |
+| Category | Technology |
 | :--- | :--- |
-| **ASP.NET Core 8.0** | Core Backend Framework |
-| **EF Core & SQL Server** | Data Persistence & ORM |
-| **ASP.NET Identity** | Authentication & Role-Based Authorization |
-| **Stripe SDK** | Secure Payment Gateway |
-| **Bootstrap 5 & JS** | Responsive UI & Client-side logic |
-| **Session State** | Real-time Shopping Cart badge tracking |
+| **Backend** | ASP.NET Core 8.0 (MVC) |
+| **ORM / DB** | EF Core & SQL Server |
+| **Security** | ASP.NET Identity (RBAC) |
+| **Payments** | Stripe API SDK |
+| **UI** | Bootstrap 5, JavaScript, Session State |
 
 ---
 
-## 📖 Deep Dive: Order Workflow
+## 📖 Deep Dive: How it Works (Under the Hood)
 
-1.  **ShoppingCart:** User adds items; system checks stock and creates/updates records.
-2.  **Summary:** Final validation of stock vs. requested quantity.
-3.  **Stripe Redirect:** User enters payment info on Stripe's secure servers.
-4.  **Webhook/Return:** Upon success, `OrderConfirmation` is triggered.
-5.  **Database Update:** The system clears the user's cart, updates `OrderHeader`, and reduces `StockQuantity` in the `Products` table.
-
+### 1. Repository & Unit of Work
+Ensures the data access logic is centralized. For example, adding to a cart:
+```csharp
+_UnitOfWork.ShoppingCartRepository.AddAsync(cart);
+await _UnitOfWork.CompleteAsync(); // Atomic commit
