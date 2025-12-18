@@ -27,12 +27,17 @@
                     <p class="lead mb-4">@Html.Raw(Model.Product.Description)</p>
                     <div class="d-flex align-items-center mb-4">
                         <!-- زرار زيادة/نقص الكمية -->
-                        <div class="input-group me-3" style="max-width: 120px;">
-                            <button class="btn btn-outline-secondary" type="button" onclick="document.getElementById('inputQuantity').stepDown()">-</button>
-                            <input class="form-control text-center" id="inputQuantity" asp-for="Count" min="1" value="1" />
-                            <button class="btn btn-outline-secondary" type="button" onclick="document.getElementById('inputQuantity').stepUp()">+</button>
-                        </div>
-                        @if (!User.IsInRole("Admin"))
+                        @if (Model.Product.StockQuantity > 0)
+                            {
+                                <div class="input-group me-3" style="max-width: 120px;">
+                                    <button class="btn btn-outline-secondary" type="button" onclick="document.getElementById('inputQuantity').stepDown()">-</button>
+                                    <input class="form-control text-center" id="inputQuantity" asp-for="Count" min="1"  type="number" max="@Model.Product.StockQuantity"/>
+                                    <button class="btn btn-outline-secondary" type="button" onclick="document.getElementById('inputQuantity').stepUp()">+</button>
+                                </div>
+                            }
+                            @if (!User.IsInRole("Admin") )
+                            {
+                            if (Model.Product.StockQuantity > 0)
                             {
                                 <!-- أزرار الأفعال -->
                                 <button class="btn btn-dark me-3" type="submit">
@@ -40,6 +45,12 @@
                                     Add to Cart
                                 </button>
                             }
+                                   else
+                            {
+                            <button class="btn btn-danger me-3" disabled>Out of Stock</button>
+                            }
+                            }
+                         
                             <a class="btn btn-primary" href="/" role="button">
                             <i class="bi-house-door-fill me-1"></i>
                             Return Home
