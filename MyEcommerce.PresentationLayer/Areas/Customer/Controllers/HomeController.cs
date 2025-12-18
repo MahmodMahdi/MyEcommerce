@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using MyEcommerce.DataAccessLayer.Repositories;
 using MyEcommerce.DomainLayer.Interfaces;
 using MyEcommerce.DomainLayer.Models;
 using System.Security.Claims;
@@ -46,6 +47,10 @@ namespace MyEcommerce.PresentationLayer.Areas.Customer.Controllers
 		[Authorize]
 		public async Task<IActionResult> Details(ShoppingCart shoppingCart)
 		{
+			var product = await _unitOfWork.ProductRepository.GetByIdAsync(p => p.Id == shoppingCart.ProductId);
+			// التحقق: هل الكمية المطلوبة أكبر من المتاح؟
+			if (product == null) return NotFound();
+			
 			// here i bring user who has access (login)
 			var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 			shoppingCart.ApplicationUserId = userId;
@@ -53,8 +58,19 @@ namespace MyEcommerce.PresentationLayer.Areas.Customer.Controllers
 			// here i want to check if customer has previous order of same product (count of order)
 			var CartFromDb =await _unitOfWork.ShoppingCartRepository.GetByIdAsync(
 				u => u.ApplicationUserId == userId && u.ProductId == shoppingCart.ProductId);
+			// التحقق الذكي: الكمية المطلوبة + الكمية اللي موجودة أصلاً في السلة
+			int currentInCart = CartFromDb != null ? CartFromDb.Count : 0;
+			int totalRequested = currentInCart + shoppingCart.Count;
+			if (totalRequested > product.StockQuantity)
+			{
+				
+				TempData["Error"] = $"Sorry, you already have {currentInCart} in cart. Total available is {product.StockQuantity}.";
+				return RedirectToAction(nameof(Details), new { productId = shoppingCart.ProductId });
+			}
+
 			if (CartFromDb == null)
 			{
+				shoppingCart.Product = null;
 				// if this is first one it only add it to DB
 				await _unitOfWork.ShoppingCartRepository.AddAsync(shoppingCart);
 				await _unitOfWork.CompleteAsync();
@@ -69,6 +85,7 @@ namespace MyEcommerce.PresentationLayer.Areas.Customer.Controllers
 			    _unitOfWork.ShoppingCartRepository.IncreaseCount(CartFromDb, shoppingCart.Count);
 				await _unitOfWork.CompleteAsync();
 			}
+			TempData["Update"] = "Item added to cart successfully!";
 			return RedirectToAction(nameof(Index));
 		}
 	}
