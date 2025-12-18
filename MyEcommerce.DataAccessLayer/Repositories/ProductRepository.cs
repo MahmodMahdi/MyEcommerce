@@ -29,5 +29,17 @@ namespace MyEcommerce.DataAccessLayer.Repositories
 				productItem.CategoryId = product.CategoryId;
 			}
 		}
+		public async Task<IEnumerable<Product>> GetPagedAsync(int skip, int take)
+		{
+			return await _context.Products
+				.Skip(skip)
+				.Take(take)
+				.ToListAsync();
+		}
+
+		public async Task<int> GetCountAsync()
+		{
+			return await _context.Products.CountAsync();
+		}
 	}
 }
