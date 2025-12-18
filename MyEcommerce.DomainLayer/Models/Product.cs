@@ -14,6 +14,9 @@ namespace MyEcommerce.DomainLayer.Models
 		[MaxLength(30, ErrorMessage = "Name must be less than 29 letters"), MinLength(2, ErrorMessage = "Name must be greater than 2 letters.")]
 		public string Name { get; set; }
 		public string Description { get; set; }
+		[Required]
+		[Range(0, int.MaxValue, ErrorMessage = "Stock quantity cannot be negative")]
+		public int StockQuantity { get; set; }
 		[ValidateNever]
 		public string Image {  get; set; }
 		[Required(ErrorMessage ="*")]
