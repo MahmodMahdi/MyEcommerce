@@ -4,9 +4,10 @@ using MyEcommerce.DomainLayer.Interfaces;
 using MyEcommerce.DomainLayer.Models;
 using MyEcommerce.DomainLayer.Models.Order;
 using MyEcommerce.DomainLayer.ViewModels;
-
+using Stripe;
 using Stripe.Checkout;
 using System.Security.Claims;
+using System.Threading.Tasks;
 using Utilities;
 
 namespace MyEcommerce.PresentationLayer.Areas.Customer.Controllers
@@ -15,101 +16,178 @@ namespace MyEcommerce.PresentationLayer.Areas.Customer.Controllers
 	public class CartController : Controller
 	{
 		private readonly IUnitOfWork _UnitOfWork;
-		public ShoppingCartViewModel shoppingCartViewModel;
 		public int TotalCart { get; set; }
 		public CartController(IUnitOfWork unitOfWork)
 		{
 			_UnitOfWork = unitOfWork;
 		}
 		[Authorize]
-		public IActionResult Index()
+		public async Task<IActionResult> Index()
 		{
 			// here i need user who login
-			var IdentityClaims = (ClaimsIdentity)User.Identity;
-			var claim = IdentityClaims.FindFirst(ClaimTypes.NameIdentifier);
-			var userId = claim.Value;
-			shoppingCartViewModel = new ShoppingCartViewModel()
+			var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+			var shoppingCartViewModel = new ShoppingCartViewModel()
 			{
-				Carts = _UnitOfWork.ShoppingCartRepository.GetAll(u => u.ApplicationUserId == userId, Includeword: "Product"),
-				OrderHeader =new()
-			
+				Carts = await _UnitOfWork.ShoppingCartRepository.GetAllAsync(u => u.ApplicationUserId == userId, IncludeProperties: "Product"),
+				OrderHeader = new()
+
 			};
 			// here i want to sum the carts which user order
-			foreach (var item in shoppingCartViewModel.Carts)
-			{
-				shoppingCartViewModel.TotalCarts += (item.Count * item.Product.Price);
-			}
+			shoppingCartViewModel.TotalCarts = shoppingCartViewModel.Carts.Sum(c => c.Count * c.Product.Price);
+
 			return View(shoppingCartViewModel);
 		}
 		[HttpGet]
-		public IActionResult Summary()
+		public async Task<IActionResult> Summary()
 		{
-			var claimsidentity = (ClaimsIdentity)User.Identity;
-			var claim = claimsidentity.FindFirst(ClaimTypes.NameIdentifier);
-			var userId = claim.Value;
-			shoppingCartViewModel = new ShoppingCartViewModel()
+			var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+			var shoppingCartViewModel = new ShoppingCartViewModel()
 			{
-				Carts = _UnitOfWork.ShoppingCartRepository.GetAll(u => u.ApplicationUserId == userId, Includeword: "Product"),
+				Carts = await _UnitOfWork.ShoppingCartRepository.GetAllAsync(u => u.ApplicationUserId == userId, IncludeProperties: "Product"),
 				OrderHeader = new()
 
 			};
 			// this data that appear when opening the page (Customer info)
-			shoppingCartViewModel.OrderHeader.ApplicationUser = _UnitOfWork.ApplicationUserRepository.GetById(x => x.Id == userId);
+			shoppingCartViewModel.OrderHeader.ApplicationUser = await _UnitOfWork.ApplicationUserRepository.GetByIdAsync(x => x.Id == userId);
 			shoppingCartViewModel.OrderHeader.Name = shoppingCartViewModel.OrderHeader.ApplicationUser.Name;
 			shoppingCartViewModel.OrderHeader.Address = shoppingCartViewModel.OrderHeader.ApplicationUser.Address;
 			shoppingCartViewModel.OrderHeader.City = shoppingCartViewModel.OrderHeader.ApplicationUser.City;
 			shoppingCartViewModel.OrderHeader.PhoneNumber = shoppingCartViewModel.OrderHeader.ApplicationUser.PhoneNumber;
-			foreach (var item in shoppingCartViewModel.Carts)
-			{
-				shoppingCartViewModel.OrderHeader.TotalPrice += (item.Count * item.Product.Price);
-			}
+
+			shoppingCartViewModel.OrderHeader.TotalPrice = shoppingCartViewModel.Carts.Sum(c => c.Count * c.Product.Price);
+
 			return View(shoppingCartViewModel);
 
 		}
 		[HttpPost]
 		[ValidateAntiForgeryToken]
-		public IActionResult PostSummary(ShoppingCartViewModel ShoppingCartViewModel)
+		public async Task<IActionResult> PostSummary(ShoppingCartViewModel shoppingCartViewModel)
 		{
-			// get the user 
-			var claimsidentity = (ClaimsIdentity)User.Identity;
-			var claim = claimsidentity.FindFirst(ClaimTypes.NameIdentifier);
-			var userId = claim.Value;
-
-			// get the carts of that user assigned
-			ShoppingCartViewModel.Carts = _UnitOfWork.ShoppingCartRepository.GetAll(u => u.ApplicationUserId == userId, Includeword: "Product");
-			#region Order Header Info 
-			// set a status data info for user
-			ShoppingCartViewModel.OrderHeader.OrderStatus = Helper.Pending;
-			ShoppingCartViewModel.OrderHeader.PaymentStatus = Helper.Pending;
-			ShoppingCartViewModel.OrderHeader.OrderDate = DateTime.Now;
-			ShoppingCartViewModel.OrderHeader.ApplicationUserId = userId;
-
-			// sum count of cart total price
-			foreach (var item in ShoppingCartViewModel.Carts)
+			try
 			{
-				ShoppingCartViewModel.OrderHeader.TotalPrice += (item.Count * item.Product.Price);
-			}
-			// add this data in OrderHeader in DB
-			_UnitOfWork.OrderHeaderRepository.Add(ShoppingCartViewModel.OrderHeader);
-			_UnitOfWork.complete();
-			#endregion
-			#region Order Detail Info
-			// here it will loop in Carts and get the details of order and set it into Order Detail Model
-			foreach (var cart in ShoppingCartViewModel.Carts)
-			{
-				var OrderDetail = new OrderDetail()
+				// get the user 
+				var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+				// get the carts of that user assigned
+				shoppingCartViewModel.Carts = await _UnitOfWork.ShoppingCartRepository.GetAllAsync(u => u.ApplicationUserId == userId, IncludeProperties: "Product");
+				if (!shoppingCartViewModel.Carts.Any())
 				{
-					ProductId = cart.ProductId,
-					OrderId = ShoppingCartViewModel.OrderHeader.Id,
-					Price = cart.Product.Price,
-					Count = cart.Count
-				};
-				// add this data in OrderDetail in DB
-				_UnitOfWork.OrderDetailRepository.Add(OrderDetail);
-				_UnitOfWork.complete();
+					return RedirectToAction(nameof(Index));
+				}
+				#region Order Header Info 
+				// set a status data info for user
+				shoppingCartViewModel.OrderHeader.OrderStatus = Helper.Pending;
+				shoppingCartViewModel.OrderHeader.PaymentStatus = Helper.Pending;
+				shoppingCartViewModel.OrderHeader.OrderDate = DateTime.Now;
+				shoppingCartViewModel.OrderHeader.ApplicationUserId = userId;
+
+				// sum count of cart total price
+				shoppingCartViewModel.OrderHeader.TotalPrice = shoppingCartViewModel.Carts.Sum(c => c.Count * c.Product.Price);
+
+				// add this data in OrderHeader in DB
+				await _UnitOfWork.OrderHeaderRepository.AddAsync(shoppingCartViewModel.OrderHeader);
+				await _UnitOfWork.CompleteAsync();
+				#endregion
+				#region Order Detail Info
+				// here it will loop in Carts and get the details of order and set it into Order Detail Model
+				foreach (var cart in shoppingCartViewModel.Carts)
+				{
+					var OrderDetail = new OrderDetail()
+					{
+						ProductId = cart.ProductId,
+						OrderId = shoppingCartViewModel.OrderHeader.Id,
+						Price = cart.Product.Price,
+						Count = cart.Count
+					};
+					// add this data in OrderDetail in DB
+					await _UnitOfWork.OrderDetailRepository.AddAsync(OrderDetail);
+				}
+				await _UnitOfWork.CompleteAsync();
+				#endregion
+				// here code of stripe method (from stripe site) but i set my value 
+				return await ProcessStripePayment(shoppingCartViewModel);
+
 			}
-			#endregion
-			// here code of stripe method (from stripe site) but i set my value 
+			catch (Exception ex)
+			{
+				// أحياناً Stripe يرمي خطأ من نوع HttpRequestException مباشرة
+				TempData["Error"] = "Connection Failed: Please check your internet and try again.";
+
+				// سطر للـ Debugging فقط ليظهر لك في الـ Output Window ما هو الخطأ الحقيقي
+				System.Diagnostics.Debug.WriteLine($"Error Type: {ex.GetType().Name}, Message: {ex.Message}");
+				return RedirectToAction(nameof(Index));
+			}
+		}
+		public async Task<IActionResult> OrderConfirmation(int id)
+		{
+			try
+			{
+				var OrderHeader = await _UnitOfWork.OrderHeaderRepository.GetByIdAsync(u => u.Id == id);
+				// check my session in stripe
+				var service = new SessionService();
+				var session = await service.GetAsync(OrderHeader.SessionId);
+				if (session.PaymentStatus.ToLower() == "paid")
+				{
+					await _UnitOfWork.OrderHeaderRepository.UpdateOrderStatusAsync(id, Helper.Approve, Helper.Approve);
+					// when order done it will fill the paymentIntentId of Db with PII with stripe
+					OrderHeader.PaymentIntentId = session.PaymentIntentId;
+					await _UnitOfWork.CompleteAsync();
+				}
+				// if status is paid then i need to remove items from cart 
+				var shoppingCart = await _UnitOfWork.ShoppingCartRepository.GetAllAsync(u => u.ApplicationUserId == OrderHeader.ApplicationUserId);
+				await _UnitOfWork.ShoppingCartRepository.RemoveRangeAsync(shoppingCart);
+				await _UnitOfWork.CompleteAsync();
+				HttpContext.Session.SetInt32(Helper.SessionKey, 0);
+				return View(id);
+			}
+			catch (Exception)
+			{
+				// في حال فشل النت هنا، نوجه المستخدم لصفحة تخبره بأننا سنؤكد طلبه فور عودة الخدمة
+				TempData["Error"] = "Connection lost while confirming payment. Don't worry, your order is being processed.";
+				return RedirectToAction("Index", "Home");
+			}
+		}
+		public async Task<IActionResult> Plus(int CartId)
+		{
+			var ShoppingCart = await _UnitOfWork.ShoppingCartRepository.GetByIdAsync(c => c.Id == CartId);
+			_UnitOfWork.ShoppingCartRepository.IncreaseCount(ShoppingCart, 1);
+			await _UnitOfWork.CompleteAsync();
+			return RedirectToAction(nameof(Index));
+		}
+		public async Task<IActionResult> Minus(int CartId)
+		{
+			var ShoppingCart = await _UnitOfWork.ShoppingCartRepository.GetByIdAsync(c => c.Id == CartId);
+			if (ShoppingCart.Count <= 1)
+			{
+				await RemoveFromCart(ShoppingCart);
+				return RedirectToAction(nameof(Index));
+			}
+			else
+			{
+				_UnitOfWork.ShoppingCartRepository.DecreaseCount(ShoppingCart, 1);
+			}
+			await _UnitOfWork.CompleteAsync();
+			return RedirectToAction(nameof(Index));
+		}
+
+		public async Task<IActionResult> Remove(int cartId)
+		{
+			var ShoppingCart = await _UnitOfWork.ShoppingCartRepository.GetByIdAsync(c => c.Id == cartId);
+			await RemoveFromCart(ShoppingCart);
+			return RedirectToAction(nameof(Index));
+		}
+		private async Task RemoveFromCart(ShoppingCart cart)
+		{
+			await _UnitOfWork.ShoppingCartRepository.RemoveAsync(cart);
+			await _UnitOfWork.CompleteAsync();
+
+			var count = (await _UnitOfWork.ShoppingCartRepository.GetAllAsync(s => s.ApplicationUserId == cart.ApplicationUserId)).Count();
+			HttpContext.Session.SetInt32(Helper.SessionKey, count);
+		}
+		private async Task<IActionResult> ProcessStripePayment(ShoppingCartViewModel shoppingCartViewModel)
+		{
 			#region Stripe code
 			var domain = "https://localhost:7148/"; // manual
 			var options = new SessionCreateOptions
@@ -117,13 +195,13 @@ namespace MyEcommerce.PresentationLayer.Areas.Customer.Controllers
 				LineItems = new List<SessionLineItemOptions>(),
 				// manual
 				Mode = "payment",
-				SuccessUrl = domain + $"Customer/Cart/OrderConfirmation?id={ShoppingCartViewModel.OrderHeader.Id}",
+				SuccessUrl = domain + $"Customer/Cart/OrderConfirmation?id={shoppingCartViewModel.OrderHeader.Id}",
 				CancelUrl = domain + $"Customer/Cart/Index",
 			};
 			// manual to set my data
-			foreach (var item in ShoppingCartViewModel.Carts)
+			foreach (var item in shoppingCartViewModel.Carts)
 			{
-				var sessionLineOption= new SessionLineItemOptions
+				var sessionLineOption = new SessionLineItemOptions
 				{
 					PriceData = new SessionLineItemPriceDataOptions
 					{
@@ -140,72 +218,15 @@ namespace MyEcommerce.PresentationLayer.Areas.Customer.Controllers
 			}
 
 			var service = new SessionService();
-			Session session = service.Create(options);
+			Session session = await service.CreateAsync(options);
 			// check of session to confirm (success of not)
-			ShoppingCartViewModel.OrderHeader.SissionId = session.Id;
-			_UnitOfWork.complete();
-			Response.Headers.Add("Location", session.Url);
+			shoppingCartViewModel.OrderHeader.SessionId = session.Id;
+			await _UnitOfWork.CompleteAsync();
+			Response.Headers.Append("Location", session.Url);
 			#endregion
 
 			return new StatusCodeResult(303);
 
 		}
-		public IActionResult OrderConfirmation(int id)
-		{
-			var OrderHeader = _UnitOfWork.OrderHeaderRepository.GetById(u => u.Id == id);
-			// check my session in stripe
-			var service = new SessionService();
-			var session = service.Get(OrderHeader.SissionId);
-			if (session.PaymentStatus.ToLower() == "paid")
-			{
-				_UnitOfWork.OrderHeaderRepository.UpdateOrderStatus(id, Helper.Approve, Helper.Approve);
-				// when order done it will fill the paymentIntentId of Db with PII with stripe
-				OrderHeader.PaymentIntentId = session.PaymentIntentId;
-				_UnitOfWork.complete();
-			}
-			// if status is paid then i need to remove items from cart 
-			var shoppingCart = _UnitOfWork.ShoppingCartRepository.GetAll(u=>u.ApplicationUserId == OrderHeader.ApplicationUserId).ToList();
-			_UnitOfWork.ShoppingCartRepository.RemoveRange(shoppingCart);
-			_UnitOfWork.complete();
-			var count = _UnitOfWork.ShoppingCartRepository.GetAll(s => s.ApplicationUserId == OrderHeader.ApplicationUserId).ToList().Count();
-			HttpContext.Session.SetInt32(Helper.SessionKey, count);
-			return View();
-		}
-		public IActionResult Plus(int CartId)
-		{
-			var ShoppingCart = _UnitOfWork.ShoppingCartRepository.GetById(c => c.Id == CartId);
-			_UnitOfWork.ShoppingCartRepository.IncreaseCount(ShoppingCart, 1);
-			_UnitOfWork.complete();
-			return RedirectToAction(nameof(Index));
-		}
-		public IActionResult Minus(int CartId)
-		{
-			var ShoppingCart = _UnitOfWork.ShoppingCartRepository.GetById(c => c.Id == CartId);
-			if (ShoppingCart.Count <= 1)
-			{
-				_UnitOfWork.ShoppingCartRepository.Remove(ShoppingCart);
-				var count = _UnitOfWork.ShoppingCartRepository.GetAll(s => s.ApplicationUserId == ShoppingCart.ApplicationUserId).ToList().Count()-1;
-				HttpContext.Session.SetInt32(Helper.SessionKey, count);
-				_UnitOfWork.complete();
-				return RedirectToAction(nameof(Index), "Home");
-			}
-			else
-			{
-				_UnitOfWork.ShoppingCartRepository.DecreaseCount(ShoppingCart, 1);
-			}
-			_UnitOfWork.complete();
-			return RedirectToAction(nameof(Index));
-		}
-
-		public IActionResult Remove(int cartId)
-		{
-			var ShoppingCart = _UnitOfWork.ShoppingCartRepository.GetById(c => c.Id == cartId);
-			_UnitOfWork.ShoppingCartRepository.Remove(ShoppingCart);
-			_UnitOfWork.complete();
-			var count = _UnitOfWork.ShoppingCartRepository.GetAll(s => s.ApplicationUserId == ShoppingCart.ApplicationUserId).ToList().Count();
-			HttpContext.Session.SetInt32(Helper.SessionKey, count);
-			return RedirectToAction(nameof(Index));
-		}
-		
 	}
 }
