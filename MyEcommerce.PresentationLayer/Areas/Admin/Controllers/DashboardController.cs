@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MyEcommerce.DomainLayer.Interfaces;
-using MyEcommerce.DomainLayer.ViewModels;
 using Utilities;
 
 namespace MyEcommerce.PresentationLayer.Areas.Admin.Controllers
@@ -17,18 +16,32 @@ namespace MyEcommerce.PresentationLayer.Areas.Admin.Controllers
 			_unitOfWork = unitOfWork;
 		}
 
-		public IActionResult Index()
+		public async Task<IActionResult> Index()
 		{
-			var MostPurchasedProduct = _unitOfWork.OrderDetailRepository.MostPurchasedProduct();
-			var MostPurchasedBuyer = _unitOfWork.OrderHeaderRepository.TopPurchasedBuyer();
-			ViewBag.Orders = _unitOfWork.OrderHeaderRepository.GetAll().Count();
-			ViewBag.ApprovedOrders = _unitOfWork.OrderHeaderRepository.GetAll(A => A.OrderStatus == Helper.Approve).Count();
-			ViewBag.ShippedOrders = _unitOfWork.OrderHeaderRepository.GetAll(A => A.OrderStatus == Helper.Shipped).Count();
-			ViewBag.PendingOrders = _unitOfWork.OrderHeaderRepository.GetAll(A => A.OrderStatus == Helper.Pending).Count();
+			var MostPurchasedProduct =await _unitOfWork.OrderDetailRepository.MostPurchasedProductAsync();
+			var MostPurchasedBuyer =await _unitOfWork.OrderHeaderRepository.TopPurchasedBuyerAsync();
+
+			var orders =await _unitOfWork.OrderHeaderRepository.GetAllAsync();
+			ViewBag.Orders = orders.Count();
+			
+			var ApprovedOrder =await _unitOfWork.OrderHeaderRepository.GetAllAsync(A => A.OrderStatus == Helper.Approve);
+            ViewBag.ApprovedOrders = ApprovedOrder.Count();
+			
+			var ShippedOrder =await _unitOfWork.OrderHeaderRepository.GetAllAsync(A => A.OrderStatus == Helper.Shipped);
+            ViewBag.ShippedOrders = ShippedOrder.Count();
+			
+			var PendingOrder =await _unitOfWork.OrderHeaderRepository.GetAllAsync(A => A.OrderStatus == Helper.Pending);
+			ViewBag.PendingOrders = PendingOrder.Count();
+
 			ViewBag.MostPurchasedProduct = MostPurchasedProduct;
 			ViewBag.MostBuyer = MostPurchasedBuyer;
-			ViewBag.Users = _unitOfWork.ApplicationUserRepository.GetAll().Count();
-			ViewBag.Products = _unitOfWork.ProductRepository.GetAll().Count();
+
+			var Users =await _unitOfWork.ApplicationUserRepository.GetAllAsync();
+			ViewBag.Users = Users.Count();
+
+			var Products = await _unitOfWork.ProductRepository.GetAllAsync();
+			ViewBag.Products = Products.Count();
+
 			return View();
 		}
 	}
