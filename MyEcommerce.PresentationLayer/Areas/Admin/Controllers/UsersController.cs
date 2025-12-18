@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using MyEcommerce.DataAccessLayer.Data;
 using System.Security.Claims;
 using Utilities;
@@ -17,13 +18,30 @@ namespace MyEcommerce.PresentationLayer.Areas.Admin.Controllers
 			_context = context;
 		}
 
-		public IActionResult Index()
+		public async Task<IActionResult> Index(int pageNumber =1)
 		{
-			var claimsIdentity =(ClaimsIdentity)User.Identity; // here i want to bring claims
-			var claim = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier); // here i filter claim of users
-			string userId = claim.Value; // here i bring user by his id
-			var Users = _context.ApplicationUsers.Where(u=>u.Id!= userId).ToList(); // here i bring all users except me
-			return View(Users);
+			if (pageNumber < 1) pageNumber = 1;
+
+			int pageSize = 10; // عدد المستخدمين في كل صفحة
+			var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+			// 1. حساب العدد الإجمالي للمستخدمين (باستثناء الحالي)
+			int totalUsers = await _context.ApplicationUsers
+				.Where(u => u.Id != userId)
+				.CountAsync();
+
+			int numberOfPages = (int)Math.Ceiling((double)totalUsers / pageSize);
+			int numberOfItemToSkip = (pageNumber - 1) * pageSize;
+
+			var users = await _context.ApplicationUsers
+				.Where(u => u.Id != userId)
+				.OrderBy(u => u.UserName)
+				.Skip(numberOfItemToSkip)
+				.Take(pageSize)
+				.ToListAsync();
+			ViewBag.PageNo = pageNumber;
+			ViewBag.NoOfPages = numberOfPages;
+
+			return View(users);
 		}
 		public IActionResult LockUnlock(string? id)
 		{

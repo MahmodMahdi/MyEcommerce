@@ -39,4 +39,55 @@
 		</tr>
 	}
 </table>
+@* Pagination *@
+</div>
+@{
+    int PrevPageNo = ViewBag.PageNo - 1;
+    if (PrevPageNo <= 0)
+    {
+        PrevPageNo = 1;
+    }
+    int NextPageNo = ViewBag.PageNo + 1;
+    if (NextPageNo > ViewBag.NoOfPages)
+    {
+        NextPageNo = ViewBag.NoOfPages;
+    }
+}
+@if (@Model.Any())
+{
+    <ul class="pagination justify-content-center">
+        <li class="page-item">
+            <a class="page-link"
+               href="/Admin/Users/index?PageNumber=@PrevPageNo">Previous</a>
+        </li>
+        @for (int j = 0; j < ViewBag.NoOfPages; j++)
+        {
+            if ((j + 1) == ViewBag.PageNo)
+            {
+                <li class="page-item active">
+                    <a class="page-link"
+                       href="/Admin/Users/index?PageNumber=@(j + 1)">
+                        @(j + 1)
+                    </a>
+                </li>
+            }
+            else
+            {
+                <li class="page-item ">
+                    <a class="page-link"
+                       href="/Admin/Users/index?PageNumber=@(j + 1)">
+                        @(j + 1)
+                    </a>
+                </li>
+            }
+        }
+        <li class="page-item">
+            <a class="page-link"
+               href="/Admin/Users/index?PageNumber=@NextPageNo">
+                Next
+            </a>
+        </li>
+    </ul>
+}
+
 

@@ -3,7 +3,9 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using MyEcommerce.DataAccessLayer.Data;
 using MyEcommerce.DataAccessLayer.Repositories;
+using MyEcommerce.DataAccessLayer.Services;
 using MyEcommerce.DomainLayer.Interfaces;
+using MyEcommerce.DomainLayer.Services;
 using Stripe;
 using Utilities;
 
@@ -31,6 +33,7 @@ namespace MyEcommerce.PresentationLayer
 				.AddEntityFrameworkStores<ApplicationDbContext>();
 			builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 			builder.Services.AddSingleton<IEmailSender,EmailSender>();
+			builder.Services.AddScoped<IImageService,ImageService>();
 			builder.Services.AddSession();
 			builder.Services.AddDistributedMemoryCache();
 			var app = builder.Build();

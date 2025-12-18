@@ -18,14 +18,16 @@ namespace MyEcommerce.PresentationLayer.Areas.Customer.Controllers
 
 		public async Task<IActionResult> Index(int pageNumber = 1)
 		{
-			var products =await _unitOfWork.ProductRepository.GetAllAsync();
-			// Add Pagination
-			int PageSize = 8;
-			int NumberOfPages = Convert.ToInt32(Math.Ceiling(Convert.ToDouble(products.Count()) / Convert.ToDouble(PageSize)));
-			int NumberOfItemToSkip = (pageNumber - 1) * PageSize;
+			int pageSize = 8;
+
+			int totalItems = await _unitOfWork.ProductRepository.GetCountAsync();
+
+			int numberOfPages = (int)Math.Ceiling((double)totalItems / pageSize);
+			int numberOfItemToSkip = (pageNumber - 1) * pageSize;
+			var products = await _unitOfWork.ProductRepository.GetPagedAsync(numberOfItemToSkip, pageSize);
+
 			ViewBag.PageNo = pageNumber;
-			ViewBag.NoOfPages = NumberOfPages;
-			products =products.Skip(NumberOfItemToSkip).Take(PageSize).ToList() ;
+			ViewBag.NoOfPages = numberOfPages;
 			return View(products);
 		}
 		public async Task<IActionResult> Details(int ProductId)
