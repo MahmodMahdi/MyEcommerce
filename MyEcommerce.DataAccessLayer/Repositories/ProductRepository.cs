@@ -25,6 +25,7 @@ namespace MyEcommerce.DataAccessLayer.Repositories
 				productItem.Name = product.Name;
 				productItem.Description = product.Description;
 				productItem.Price = product.Price;
+				productItem.StockQuantity = product.StockQuantity;
 				productItem.Image = product.Image;
 				productItem.CategoryId = product.CategoryId;
 			}
