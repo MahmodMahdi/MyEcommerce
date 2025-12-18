@@ -1,151 +1,156 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using MyEcommerce.DataAccessLayer.Repositories;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using MyEcommerce.DomainLayer.Interfaces;
 using MyEcommerce.DomainLayer.Models;
+using MyEcommerce.DomainLayer.Services;
 using MyEcommerce.DomainLayer.ViewModels;
-
 namespace MyEcommerce.PresentationLayer.Areas.Admin.Controllers
 {
 	[Area("Admin")]
 	public class ProductController : Controller
 	{
 		private readonly IUnitOfWork _unitOfWork;
-		private readonly IWebHostEnvironment _webHostEnvironment;
-		public ProductController(IUnitOfWork unitOfWork, IWebHostEnvironment webHostEnvironment)
+		private readonly IImageService _imageService;
+
+		public ProductController(IUnitOfWork unitOfWork, IImageService imageService)
 		{
 			_unitOfWork = unitOfWork;
-			_webHostEnvironment = webHostEnvironment;
+			_imageService = imageService;
 		}
+
+		#region Index
+		public IActionResult Index() => View();
+
 		[HttpGet]
-		public IActionResult Index()
+		public async Task<IActionResult> GetData()
 		{
-			return View();
-		}
-		[HttpGet]
-		public IActionResult GetData() // return json of product data to show it into index
-		{
-			var products = _unitOfWork.ProductRepository.GetAll(Includeword:"Category");
+			var products = await _unitOfWork.ProductRepository.GetAllAsync(IncludeProperties: "Category");
 			return Json(new { data = products });
 		}
+		#endregion
+
+		#region Create
 		[HttpGet]
-		public IActionResult Create()
+		public async Task<IActionResult> Create()
 		{
-			var productvm = new ProductViewModel()
+			var productVM = new ProductViewModel
 			{
-				Product = new Product()
+				Product = new Product(),
 			};
-			PopulateCategoryDropDownList();
-			return View(productvm);
-		}
-		[HttpPost]
-		[ValidateAntiForgeryToken]
-		public IActionResult Create(ProductViewModel productvm,IFormFile file)
-		{
-			if (ModelState.IsValid)
-			{
-				// first path
-				string RootPath = _webHostEnvironment.WebRootPath;
-				if(file != null)
-				{
-					string filename = Guid.NewGuid().ToString();
-					// compile first path with folder of images
-					var Upload = Path.Combine(RootPath, @"Image\Products");
-					if (!Directory.Exists(Upload))
-					{
-						Directory.CreateDirectory(Upload);
-					}
-					// get extension of image
-					var extension = Path.GetExtension(file.FileName);
-					using(var filestream = new FileStream(Path.Combine(Upload, filename + extension), FileMode.Create))
-					{
-						file.CopyTo(filestream);
-					}
-					productvm.Product.Image = @"Image\Products\" + filename + extension;
-				}
-				_unitOfWork.ProductRepository.Add(productvm.Product);
-				_unitOfWork.complete();
-				TempData["Create"] = "Data Has Created Successfully";
-				return RedirectToAction("Index");
-			}
-			ViewBag.CategoryDropDownList = _unitOfWork.CategoryRepository.GetAll();
-			return View(productvm);
-		}
-		[HttpGet]
-		public IActionResult Edit(int? id)
-		{
-			
-			var productvm = new ProductViewModel()
-			{
-				Product = _unitOfWork.ProductRepository.GetById(c => c.Id == id)
-			};
-			PopulateCategoryDropDownList();
-			if (id == null | id == 0)
-			{
-				NotFound();
-			}
-			return View(productvm);
-		}
-		[HttpPost]
-		[ValidateAntiForgeryToken]
-		public IActionResult Edit(ProductViewModel productvm, IFormFile? file)
-		{
-			if (ModelState.IsValid)
-			{
-				var oldProduct = _unitOfWork.ProductRepository.GetById(x=>x.Id==productvm.Product.Id);
-				string RootPath = _webHostEnvironment.WebRootPath;
-				if (file != null)
-				{
-					string filename = Guid.NewGuid().ToString();
-					// compile first path with folder of images
-					var Upload = Path.Combine(RootPath, @"Image\Products");
-					// get extension of image
-					var extension = Path.GetExtension(file.FileName);
-					if (productvm.Product.Image != null)
-					{
-						var oldImg = Path.Combine(RootPath, oldProduct.Image.TrimStart('\\')); // here it show that img in db include /image/products so i made trim start
-						if (System.IO.File.Exists(oldImg))
-						{
-							System.IO.File.Delete(oldImg);
-						}
-					}
-					using (var filestream = new FileStream(Path.Combine(Upload, filename + extension), FileMode.Create))
-					{
-						file.CopyTo(filestream);
-					}
-					productvm.Product.Image = @"Image\Products\" + filename + extension;
-				}
-				_unitOfWork.ProductRepository.Update(productvm.Product);
-				_unitOfWork.complete();
-				TempData["Update"] = "Data Has Updated Successfully";
-				return RedirectToAction("Index");
-			}
-			PopulateCategoryDropDownList();
-			return View(productvm);
+			await PopulateCategories(productVM);
+			return View(productVM);
 		}
 
-		public void PopulateCategoryDropDownList()
+		[HttpPost]
+		[ValidateAntiForgeryToken]
+		public async Task<IActionResult> Create(ProductViewModel productVM, IFormFile image)
 		{
-			ViewBag.CategoryDropDownList = _unitOfWork.CategoryRepository.GetAll();
+			// 🔹 تهيئة categories قبل ModelState check
+			await PopulateCategories(productVM);
 
+			if (image == null)
+				ModelState.AddModelError("Product.Image", "Please choose product image");
+
+			if (!ModelState.IsValid)
+				return View(productVM);
+
+			// حفظ الصورة
+			productVM.Product.Image = await _imageService.SaveAsync(image);
+
+			// إضافة المنتج
+			await _unitOfWork.ProductRepository.AddAsync(productVM.Product);
+			await _unitOfWork.CompleteAsync();
+
+			TempData["Create"] = "Product created successfully";
+			return RedirectToAction(nameof(Index));
 		}
+		#endregion
+
+		#region Edit
+		[HttpGet]
+		public async Task<IActionResult> Edit(int id)
+		{
+			if (id <= 0) return NotFound();
+
+			var product = await _unitOfWork.ProductRepository.GetByIdAsync(x => x.Id == id);
+			if (product == null) return NotFound();
+
+			var productVM = new ProductViewModel { Product = product };
+			await PopulateCategories(productVM);
+
+			return View(productVM);
+		}
+
+
+		[HttpPost]
+		[ValidateAntiForgeryToken]
+		public async Task<IActionResult> Edit(ProductViewModel productVM, IFormFile? image)
+		{
+			// populate categories أول حاجة قبل ModelState check
+			await PopulateCategories(productVM);
+
+			if (!ModelState.IsValid)
+				return View(productVM);
+
+			var oldProduct = await _unitOfWork.ProductRepository.GetByIdAsync(x => x.Id == productVM.Product.Id);
+			if (oldProduct == null) return NotFound();
+
+			if (image != null)
+			{
+				await _imageService.DeleteAsync(oldProduct.Image);
+				productVM.Product.Image = await _imageService.SaveAsync(image);
+			}
+			else
+			{
+				productVM.Product.Image ??= oldProduct.Image;
+			}
+
+			await _unitOfWork.ProductRepository.UpdateAsync(productVM.Product);
+			await _unitOfWork.CompleteAsync();
+
+			TempData["Update"] = "Product updated successfully";
+			return RedirectToAction(nameof(Index));
+		}
+
+		#endregion
+
+		#region Delete
 		[HttpDelete]
-		public IActionResult Delete(int? id)
+		public async Task<IActionResult> Delete(int id)
 		{
-			var product = _unitOfWork.ProductRepository.GetById(c => c.Id == id);
+			if (id <= 0)
+				return Json(new { success = false, message = "Invalid ID" });
+
+			var product = await _unitOfWork.ProductRepository.GetByIdAsync(x => x.Id == id);
 			if (product == null)
-			{
-				{
-					return Json(new { success = false, message = "Error While Deleting" });
-				}
-			}
-			_unitOfWork.ProductRepository.Remove(product);
-			var oldImg = Path.Combine(_webHostEnvironment.WebRootPath, product.Image.TrimStart('\\'));
-			if (System.IO.File.Exists(oldImg))
-			{
-				System.IO.File.Delete(oldImg);
-			}
-			_unitOfWork.complete();
-			return Json(new { success = true, message = "file has been Deleted" });
+				return Json(new { success = false, message = "Product not found" });
+
+			await _imageService.DeleteAsync(product.Image);
+			await _unitOfWork.ProductRepository.RemoveAsync(product);
+			await _unitOfWork.CompleteAsync();
+
+			return Json(new { success = true, message = "Product deleted successfully" });
 		}
+		#endregion
+
+		#region Helpers
+		private async Task PopulateCategories(ProductViewModel productVM)
+		{
+			var categories = await _unitOfWork.CategoryRepository.GetAllAsync();
+
+			productVM.Categories = categories.Select(c => new DropDownItem
+			{
+				Value = c.Id.ToString(),
+				Text = c.Name
+			}).ToList();
+
+			ViewBag.CategoryDropDownList = productVM.Categories.Select(x =>
+				new SelectListItem
+				{
+					Value = x.Value,
+					Text = x.Text
+				});
+		}
+		#endregion
 	}
 }
