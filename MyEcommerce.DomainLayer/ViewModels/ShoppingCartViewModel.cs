@@ -1,8 +1,5 @@
 ﻿using MyEcommerce.DomainLayer.Models;
 using MyEcommerce.DomainLayer.Models.Order;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace MyEcommerce.DomainLayer.ViewModels
 {

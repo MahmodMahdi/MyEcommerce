@@ -4,10 +4,8 @@ using MyEcommerce.DomainLayer.Interfaces;
 using MyEcommerce.DomainLayer.Models;
 using MyEcommerce.DomainLayer.Models.Order;
 using MyEcommerce.DomainLayer.ViewModels;
-using Stripe;
 using Stripe.Checkout;
 using System.Security.Claims;
-using System.Threading.Tasks;
 using Utilities;
 
 namespace MyEcommerce.PresentationLayer.Areas.Customer.Controllers

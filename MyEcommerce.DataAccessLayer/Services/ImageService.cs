@@ -1,7 +1,5 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using System.IO;
-using System.Threading.Tasks;
 using MyEcommerce.DomainLayer.Services;
 
 namespace MyEcommerce.DataAccessLayer.Services

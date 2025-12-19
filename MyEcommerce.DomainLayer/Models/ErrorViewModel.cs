@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace MyEcommerce.DomainLayer.Models
+﻿namespace MyEcommerce.DomainLayer.Models
 {
 	public class ErrorViewModel
 	{

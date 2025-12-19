@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MyEcommerce.DataAccessLayer.Data;
 using System.Security.Claims;
-using Utilities;
 
 namespace MyEcommerce.PresentationLayer.Areas.Admin.Controllers
 {
@@ -23,8 +22,9 @@ namespace MyEcommerce.PresentationLayer.Areas.Admin.Controllers
 			if (pageNumber < 1) pageNumber = 1;
 
 			int pageSize = 10; // عدد المستخدمين في كل صفحة
+			
 			var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-			// 1. حساب العدد الإجمالي للمستخدمين (باستثناء الحالي)
+
 			int totalUsers = await _context.ApplicationUsers
 				.Where(u => u.Id != userId)
 				.CountAsync();

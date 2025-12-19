@@ -1,10 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MyEcommerce.DataAccessLayer.Data;
 using MyEcommerce.DomainLayer.Interfaces;
-using System;
-using System.Collections.Generic;
 using System.Linq.Expressions;
-using System.Text;
 
 namespace MyEcommerce.DataAccessLayer.Repositories
 {

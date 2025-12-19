@@ -2,9 +2,6 @@
 using MyEcommerce.DataAccessLayer.Repositories.Order;
 using MyEcommerce.DomainLayer.Interfaces;
 using MyEcommerce.DomainLayer.Interfaces.Order;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace MyEcommerce.DataAccessLayer.Repositories
 {

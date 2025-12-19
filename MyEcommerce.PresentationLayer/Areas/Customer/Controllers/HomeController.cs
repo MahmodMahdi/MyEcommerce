@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using MyEcommerce.DataAccessLayer.Repositories;
 using MyEcommerce.DomainLayer.Interfaces;
 using MyEcommerce.DomainLayer.Models;
 using System.Security.Claims;

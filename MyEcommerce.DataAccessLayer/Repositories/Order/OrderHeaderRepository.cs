@@ -1,11 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MyEcommerce.DataAccessLayer.Data;
-using MyEcommerce.DomainLayer.Interfaces;
 using MyEcommerce.DomainLayer.Interfaces.Order;
 using MyEcommerce.DomainLayer.Models.Order;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace MyEcommerce.DataAccessLayer.Repositories.Order
 {

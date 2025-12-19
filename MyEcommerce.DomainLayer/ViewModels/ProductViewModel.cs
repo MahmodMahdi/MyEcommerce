@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using MyEcommerce.DomainLayer.Models;
-using System.Collections.Generic;
 
 namespace MyEcommerce.DomainLayer.ViewModels
 {

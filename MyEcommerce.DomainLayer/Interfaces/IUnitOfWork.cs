@@ -1,7 +1,4 @@
 ﻿using MyEcommerce.DomainLayer.Interfaces.Order;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace MyEcommerce.DomainLayer.Interfaces
 {
