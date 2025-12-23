@@ -1,5 +1,6 @@
-﻿using MyEcommerce.DataAccessLayer.Data;
-using MyEcommerce.DomainLayer.Interfaces;
+﻿using Microsoft.EntityFrameworkCore;
+using MyEcommerce.DataAccessLayer.Data;
+using MyEcommerce.DomainLayer.Interfaces.Repositories;
 using MyEcommerce.DomainLayer.Models;
 
 namespace MyEcommerce.DataAccessLayer.Repositories
@@ -10,6 +11,11 @@ namespace MyEcommerce.DataAccessLayer.Repositories
 		public ApplicationUserRepository(ApplicationDbContext context) : base(context)
 		{
 			_context = context;
+		}
+
+		public async Task<int> LockedUserAcccount()
+		{
+			return await _context.ApplicationUsers.CountAsync(u => u.LockoutEnd > DateTime.Now);		
 		}
 	}
 }
