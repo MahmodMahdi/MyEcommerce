@@ -250,7 +250,7 @@ namespace MyEcommerce.DataAccessLayer.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Categories");
+                    b.ToTable("Categories", (string)null);
                 });
 
             modelBuilder.Entity("MyEcommerce.DomainLayer.Models.Order.OrderDetail", b =>
@@ -279,7 +279,7 @@ namespace MyEcommerce.DataAccessLayer.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("OrderDetails");
+                    b.ToTable("OrderDetails", (string)null);
                 });
 
             modelBuilder.Entity("MyEcommerce.DomainLayer.Models.Order.OrderHeader", b =>
@@ -344,7 +344,7 @@ namespace MyEcommerce.DataAccessLayer.Migrations
 
                     b.HasIndex("ApplicationUserId");
 
-                    b.ToTable("OrderHeaders");
+                    b.ToTable("OrderHeaders", (string)null);
                 });
 
             modelBuilder.Entity("MyEcommerce.DomainLayer.Models.Product", b =>
@@ -381,7 +381,7 @@ namespace MyEcommerce.DataAccessLayer.Migrations
 
                     b.HasIndex("CategoryId");
 
-                    b.ToTable("Products");
+                    b.ToTable("Products", (string)null);
                 });
 
             modelBuilder.Entity("MyEcommerce.DomainLayer.Models.ShoppingCart", b =>
@@ -408,7 +408,7 @@ namespace MyEcommerce.DataAccessLayer.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("ShoppingCarts");
+                    b.ToTable("ShoppingCarts", (string)null);
                 });
 
             modelBuilder.Entity("MyEcommerce.DomainLayer.Models.ApplicationUser", b =>

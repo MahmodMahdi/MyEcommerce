@@ -23,7 +23,7 @@ function loaddata() {
                 },
                 "width": "15%"
             },
-            { "data": "category.name" },
+            { "data": "categoryName" },
             {
                 "data": "id",
                 "render": function (data) {
