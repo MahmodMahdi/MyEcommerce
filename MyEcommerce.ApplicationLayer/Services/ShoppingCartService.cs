@@ -155,9 +155,9 @@ namespace MyEcommerce.ApplicationLayer.Services
 				await _unitOfWork.BeginTransactionAsync();
 				try
 				{
-					_unitOfWork.OrderHeaderRepository.UpdateOrderStatus(orderId, Helper.Approve, Helper.Approve);
 					// when order done it will fill the paymentIntentId of Db with PII with stripe
 					OrderHeader.PaymentIntentId = session.PaymentIntentId;
+					_unitOfWork.OrderHeaderRepository.UpdateOrderStatus(orderId, Helper.Approve, Helper.Approve);
 					// --- منطق خصم المخزون 
 					var orderDetails = await _unitOfWork.OrderDetailRepository.GetAllAsync(x => x.OrderId == orderId, IncludeProperties: "Product");
 					foreach (var item in orderDetails)
@@ -213,7 +213,7 @@ namespace MyEcommerce.ApplicationLayer.Services
 		         shoppingCart.ApplicationUserId, shoppingCart.ProductId, shoppingCart.Product.StockQuantity);
 				throw new InvalidOperationException("you can't add any more, you reach the available max in inventory ");
 			}
-			return (await _unitOfWork.ShoppingCartRepository.GetAllAsync(u => u.ApplicationUserId == shoppingCart.ApplicationUserId)).Count();
+			return await _unitOfWork.ShoppingCartRepository.CountAsync(u => u.ApplicationUserId == shoppingCart.ApplicationUserId);
 		}
 		public async Task<int> DecrementCountAsync(int CartId)
 		{
@@ -229,7 +229,7 @@ namespace MyEcommerce.ApplicationLayer.Services
 				_unitOfWork.ShoppingCartRepository.DecreaseCount(shoppingCart, 1);
 				await _unitOfWork.CompleteAsync();
 			}
-			return (await _unitOfWork.ShoppingCartRepository.GetAllAsync(s => s.ApplicationUserId == userId)).Count();
+			return await _unitOfWork.ShoppingCartRepository.CountAsync(u => u.ApplicationUserId == userId);
 		}
 		public async Task<int> DeleteAsync(int id)
 		{
@@ -245,9 +245,7 @@ namespace MyEcommerce.ApplicationLayer.Services
 			var userId = cart.ApplicationUserId;
 			_unitOfWork.ShoppingCartRepository.Remove(cart);
 			await _unitOfWork.CompleteAsync();
-			return (await _unitOfWork.ShoppingCartRepository.GetAllAsync(s => s.ApplicationUserId == userId)).Count();
+			return await _unitOfWork.ShoppingCartRepository.CountAsync(u => u.ApplicationUserId == userId);
 		}
-
-
 	}
 }
