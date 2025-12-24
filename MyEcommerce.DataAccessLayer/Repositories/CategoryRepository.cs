@@ -1,10 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MyEcommerce.DataAccessLayer.Data;
-using MyEcommerce.DomainLayer.Interfaces;
+using MyEcommerce.DomainLayer.Interfaces.Repositories;
 using MyEcommerce.DomainLayer.Models;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using System.Threading.Tasks;
 
 namespace MyEcommerce.DataAccessLayer.Repositories
 {
@@ -14,18 +12,6 @@ namespace MyEcommerce.DataAccessLayer.Repositories
 		public CategoryRepository(ApplicationDbContext context): base(context)
 		{
 			_context = context;
-		}
-
-		public async Task UpdateAsync(Category category)
-		{
-			var categoryItem =await _context.Categories.FirstOrDefaultAsync(c=>c.Id == category.Id);
-			if (categoryItem != null)
-			{
-				categoryItem.Name = category.Name;
-				categoryItem.Description = category.Description;
-				categoryItem.CreatedTime = DateTime.Now;
-			}
-
 		}
 	}
 }

@@ -1,10 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MyEcommerce.DataAccessLayer.Data;
-using MyEcommerce.DomainLayer.Interfaces;
-using System;
-using System.Collections.Generic;
+using MyEcommerce.DomainLayer.Interfaces.Repositories;
 using System.Linq.Expressions;
-using System.Text;
 
 namespace MyEcommerce.DataAccessLayer.Repositories
 {
@@ -17,15 +14,11 @@ namespace MyEcommerce.DataAccessLayer.Repositories
 			_context = context;
 			_dbset = _context.Set<T>();
 		}
-		public async Task AddAsync(T entity)
-		{
-			await _dbset.AddAsync(entity);
-		}
-
 		public async Task<IEnumerable<T>> GetAllAsync(Expression<Func<T, bool>>? predicate = null, string? IncludeProperties = null)
 		{
 			IQueryable<T> query = _dbset;
 			// here if user need using where 
+			query.AsNoTracking();
 			if (predicate != null)
 			{
 				query = query.Where(predicate);
@@ -38,13 +31,17 @@ namespace MyEcommerce.DataAccessLayer.Repositories
 					query = query.Include(item);
 				}
 			}
-			return await query.AsNoTracking().ToListAsync();
+			return await query.ToListAsync();
 		}
 
-		public async Task<T> GetByIdAsync(Expression<Func<T, bool>>? predicate = null, string? IncludeProperties=null)
+		public async Task<T> GetFirstOrDefaultAsync(Expression<Func<T, bool>>? predicate = null, string? IncludeProperties=null,bool tracked = true)
 		{
 
 			IQueryable<T> query = _dbset;
+			if (!tracked)
+			{
+				query = query.AsNoTracking();
+			}
 			// here if user need using where 
 			if (predicate != null)
 			{
@@ -58,17 +55,43 @@ namespace MyEcommerce.DataAccessLayer.Repositories
 					query = query.Include(item);
 				}
 			}
-			return await query.SingleOrDefaultAsync();
+			return await query.FirstOrDefaultAsync();
 		}
-
-		public async Task RemoveAsync(T entity)
+		public async Task AddAsync(T entity)
+		{
+			await _dbset.AddAsync(entity);
+		}
+		public void Update(T entity)
+		{
+			 _dbset.Update(entity);
+		}
+		public async Task AddRangeAsync(IEnumerable<T> entity)
+		{
+			await _dbset.AddRangeAsync(entity);
+		}
+		public void Remove(T entity)
 		{
 			 _dbset.Remove(entity);
 		}
 
-		public async Task RemoveRangeAsync(IEnumerable<T> entities)
+		public void RemoveRange(IEnumerable<T> entities)
 		{
 			_dbset.RemoveRange(entities);
+		}
+		//public async Task<int> CountAsync(Expression<Func<T, bool>>? predicate = null)
+		//{
+		//	if (predicate == null)
+		//		return await _dbset.CountAsync();
+		//	return await _dbset.CountAsync(predicate);
+		//}
+		public async Task<int> CountAsync(Expression<Func<T, bool>>? filter = null)
+		{
+			IQueryable<T> query = _dbset;
+			if (filter != null)
+			{
+				query = query.Where(filter);
+			}
+			return await query.CountAsync();
 		}
 	}
 }
