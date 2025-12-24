@@ -114,6 +114,8 @@ namespace MyEcommerce.ApplicationLayer.Services
 				title = "Security Alert: Account Locked";
 				actionText = "Your account has been temporarily locked for 24 hours due to multiple failed login attempts. If this wasn't you, please reset your password immediately:";
 				buttonText = "Reset My Password";
+				var domain = "https://localhost:7148";
+				htmlMessage = $"{domain}/Identity/Account/ForgotPassword";
 			}
 			else if (subject.Contains("Administrative Action", StringComparison.OrdinalIgnoreCase))
 			{
