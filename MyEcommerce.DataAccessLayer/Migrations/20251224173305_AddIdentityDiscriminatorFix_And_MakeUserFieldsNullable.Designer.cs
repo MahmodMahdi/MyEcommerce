@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MyEcommerce.DataAccessLayer.Data;
 
@@ -11,9 +12,11 @@ using MyEcommerce.DataAccessLayer.Data;
 namespace MyEcommerce.DataAccessLayer.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251224173305_AddIdentityDiscriminatorFix_And_MakeUserFieldsNullable")]
+    partial class AddIdentityDiscriminatorFix_And_MakeUserFieldsNullable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -260,7 +263,7 @@ namespace MyEcommerce.DataAccessLayer.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Categories", (string)null);
+                    b.ToTable("Categories");
                 });
 
             modelBuilder.Entity("MyEcommerce.DomainLayer.Models.Order.OrderDetail", b =>
@@ -289,7 +292,7 @@ namespace MyEcommerce.DataAccessLayer.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("OrderDetails", (string)null);
+                    b.ToTable("OrderDetails");
                 });
 
             modelBuilder.Entity("MyEcommerce.DomainLayer.Models.Order.OrderHeader", b =>
@@ -354,7 +357,7 @@ namespace MyEcommerce.DataAccessLayer.Migrations
 
                     b.HasIndex("ApplicationUserId");
 
-                    b.ToTable("OrderHeaders", (string)null);
+                    b.ToTable("OrderHeaders");
                 });
 
             modelBuilder.Entity("MyEcommerce.DomainLayer.Models.Product", b =>
@@ -390,7 +393,7 @@ namespace MyEcommerce.DataAccessLayer.Migrations
 
                     b.HasIndex("CategoryId");
 
-                    b.ToTable("Products", (string)null);
+                    b.ToTable("Products");
                 });
 
             modelBuilder.Entity("MyEcommerce.DomainLayer.Models.ShoppingCart", b =>
@@ -417,7 +420,7 @@ namespace MyEcommerce.DataAccessLayer.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("ShoppingCarts", (string)null);
+                    b.ToTable("ShoppingCarts");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
