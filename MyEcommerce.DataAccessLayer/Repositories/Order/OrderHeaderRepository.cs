@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MyEcommerce.DataAccessLayer.Data;
-using MyEcommerce.DomainLayer.Interfaces.Order;
+using MyEcommerce.DomainLayer.Interfaces.Repositories.Order;
 using MyEcommerce.DomainLayer.Models.Order;
 
 namespace MyEcommerce.DataAccessLayer.Repositories.Order
@@ -13,7 +13,7 @@ namespace MyEcommerce.DataAccessLayer.Repositories.Order
 			_context = context;
 		}
 
-		public async Task UpdateAsync(OrderHeader orderHeader)
+		public void Update(OrderHeader orderHeader)
 		{
 			 _context.OrderHeaders.Update(orderHeader);
 		}
@@ -33,37 +33,29 @@ namespace MyEcommerce.DataAccessLayer.Repositories.Order
 		}
 		public async Task<string> TopPurchasedBuyerAsync()
 		{
-			var TopBuyer = await _context.OrderHeaders
-				.GroupBy(P => P.ApplicationUser.Name)
+			var topBuyer = await _context.OrderHeaders
+				.AsNoTracking()
+				.GroupBy(o => new { o.ApplicationUserId, o.Name })
 				.Select(g => new
 				{
-					UserName = g.Key,
-					count = g.Count()
+					UserName = g.Key.Name,
+					TotalSpent = g.Sum(o=>o.TotalPrice)
 				})
-				.OrderByDescending(x => x.count)
+				.OrderByDescending(x => x.TotalSpent)
 				.Select(x => x.UserName)
 				.FirstOrDefaultAsync();
-			return TopBuyer.ToString();
-
-			/// Another way with join
-			//var TopBuyer = _context.OrderHeaders
+			return topBuyer ?? "No Customers Yet!";
+			// here it is wrong the same of another way
+			//var TopBuyer = await _context.OrderHeaders
 			//	.GroupBy(P => P.ApplicationUser.Name)
-			//	.Select(g => new 
+			//	.Select(g => new
 			//	{
-			//		UserId = g.Key,
+			//		UserName = g.Key,
 			//		count = g.Count()
 			//	})
 			//	.OrderByDescending(x => x.count)
-			//	.Join(_context.ApplicationUsers,
-			//	t=>t.UserId,
-			//	u=>u.Id,
-			//	(t,u)=> new
-			//	{
-			//		UserName = u.Name,
-			//		Count = u.Id
-			//	})
-			//	.Select(x=>x.UserName)
-			//	.FirstOrDefault();
+			//	.Select(x => x.UserName)
+			//	.FirstOrDefaultAsync();
 			//return TopBuyer.ToString();
 		}
 	}
