@@ -61,6 +61,10 @@ namespace MyEcommerce.DataAccessLayer.Repositories
 		{
 			await _dbset.AddAsync(entity);
 		}
+		public void Update(T entity)
+		{
+			 _dbset.Update(entity);
+		}
 		public async Task AddRangeAsync(IEnumerable<T> entity)
 		{
 			await _dbset.AddRangeAsync(entity);

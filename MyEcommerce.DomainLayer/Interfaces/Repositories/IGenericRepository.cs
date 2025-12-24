@@ -9,8 +9,9 @@ namespace MyEcommerce.DomainLayer.Interfaces.Repositories
 		Task<T> GetFirstOrDefaultAsync(Expression<Func<T, bool>>? predicate=null, string? IncludeProperties=null,bool tracked = true);
 	    Task AddAsync(T entity);
 		Task AddRangeAsync (IEnumerable<T> entity);
+		Task<int> CountAsync(Expression<Func<T, bool>>? filter = null);
+		void Update (T entity);
 		void Remove (T entity);
 		void RemoveRange(IEnumerable<T> entities);
-		Task<int> CountAsync(Expression<Func<T, bool>>? filter = null);
 	}
 }
