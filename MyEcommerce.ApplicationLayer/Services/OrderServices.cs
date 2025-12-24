@@ -36,7 +36,7 @@ namespace MyEcommerce.ApplicationLayer.Services
 		}
 		public async Task<bool> UpdateOrderDetialsAsync(UpdateOrderDto orderViewModel)
 		{
-			var orderFromDb = await _unitOfWork.OrderHeaderRepository.GetFirstOrDefaultAsync(x => x.Id == orderViewModel.OrderId, IncludeProperties: "ApplicationUser");
+			var orderFromDb = await _unitOfWork.OrderHeaderRepository.GetFirstOrDefaultAsync(x => x.Id == orderViewModel.OrderId);
 			if (orderFromDb == null) return false;
 			var oldTrackingNumber = orderFromDb.TrackingNumber;
 			var oldCarrior = orderFromDb.Carrior;
@@ -55,22 +55,27 @@ namespace MyEcommerce.ApplicationLayer.Services
 			bool isChanged = orderFromDb.TrackingNumber != oldTrackingNumber || orderFromDb.Carrior != oldCarrior;
 			if (hasShippingData && isChanged)
 			{
+				var user = await _unitOfWork.ApplicationUserRepository.GetFirstOrDefaultAsync(x => x.Id == orderFromDb.ApplicationUserId, tracked: false);
+
 				try
 				{
-					var sendingEmailDetails = new OrderEmailDto()
+					if (user != null)
 					{
-						Email = orderFromDb.ApplicationUser.Email,
-						Name = orderFromDb.ApplicationUser.Name,
-						OrderId = orderFromDb.Id,
-						TrackingNumber = orderFromDb.TrackingNumber,
-						Carrier = orderFromDb.Carrior,
-					};
-					await _emailService.SendShippingEmail(sendingEmailDetails);
+						var sendingEmailDetails = new OrderEmailDto()
+						{
+							Email = user.Email,
+							Name = user.Name,
+							OrderId = orderFromDb.Id,
+							TrackingNumber = orderFromDb.TrackingNumber,
+							Carrier = orderFromDb.Carrior,
+						};
+						await _emailService.SendShippingEmail(sendingEmailDetails);
+					}
 				}
 				catch (Exception ex)
 				{
 					_logger.LogError(ex, "[EMAIL ERROR] Failed to send shipping update email for Order #{OrderId} to User {Email}",
-							orderFromDb.Id, orderFromDb.ApplicationUser.Email);
+							orderFromDb.Id, user.Email);
 				}
 			}
 			return true;
@@ -94,7 +99,7 @@ namespace MyEcommerce.ApplicationLayer.Services
 						var service = new RefundService();
 						Refund refund = service.Create(option); 
 
-						_unitOfWork.OrderHeaderRepository.UpdateOrderStatus(orderFromDB.Id, Helper.Cancelled, Helper.Refund);
+						await _unitOfWork.OrderHeaderRepository.UpdateOrderStatusAsync(orderFromDB.Id, Helper.Cancelled, Helper.Refund);
 					}
 					catch (StripeException ex)
 					{
@@ -105,13 +110,13 @@ namespace MyEcommerce.ApplicationLayer.Services
 				}
 				else
 				{
-					_unitOfWork.OrderHeaderRepository.UpdateOrderStatus(orderFromDB.Id, Helper.Cancelled, Helper.Cancelled);
+					await _unitOfWork.OrderHeaderRepository.UpdateOrderStatusAsync(orderFromDB.Id, Helper.Cancelled, Helper.Cancelled);
 				}
 
 			}
 			else
 			{
-				_unitOfWork.OrderHeaderRepository.UpdateOrderStatus(orderFromDB.Id, Helper.Cancelled, Helper.Cancelled);
+				await _unitOfWork.OrderHeaderRepository.UpdateOrderStatusAsync(orderFromDB.Id, Helper.Cancelled, Helper.Cancelled);
 			}
 			await _unitOfWork.CompleteAsync();
 			return true;
@@ -119,9 +124,7 @@ namespace MyEcommerce.ApplicationLayer.Services
 
 		public async Task<bool> StartProccessing(OrderViewModel orderViewModel)
 		{
-			var orderFromDb = await _unitOfWork.OrderHeaderRepository.GetFirstOrDefaultAsync(o => o.Id == orderViewModel.OrderHeader.Id,IncludeProperties:"ApplicationUser",tracked:false);
-			if (orderFromDb == null) return false;
-			_unitOfWork.OrderHeaderRepository.UpdateOrderStatus(orderViewModel.OrderHeader.Id, Helper.Proccessing, null);
+			await _unitOfWork.OrderHeaderRepository.UpdateOrderStatusAsync(orderViewModel.OrderHeader.Id, Helper.Proccessing, null);
 			await _unitOfWork.CompleteAsync();
 			return true;
 		}
@@ -141,7 +144,7 @@ namespace MyEcommerce.ApplicationLayer.Services
 			{
 				var SendingEmaildetails = new OrderEmailDto()
 				{
-					Email = orderFromDb.ApplicationUser.Email,
+					Email = orderFromDb.ApplicationUser?.Email?? "No Email",
 					Name = orderFromDb.ApplicationUser.Name,
 					OrderId = orderFromDb.Id,
 					TrackingNumber = orderViewModel.OrderHeader.TrackingNumber,
