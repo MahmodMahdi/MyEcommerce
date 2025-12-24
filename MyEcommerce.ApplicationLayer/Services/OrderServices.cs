@@ -82,46 +82,64 @@ namespace MyEcommerce.ApplicationLayer.Services
 		}
 		public async Task<bool> CancelOrderAsync(OrderViewModel orderViewModel)
 		{
-			//bring order from db
-			var orderFromDB = await _unitOfWork.OrderHeaderRepository.GetFirstOrDefaultAsync(o => o.Id == orderViewModel.OrderHeader.Id);
-			if (orderFromDB == null) return false;
-			if (orderFromDB.PaymentStatus == Helper.Approve)
-			{
-				if (!string.IsNullOrEmpty(orderFromDB.PaymentIntentId))
-				{
-					try
-					{
-						var option = new RefundCreateOptions
-						{
-							Reason = RefundReasons.RequestedByCustomer,
-							PaymentIntent = orderFromDB.PaymentIntentId
-						};
-						var service = new RefundService();
-						Refund refund = service.Create(option); 
+			// 1️- جلب الطلب من قاعدة البيانات مع التفاصيل والمنتجات
+			var orderFromDB = await _unitOfWork.OrderHeaderRepository
+				.GetFirstOrDefaultAsync(o => o.Id == orderViewModel.OrderHeader.Id);
 
-						await _unitOfWork.OrderHeaderRepository.UpdateOrderStatusAsync(orderFromDB.Id, Helper.Cancelled, Helper.Refund);
-					}
-					catch (StripeException ex)
+			if (orderFromDB == null) return false;
+
+			// 2️- جلب تفاصيل الطلب لإعادة الكميات للمخزن
+			var orderDetails = await _unitOfWork.OrderDetailRepository
+				.GetAllAsync(x => x.OrderId == orderFromDB.Id, IncludeProperties: "Product");
+
+			await _unitOfWork.BeginTransactionAsync();
+			try
+			{
+				// 3️- منطق الاسترجاع المالي (Stripe Refund)
+				if (orderFromDB.PaymentStatus == Helper.Approve && !string.IsNullOrEmpty(orderFromDB.PaymentIntentId))
+				{
+					var options = new RefundCreateOptions
 					{
-						_logger.LogError(ex, "[STRIPE ERROR] Refund failed for Order #{OrderId}. Check PaymentIntentId: {PaymentIntentId}",
-								orderFromDB.Id, orderFromDB.PaymentIntentId);
-						return false;
-					}
+						Reason = RefundReasons.RequestedByCustomer,
+						PaymentIntent = orderFromDB.PaymentIntentId
+					};
+					var service = new RefundService();
+					await service.CreateAsync(options);
+
+					await _unitOfWork.OrderHeaderRepository.UpdateOrderStatusAsync(orderFromDB.Id, Helper.Cancelled, Helper.Refund);
 				}
 				else
 				{
 					await _unitOfWork.OrderHeaderRepository.UpdateOrderStatusAsync(orderFromDB.Id, Helper.Cancelled, Helper.Cancelled);
 				}
 
-			}
-			else
-			{
-				await _unitOfWork.OrderHeaderRepository.UpdateOrderStatusAsync(orderFromDB.Id, Helper.Cancelled, Helper.Cancelled);
-			}
-			await _unitOfWork.CompleteAsync();
-			return true;
-		}
+				// 4️- أهم خطوة: إعادة المنتجات للمخزن
+				// بنعملها فقط لو الطلب كان Approved 
+				if (orderFromDB.OrderStatus == Helper.Approve)
+				{
+					foreach (var item in orderDetails)
+					{
+						if (item.Product != null)
+						{
+							item.Product.StockQuantity += item.Count; // زيادة المخزن مرة تانية
+						}
+					}
+				}
 
+				// 5️- تحديث حالة الطلب النهائية
+				orderFromDB.OrderStatus = Helper.Cancelled;
+
+				await _unitOfWork.CompleteAsync();
+				await _unitOfWork.CommitTransactionAsync();
+				return true;
+			}
+			catch (Exception ex)
+			{
+				await _unitOfWork.RollbackTransactionAsync();
+				_logger.LogError(ex, "[CANCEL ERROR] Failed to cancel order #{OrderId}", orderFromDB.Id);
+				return false;
+			}
+		}
 		public async Task<bool> StartProccessing(OrderViewModel orderViewModel)
 		{
 			await _unitOfWork.OrderHeaderRepository.UpdateOrderStatusAsync(orderViewModel.OrderHeader.Id, Helper.Proccessing, null);
