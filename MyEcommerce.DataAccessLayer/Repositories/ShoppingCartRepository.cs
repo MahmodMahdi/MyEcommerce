@@ -1,5 +1,5 @@
 ﻿using MyEcommerce.DataAccessLayer.Data;
-using MyEcommerce.DomainLayer.Interfaces;
+using MyEcommerce.DomainLayer.Interfaces.Repositories;
 using MyEcommerce.DomainLayer.Models;
 
 namespace MyEcommerce.DataAccessLayer.Repositories
