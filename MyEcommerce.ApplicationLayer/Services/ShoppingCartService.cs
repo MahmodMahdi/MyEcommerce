@@ -145,58 +145,72 @@ namespace MyEcommerce.ApplicationLayer.Services
 		}
 		public async Task<bool> OrderConfirmation(int orderId)
 		{
-			var OrderHeader = await _unitOfWork.OrderHeaderRepository.GetFirstOrDefaultAsync(u => u.Id == orderId, IncludeProperties: "ApplicationUser");
-			if (OrderHeader == null) return false;
-			// check my session in stripe
-			var service = new SessionService();
-			var session = await service.GetAsync(OrderHeader.SessionId);
-			if (session.PaymentStatus.ToLower() == "paid")
+			var orderHeader = await _unitOfWork.OrderHeaderRepository
+				.GetFirstOrDefaultAsync(x => x.Id == orderId, IncludeProperties: "ApplicationUser");
+
+			if (orderHeader == null)
 			{
-				await _unitOfWork.BeginTransactionAsync();
-				try
+				_logger.LogError("OrderConfirmation Failed: OrderId {OrderId} not found in database.", orderId);
+				return false;
+			}
+
+			// 1️- Guard: لو الطلب اتأكد قبل كدة
+			if (orderHeader.OrderStatus == Helper.Approve)
+			{
+				_logger.LogInformation("Order {OrderId} is already approved. Skipping confirmation.", orderId);
+				return true;
+			}
+				
+
+			// 2️- التحقق من حالة الدفع في Stripe
+			var session = await GetStripeSession(orderHeader.SessionId);
+			if (!string.Equals(session.PaymentStatus, "paid", StringComparison.OrdinalIgnoreCase))
+			{
+				_logger.LogWarning("Payment not verified for Order {OrderId}. Stripe Status: {Status}", orderId, session.PaymentStatus);
+				return false;
+
+			}
+
+			await _unitOfWork.BeginTransactionAsync();
+			try
+			{
+				orderHeader.PaymentIntentId = session.PaymentIntentId;
+				// 3- جلب تفاصيل الطلب
+				var orderDetails = (await _unitOfWork.OrderDetailRepository
+					.GetAllAsync(x => x.OrderId == orderId, IncludeProperties: "Product")).ToList();
+
+				// 4- فحص المخزون والتعامل مع العجز
+				if (!IsStockAvailable(orderDetails))
 				{
-					// when order done it will fill the paymentIntentId of Db with PII with stripe
-					OrderHeader.PaymentIntentId = session.PaymentIntentId;
-					await _unitOfWork.OrderHeaderRepository.UpdateOrderStatusAsync(orderId, Helper.Approve, Helper.Approve);
-					// --- منطق خصم المخزون 
-					var orderDetails = await _unitOfWork.OrderDetailRepository.GetAllAsync(x => x.OrderId == orderId, IncludeProperties: "Product");
+					// Log Warning: لأن دي حالة استثنائية (دفع بدون مخزن)
+					_logger.LogWarning("STOCK ISSUE: Order {OrderId} was paid but some items are out of stock. Setting status to {Status}",
+						orderId, Helper.PaidPending);
+					await _unitOfWork.OrderHeaderRepository.UpdateOrderStatusAsync(orderId, Helper.PaidPending, Helper.Approve);
+				}
+				else
+				{
+					// 5- المعالجة الطبيعية (خصم مخزن + اعتماد)
 					foreach (var item in orderDetails)
 					{
-						if (item.Product != null)
-						{
-							item.Product.StockQuantity -= item.Count; // خصم الكمية المباعة من المخزن
-						}
+						item.Product.StockQuantity -= item.Count;
 					}
-					// مسح السلة
-					var shoppingCart = await _unitOfWork.ShoppingCartRepository.GetAllAsync(u => u.ApplicationUserId == OrderHeader.ApplicationUserId);
-					_unitOfWork.ShoppingCartRepository.RemoveRange(shoppingCart);
-					await _unitOfWork.CompleteAsync();
-					await _unitOfWork.CommitTransactionAsync();
-					try
-					{
-						var SendingEmaildetails = new OrderEmailDto()
-						{
-							Email = OrderHeader.ApplicationUser.Email,
-							Name = OrderHeader.ApplicationUser.Name,
-							OrderId = orderId,
-							Total = OrderHeader.TotalPrice
-						};
-						await _emailService.SendOrderConfirmationEmail(SendingEmaildetails);
-					}
-					catch(Exception ex) 
-					{
-						_logger.LogError(ex, "[EMAIL ERROR] Order confirmation email failed for Order #{OrderId}", orderId);
-					}
-					return true;
+					await _unitOfWork.OrderHeaderRepository.UpdateOrderStatusAsync(orderId, Helper.Approve, Helper.Approve);
+				}
+				await ClearCart(orderHeader.ApplicationUserId);
+				await _unitOfWork.CompleteAsync();
+				await _unitOfWork.CommitTransactionAsync();
 
-				}
-				catch (Exception ex)
-				{
-					await _unitOfWork.RollbackTransactionAsync();
-					_logger.LogError(ex, "[FATAL ERROR] Transaction failed for Order #{OrderId}. Changes rolled back.", orderId); return false;
-				}
+				// 7️- إرسال الإيميل خارج الترانزكشن
+				await SendConfirmationEmail(orderHeader);
+
+				return true;
 			}
-			return false;
+			catch (Exception ex)
+			{
+				await _unitOfWork.RollbackTransactionAsync();
+				_logger.LogError(ex, "[CRITICAL] OrderConfirmation failed for OrderId={OrderId}", orderId);
+				return false;
+			}
 		}
 		public async Task<int> IncrementCountAsync(int CartId)
 		{
@@ -247,5 +261,45 @@ namespace MyEcommerce.ApplicationLayer.Services
 			await _unitOfWork.CompleteAsync();
 			return await _unitOfWork.ShoppingCartRepository.CountAsync(u => u.ApplicationUserId == userId);
 		}
+		#region Private Helper Methods
+		private async Task<Session> GetStripeSession(string sessionId)
+		{
+			var service = new SessionService();
+			return await service.GetAsync(sessionId);
+		}
+
+
+		private bool IsStockAvailable(List<OrderDetail> details)
+		{
+			return details.All(item => item.Product != null && item.Product.StockQuantity >= item.Count);
+		}
+
+	
+		private async Task ClearCart(string userId)
+		{
+			var carts = await _unitOfWork.ShoppingCartRepository
+				.GetAllAsync(x => x.ApplicationUserId == userId);
+			
+				_unitOfWork.ShoppingCartRepository.RemoveRange(carts);
+		}
+
+		private async Task SendConfirmationEmail(OrderHeader order)
+		{
+			try
+			{
+				await _emailService.SendOrderConfirmationEmail(new OrderEmailDto
+				{
+					Email = order.ApplicationUser.Email,
+					Name = order.ApplicationUser.Name,
+					OrderId = order.Id,
+					Total = order.TotalPrice
+				});
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Email failed for Order {OrderId}", order.Id);
+			}
+		}
+		#endregion
 	}
 }
