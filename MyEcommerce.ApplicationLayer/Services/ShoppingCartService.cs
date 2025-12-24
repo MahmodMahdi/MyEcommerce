@@ -184,8 +184,8 @@ namespace MyEcommerce.ApplicationLayer.Services
 				{
 					// Log Warning: لأن دي حالة استثنائية (دفع بدون مخزن)
 					_logger.LogWarning("STOCK ISSUE: Order {OrderId} was paid but some items are out of stock. Setting status to {Status}",
-						orderId, Helper.PaidPending);
-					await _unitOfWork.OrderHeaderRepository.UpdateOrderStatusAsync(orderId, Helper.PaidPending, Helper.Approve);
+						orderId, Helper.ApprovedStockIssue);
+					await _unitOfWork.OrderHeaderRepository.UpdateOrderStatusAsync(orderId, Helper.ApprovedStockIssue, Helper.Approve);
 				}
 				else
 				{
