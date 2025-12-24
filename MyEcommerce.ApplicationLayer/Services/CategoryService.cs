@@ -37,7 +37,8 @@ namespace MyEcommerce.ApplicationLayer.Services
 		public async Task UpdateAsync(CategoryViewModel categoryVM)
 		{
 			var category = _mapper.Map<Category>(categoryVM);
-			 _unitOfWork.CategoryRepository.Update(category);
+			category.CreatedTime = DateTime.Now;
+		    _unitOfWork.CategoryRepository.Update(category);
 			await _unitOfWork.CompleteAsync();
 		}
 		public async Task DeleteAsync(int id)
