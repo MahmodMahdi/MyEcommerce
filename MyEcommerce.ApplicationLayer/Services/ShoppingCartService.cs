@@ -157,7 +157,7 @@ namespace MyEcommerce.ApplicationLayer.Services
 				{
 					// when order done it will fill the paymentIntentId of Db with PII with stripe
 					OrderHeader.PaymentIntentId = session.PaymentIntentId;
-					_unitOfWork.OrderHeaderRepository.UpdateOrderStatus(orderId, Helper.Approve, Helper.Approve);
+					await _unitOfWork.OrderHeaderRepository.UpdateOrderStatusAsync(orderId, Helper.Approve, Helper.Approve);
 					// --- منطق خصم المخزون 
 					var orderDetails = await _unitOfWork.OrderDetailRepository.GetAllAsync(x => x.OrderId == orderId, IncludeProperties: "Product");
 					foreach (var item in orderDetails)
