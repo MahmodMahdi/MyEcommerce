@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MyEcommerce.DataAccessLayer.Data;
-using MyEcommerce.DomainLayer.Interfaces;
+using MyEcommerce.DomainLayer.Interfaces.Repositories;
 using MyEcommerce.DomainLayer.Models;
 
 namespace MyEcommerce.DataAccessLayer.Repositories
@@ -13,23 +13,11 @@ namespace MyEcommerce.DataAccessLayer.Repositories
 		{
 			_context = context;
 		}
-
-		public async Task UpdateAsync(Product product)
-		{
-			var productItem =await _context.Products.FirstOrDefaultAsync(x=>x.Id == product.Id);
-			if (productItem != null)
-			{
-				productItem.Name = product.Name;
-				productItem.Description = product.Description;
-				productItem.Price = product.Price;
-				productItem.StockQuantity = product.StockQuantity;
-				productItem.Image = product.Image;
-				productItem.CategoryId = product.CategoryId;
-			}
-		}
 		public async Task<IEnumerable<Product>> GetPagedAsync(int skip, int take)
 		{
 			return await _context.Products
+				.AsNoTracking()
+				.OrderBy(o=>o.Id)
 				.Skip(skip)
 				.Take(take)
 				.ToListAsync();
@@ -38,6 +26,12 @@ namespace MyEcommerce.DataAccessLayer.Repositories
 		public async Task<int> GetCountAsync()
 		{
 			return await _context.Products.CountAsync();
+		}
+
+		public async Task<string> GetMostExistItem()
+		{
+			var mostExistProduct =  await _context.Products.AsNoTracking().OrderByDescending(p => p.StockQuantity).FirstOrDefaultAsync();
+			return mostExistProduct.Name ?? "No Products in Stock";
 		}
 	}
 }
