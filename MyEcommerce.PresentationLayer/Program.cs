@@ -1,11 +1,15 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
+using MyEcommerce.ApplicationLayer.Interfaces.Services;
+using MyEcommerce.ApplicationLayer.Mapping;
+using MyEcommerce.ApplicationLayer.Services;
 using MyEcommerce.DataAccessLayer.Data;
 using MyEcommerce.DataAccessLayer.Repositories;
-using MyEcommerce.DataAccessLayer.Services;
-using MyEcommerce.DomainLayer.Interfaces;
-using MyEcommerce.DomainLayer.Services;
+using MyEcommerce.DomainLayer.Interfaces.Repositories;
+using MyEcommerce.DomainLayer.Models;
+using Serilog;
+using Serilog.Events;
 using Stripe;
 using Utilities;
 
@@ -17,8 +21,18 @@ namespace MyEcommerce.PresentationLayer
 		{
 			var builder = WebApplication.CreateBuilder(args);
 
+			// Serilog
+			Log.Logger = new LoggerConfiguration()
+				.MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+				.MinimumLevel.Override("System", LogEventLevel.Warning)
+				.WriteTo.Console(restrictedToMinimumLevel: LogEventLevel.Warning)
+				.WriteTo.File("Logs/ShopSphere.txt", rollingInterval: RollingInterval.Day)
+				.CreateLogger();
+
 			// Add services to the container.
 			builder.Services.AddControllersWithViews();
+			builder.Services.AddAutoMapper(typeof(MappingProfile));
+
 			builder.Services.AddRazorPages().AddRazorRuntimeCompilation();
 			builder.Services.AddDbContext<ApplicationDbContext>(
 				options => options.UseSqlServer(
@@ -26,16 +40,35 @@ namespace MyEcommerce.PresentationLayer
 			));
 
 			// configure stripe
+			var emailSettings = builder.Configuration.GetSection("emailSettings").Get<EmailSettings>();
+			builder.Services.AddSingleton(emailSettings);
 			builder.Services.Configure<StripeInfo>(builder.Configuration.GetSection("stripe"));
-			builder.Services.AddIdentity<IdentityUser, IdentityRole>(options=>options.Lockout.DefaultLockoutTimeSpan=TimeSpan.FromDays(1))
+			builder.Services.AddIdentity<ApplicationUser, IdentityRole>(
+				options => {
+					options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromDays(1);
+					options.Lockout.MaxFailedAccessAttempts = 5;
+					options.Lockout.AllowedForNewUsers = true;
+					options.SignIn.RequireConfirmedAccount = true;
+				})
 				.AddDefaultUI()
 				.AddDefaultTokenProviders()
 				.AddEntityFrameworkStores<ApplicationDbContext>();
 			builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-			builder.Services.AddSingleton<IEmailSender,EmailSender>();
+			builder.Services.AddScoped<ICategoryService, CategoryService>();
+			builder.Services.AddScoped<IProductService,ProductServices>();
+			builder.Services.AddScoped<IShoppingCartService, ShoppingCartService>();
+			builder.Services.AddScoped<IOrderServices, OrderServices>();
+			builder.Services.AddScoped<IDashboardService, DashboardService>();
+			builder.Services.AddScoped<IApplicationUserService,ApplicationUserService>();
+			builder.Services.AddScoped<IPaymentService,PaymentService>();
+			builder.Services.AddScoped<IEmailService,EmailService>();
 			builder.Services.AddScoped<IImageService,ImageService>();
+			builder.Services.AddTransient<IEmailSender, EmailService>();
 			builder.Services.AddSession();
 			builder.Services.AddDistributedMemoryCache();
+
+			builder.Host.UseSerilog();
+
 			var app = builder.Build();
 
 			// Configure the HTTP request pipeline.
@@ -49,13 +82,15 @@ namespace MyEcommerce.PresentationLayer
 			app.UseHttpsRedirection();
 			app.UseStaticFiles();
 
+			app.UseSession();
+
 			app.UseRouting();
+
 
 			StripeConfiguration.ApiKey = builder.Configuration.GetSection("stripe:Secretkey").Get<string>();
 
 			app.UseAuthentication();
 			app.UseAuthorization();
-			app.UseSession();
 			app.MapRazorPages();
 			app.MapControllerRoute(
 				name: "default",
