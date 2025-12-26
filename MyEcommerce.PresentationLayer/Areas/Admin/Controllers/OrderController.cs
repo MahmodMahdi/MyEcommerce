@@ -1,9 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using MyEcommerce.DomainLayer.Interfaces;
-using MyEcommerce.DomainLayer.ViewModels;
-using Stripe;
+using MyEcommerce.ApplicationLayer.ViewModels;
 using Utilities;
+using MyEcommerce.ApplicationLayer.Interfaces.Services;
 
 namespace MyEcommerce.PresentationLayer.Areas.Admin.Controllers
 {
@@ -11,10 +10,10 @@ namespace MyEcommerce.PresentationLayer.Areas.Admin.Controllers
 	[Authorize(Roles = Helper.AdminRole)]
 	public class OrderController : Controller
 	{
-		private readonly IUnitOfWork _unitOfWork;
-		public OrderController(IUnitOfWork unitOfWork)
+		private readonly IOrderServices _orderServices;
+		public OrderController(IOrderServices orderService)
 		{
-			_unitOfWork = unitOfWork;
+			_orderServices = orderService;
 		}
 		#region Index (List of Orders)
 		public IActionResult Index()
@@ -24,7 +23,7 @@ namespace MyEcommerce.PresentationLayer.Areas.Admin.Controllers
 		[HttpGet]
 		public async Task<IActionResult> GetData()
 		{
-			var OrderHeaders = await _unitOfWork.OrderHeaderRepository.GetAllAsync(IncludeProperties: "ApplicationUser");
+			var OrderHeaders = await _orderServices.GetAllAsync();
 			return Json(new { data = OrderHeaders });
 		}
 		#endregion
@@ -32,44 +31,32 @@ namespace MyEcommerce.PresentationLayer.Areas.Admin.Controllers
 		[HttpGet]
 		public async Task<IActionResult> Details(int OrderId)
 		{
-			var OrderViewModel = new OrderViewModel()
-			{
-				OrderHeader = await _unitOfWork.OrderHeaderRepository.GetByIdAsync(x => x.Id == OrderId, IncludeProperties: "ApplicationUser"),
-				OrderDetails = await _unitOfWork.OrderDetailRepository.GetAllAsync(x => x.OrderId == OrderId, IncludeProperties: "Product")
-			};
-			return View(OrderViewModel);
+			var orderViewModel =await _orderServices.GetOrderViewModelAsync(OrderId);
+			return View(orderViewModel);
 		}
 		#endregion
 		#region Update Details of Order
 		[HttpPost]
 		[ValidateAntiForgeryToken]
-		public async Task<IActionResult> UpdateDetails(OrderViewModel orderViewModel)
+		public async Task<IActionResult> UpdateDetails(UpdateOrderDto orderViewModel)
 		{
-			// حذف الخصائص التى لا يتم ارسالها من الفورم لتجنب مشاكل modelState
-			ModelState.Remove(nameof(orderViewModel.OrderDetails));
 			if (!ModelState.IsValid)
 			{
-				orderViewModel.OrderDetails = await _unitOfWork.OrderDetailRepository.GetAllAsync(x => x.OrderId == orderViewModel.OrderHeader.Id, IncludeProperties: "Product");
-				return View("Details", orderViewModel);
+				var Order = await _orderServices.GetOrderViewModelAsync(orderViewModel.OrderId);
+				return View("Details", Order);
 			}
-			var order = await _unitOfWork.OrderHeaderRepository.GetByIdAsync(x => x.Id == orderViewModel.OrderHeader.Id);
-			if (order == null) return NotFound();
-			order.Name = orderViewModel.OrderHeader.Name;
-			order.PhoneNumber = orderViewModel.OrderHeader.PhoneNumber;
-			order.Address = orderViewModel.OrderHeader.Address;
-			order.City = orderViewModel.OrderHeader.City;
-			if (!string.IsNullOrEmpty(orderViewModel.OrderHeader.Carrior))
+			var success = await _orderServices.UpdateOrderDetialsAsync(orderViewModel);
+
+			if (success)
 			{
-				order.Carrior = orderViewModel.OrderHeader.Carrior;
+				TempData["Update"] = "Data has Updated succesfully";
 			}
-			if (!string.IsNullOrEmpty(orderViewModel.OrderHeader.TrackingNumber))
+			else
 			{
-				order.TrackingNumber = orderViewModel.OrderHeader.TrackingNumber;
+				TempData["Error"] = "Order not found or update failed ";
 			}
-			await _unitOfWork.OrderHeaderRepository.UpdateAsync(order);
-			await _unitOfWork.CompleteAsync();
-			TempData["Update"] = "Data has Updated succesfully";
-			return RedirectToAction(nameof(Details), new { OrderId = order.Id });
+
+			return RedirectToAction(nameof(Details), new { OrderId = orderViewModel.OrderId });
 		}
 		#endregion
 		#region Order Status
@@ -77,65 +64,56 @@ namespace MyEcommerce.PresentationLayer.Areas.Admin.Controllers
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> StartProcessing(OrderViewModel orderViewModel)
 		{
-			// bring Id of Order
-			await _unitOfWork.OrderHeaderRepository.GetByIdAsync(o => o.Id == orderViewModel.OrderHeader.Id);
-			// update status of Order
-			await _unitOfWork.OrderHeaderRepository.UpdateOrderStatusAsync(orderViewModel.OrderHeader.Id, Helper.Proccessing, null);
-			await _unitOfWork.CompleteAsync();
-			TempData["Update"] = "Order Status has Updated succesfully";
-			return RedirectToAction(nameof(Details), new { orderid = orderViewModel.OrderHeader.Id });
+			var success = await _orderServices.StartProccessing(orderViewModel);
+			if (success)
+			{
+				TempData["Update"] = "Order is now in processing stage.";
+			}
+			else
+			{
+				TempData["Error"] = "Order not found!";
+			}
+
+			return RedirectToAction(nameof(Details), new { OrderId = orderViewModel.OrderHeader.Id });
 		}
 		[HttpPost]
 		[ValidateAntiForgeryToken]
-		public async Task<IActionResult> StartShipping(OrderViewModel orderViewModel)
+		public async Task<IActionResult> StartShipping(UpdateOrderDto shippingData)
 		{
-			//bring order from db
-			var orderFromDB = await _unitOfWork.OrderHeaderRepository.GetByIdAsync(o => o.Id == orderViewModel.OrderHeader.Id);
-			// update data of order like when shipping process ( TrackingNumber to follow the order,Carrior and status and Date of Shipping )
-			orderFromDB.TrackingNumber = orderViewModel.OrderHeader.TrackingNumber;
-			orderFromDB.Carrior = orderViewModel.OrderHeader.Carrior;
-			orderFromDB.OrderStatus = Helper.Shipped;
-			orderFromDB.ShippingDate = DateTime.Now;
-			await _unitOfWork.OrderHeaderRepository.UpdateAsync(orderFromDB);
-			await _unitOfWork.CompleteAsync();
-			TempData["Update"] = "Order has Shipped succesfully";
-			return RedirectToAction(nameof(Details), new { orderid = orderViewModel.OrderHeader.Id });
+			var orderVM = await _orderServices.GetOrderViewModelAsync(shippingData.OrderId);
+			orderVM.OrderHeader.Carrior = shippingData.Carrior;
+			orderVM.OrderHeader.TrackingNumber = shippingData.TrackingNumber;
+		
+			var success = await _orderServices.StartShipping(orderVM);
+
+			if (success)
+			{
+				TempData["Update"] = "Order has Shipped succesfully.";
+			}
+			else
+			{
+				TempData["Error"] = "Order not found!";
+			}
+			
+			return RedirectToAction(nameof(Details), new { OrderId = shippingData.OrderId });
 		}
 		#endregion
 		[HttpPost]
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> CancelOrder(OrderViewModel orderViewModel)
-		{
-			//bring order from db
-			var orderFromDB = await _unitOfWork.OrderHeaderRepository.GetByIdAsync(o => o.Id == orderViewModel.OrderHeader.Id);
-			if (orderFromDB == null) return NotFound();
-			if (orderFromDB.PaymentStatus == Helper.Approve)
-			{
-				try
-				{
-					var option = new RefundCreateOptions
-					{
-						Reason = RefundReasons.RequestedByCustomer,
-						PaymentIntent = orderFromDB.PaymentIntentId
-					};
-					var service = new RefundService();
-					Refund refund = service.Create(option);
+		{ 
+			var success = await _orderServices.CancelOrderAsync(orderViewModel);
 
-					await _unitOfWork.OrderHeaderRepository.UpdateOrderStatusAsync(orderFromDB.Id, Helper.Cancelled, Helper.Refund);
-				}
-				catch (StripeException ex)
-				{
-					TempData["Error"] = "Stripe Refund Error: " + ex.Message;
-					return RedirectToAction(nameof(Details), new { OrderId = orderFromDB.Id });
-				}
+			if (success)
+			{
+				TempData["Update"] = "Order has Cancelled succesfully.";
 			}
 			else
 			{
-				await _unitOfWork.OrderHeaderRepository.UpdateOrderStatusAsync(orderFromDB.Id, Helper.Cancelled, Helper.Cancelled);
+				TempData["Error"] = "Could not cancel order. Please check payment status.";
 			}
-			await _unitOfWork.CompleteAsync();
-			TempData["Update"] = "Order has Cancelled succesfully";
-			return RedirectToAction(nameof(Details), new { orderid = orderViewModel.OrderHeader.Id });
+
+			return RedirectToAction(nameof(Details), new { OrderId = orderViewModel.OrderHeader.Id });
 		}
 	}
 }
