@@ -1,20 +1,23 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using MyEcommerce.DomainLayer.Interfaces;
-using MyEcommerce.DomainLayer.Models;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using MyEcommerce.ApplicationLayer.Services;
+using MyEcommerce.ApplicationLayer.ViewModels;
+using Utilities;
 
 namespace MyEcommerce.PresentationLayer.Areas.Admin.Controllers
 {
 	[Area("Admin")]
+	[Authorize(Roles = Helper.AdminRole)]
 	public class CategoryController : Controller
 	{
-		private readonly IUnitOfWork _unitOfWork;
-		public CategoryController(IUnitOfWork unitOfWork)
+		private readonly ICategoryService _categoryService;
+		public CategoryController(ICategoryService categoryService)
 		{
-			_unitOfWork = unitOfWork;
+			_categoryService = categoryService;
 		}
 		public async Task<IActionResult> Index()
 		{
-			var categories =await _unitOfWork.CategoryRepository.GetAllAsync();
+			var categories = await _categoryService.GetAllAsync();
 			return View(categories);
 		}
 		[HttpGet]
@@ -24,70 +27,55 @@ namespace MyEcommerce.PresentationLayer.Areas.Admin.Controllers
 		}
 		[HttpPost]
 		[ValidateAntiForgeryToken]
-		public async Task<IActionResult> Create(Category category)
+		public async Task<IActionResult> Create(CategoryViewModel categoryVM)
 		{
 			if (ModelState.IsValid)
 			{
-				//_context.Categories.Add(category);
-				await _unitOfWork.CategoryRepository.AddAsync(category);
-				//_context.SaveChanges();
-				await _unitOfWork.CompleteAsync();
+				await _categoryService.AddAsync(categoryVM);
 				TempData["Create"] = "Data Has Created Successfully";
 				return RedirectToAction("Index");
 			}
-			return View(category);
+			return View(categoryVM);
 		}
 		[HttpGet]
-		public async Task<IActionResult> Edit(int? id)
+		public async Task<IActionResult> Edit(int id)
 		{
 			if (id == null | id == 0)
 			{
-				NotFound();
+				return NotFound();
 			}
-			var category =await _unitOfWork.CategoryRepository.GetByIdAsync(c=>c.Id == id);
+			var category =await _categoryService.GetFirstOrDefaultAsync(id);
 			return View(category);
 		}
 		[HttpPost]
 		[ValidateAntiForgeryToken]
-		public async Task<IActionResult> Edit(Category category)
+		public async Task<IActionResult> Edit(CategoryViewModel categoryVM)
 		{
 			if (ModelState.IsValid)
 			{
-				//_context.Categories.Update(category);
-				await _unitOfWork.CategoryRepository.UpdateAsync(category);
-				//_context.SaveChanges();
-				await _unitOfWork.CompleteAsync();
+				await _categoryService.UpdateAsync(categoryVM);
 				TempData["Update"] = "Data Has Updated Successfully";
 				return RedirectToAction("Index");
 			}
-			return View(category);
+			return View(categoryVM);
 		}
 		[HttpGet]
-		public async Task<IActionResult> Delete(int? id)
+		public async Task<IActionResult> Delete(int id)
 		{
-			if (id == null | id == 0)
-			{
-				NotFound();
-			}
-			var category =await _unitOfWork.CategoryRepository.GetByIdAsync(c=>c.Id==id);
-
+			
+			var category =await _categoryService.GetFirstOrDefaultAsync(id);
+			if(category  == null)
+				return NotFound();
 			return View(category);
 		}
 		[HttpPost]
 		[ValidateAntiForgeryToken]
-		public async Task<IActionResult> DeleteCategory(int? id)
+		public async Task<IActionResult> DeleteCategory(int id)
 		{
-			var category =await _unitOfWork.CategoryRepository.GetByIdAsync(c => c.Id == id);
+			var category = await _categoryService.GetFirstOrDefaultAsync(id);
 			if (category == null)
-			{
-				{
-					NotFound();
-				}
-			}
-			//_context.Categories.Remove(category);
-			await _unitOfWork.CategoryRepository.RemoveAsync(category);
-			//_context.SaveChanges();
-			await _unitOfWork.CompleteAsync();
+				return NotFound();
+			await _categoryService.DeleteAsync(id);
 			TempData["Delete"] = "Data Has Deleted Successfully";
 			return RedirectToAction(nameof(Index));
 
