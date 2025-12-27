@@ -1,60 +1,79 @@
-﻿@model Category
+﻿@model CategoryViewModel
 @{
     ViewBag.PageTitle = "Category Management";
     ViewBag.CardTitle = "Create Category";
     // Layout = "~/Views/Shared/_Dashboard.cshtml";
 }
-<div class="row">
-    <div class="col-md-6">
-        <form asp-action="Create" method="post">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="Name"></label>
-                <input asp-for="Name" class="form-control" />
-                <span asp-validation-for="Name" class="text-danger"></span>
+
+<div class="container-fluid px-4">
+    <div class="row">
+        <div class="col-lg-7 col-md-9">
+
+            <div class="card shadow-sm">
+                <div class="card-body">
+
+                    <form asp-action="Create" method="post">
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                        <div class="mb-3">
+                            <label asp-for="Name" class="form-label fw-semibold"></label>
+                            <input asp-for="Name" class="form-control" />
+                            <span asp-validation-for="Name" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="Description" class="form-label fw-semibold"></label>
+                            <textarea id="mytextarea"
+                                      asp-for="Description"
+                                      class="form-control"></textarea>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                        </div>
+
+                        <!-- BUTTONS (FINAL FIX) -->
+                        <div class="d-flex gap-3 mt-4">
+                            <button type="submit" class="btn btn-primary px-4">
+                                Create
+                            </button>
+
+                            <a asp-action="Index"
+                               asp-controller="Category"
+                               class="btn btn-outline-secondary">
+                                Back To List
+                            </a>
+                        </div>
+                    </form>
+
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="Description" class="control-label"></label>
-                <textarea id="mytextarea" asp-for="Description" class="form-control"></textarea>
-                <span asp-validation-for="Description" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <button type="submit" class="btn btn-primary">Create</button>
-            </div>
-        </form>
+
+        </div>
     </div>
 </div>
-<div>
-    <a asp-action="Index" asp-controller="Category">Back To List</a>
-</div>
+
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
-@*     using tinymce and it it amazing for text area
+    @*     using tinymce and it it amazing for text area
  *@    <script>
-       tinymce.init({
-    selector: 'textarea',
-    plugins: [
-      // Core editing features
-      'anchor', 'autolink', 'charmap', 'codesample', 'emoticons', 'link', 'lists', 'media', 'searchreplace', 'table', 'visualblocks', 'wordcount',
-      // Your account includes a free trial of TinyMCE premium features
-      // Try the most popular premium features until Dec 27, 2025:
-      'checklist', 'mediaembed', 'casechange', 'formatpainter', 'pageembed', 'a11ychecker', 'tinymcespellchecker', 'permanentpen', 'powerpaste', 'advtable', 'advcode', 'advtemplate', 'ai', 'uploadcare', 'mentions', 'tinycomments', 'tableofcontents', 'footnotes', 'mergetags', 'autocorrect', 'typography', 'inlinecss', 'markdown','importword', 'exportword', 'exportpdf'
-    ],
-    toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link media table mergetags | addcomment showcomments | spellcheckdialog a11ycheck typography uploadcare | align lineheight | checklist numlist bullist indent outdent | emoticons charmap | removeformat',
-    tinycomments_mode: 'embedded',
-    tinycomments_author: 'Author name',
-    mergetags_list: [
-      { value: 'First.Name', title: 'First Name' },
-      { value: 'Email', title: 'Email' },
-    ],
-    ai_request: (request, respondWith) => respondWith.string(() => Promise.reject('See docs to implement AI Assistant')),
-    uploadcare_public_key: 'acc93600506c14ebad60',
-  });
+                    tinymce.init({
+                 selector: 'textarea',
+                 plugins: [
+                   // Core editing features
+                   'anchor', 'autolink', 'charmap', 'codesample', 'emoticons', 'link', 'lists', 'media', 'searchreplace', 'table', 'visualblocks', 'wordcount',
+                   // Your account includes a free trial of TinyMCE premium features
+                   // Try the most popular premium features until Dec 27, 2025:
+                   'checklist', 'mediaembed', 'casechange', 'formatpainter', 'pageembed', 'a11ychecker', 'tinymcespellchecker', 'permanentpen', 'powerpaste', 'advtable', 'advcode', 'advtemplate', 'ai', 'uploadcare', 'mentions', 'tinycomments', 'tableofcontents', 'footnotes', 'mergetags', 'autocorrect', 'typography', 'inlinecss', 'markdown','importword', 'exportword', 'exportpdf'
+                 ],
+                 toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link media table mergetags | addcomment showcomments | spellcheckdialog a11ycheck typography uploadcare | align lineheight | checklist numlist bullist indent outdent | emoticons charmap | removeformat',
+                 height: 300,
+                 tinycomments_mode: 'embedded',
+                 tinycomments_author: 'Author name',
+                 mergetags_list: [
+                   { value: 'First.Name', title: 'First Name' },
+                   { value: 'Email', title: 'Email' },
+                 ],
+                 ai_request: (request, respondWith) => respondWith.string(() => Promise.reject('See docs to implement AI Assistant')),
+                 uploadcare_public_key: 'acc93600506c14ebad60',
+               });
     </script>
-   @*  <script>
-        tinymce.init({
-            selector: '#mytextarea'
-        });
-    </script> *@
 }
