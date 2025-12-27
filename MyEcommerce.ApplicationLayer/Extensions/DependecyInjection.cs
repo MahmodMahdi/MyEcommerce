@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using MyEcommerce.ApplicationLayer.Interfaces.Services;
 using MyEcommerce.ApplicationLayer.Services;
+using MyEcommerce.DataAccessLayer.DataSeeding;
 using MyEcommerce.DataAccessLayer.Repositories;
 using MyEcommerce.DomainLayer.Interfaces.Repositories;
 

@@ -3,17 +3,19 @@ using Microsoft.EntityFrameworkCore;
 using MyEcommerce.ApplicationLayer.Extensions;
 using MyEcommerce.ApplicationLayer.Mapping;
 using MyEcommerce.DataAccessLayer.Data;
+using MyEcommerce.DataAccessLayer.DataSeeding;
 using MyEcommerce.DomainLayer.Models;
 using Serilog;
 using Serilog.Events;
 using Stripe;
+using System.Threading.Tasks;
 using Utilities;
 
 namespace MyEcommerce.PresentationLayer
 {
 	public class Program
 	{
-		public static void Main(string[] args)
+		public static async Task Main(string[] args)
 		{
 			var builder = WebApplication.CreateBuilder(args);
 
@@ -66,10 +68,17 @@ namespace MyEcommerce.PresentationLayer
 			builder.Services.AddSession();
 			builder.Services.AddDistributedMemoryCache();
 
+			builder.Services.AddScoped<IDbInitializer, DbInitializer>();
+
+
 			builder.Host.UseSerilog();
 
 			var app = builder.Build();
-
+			using (var scope = app.Services.CreateScope())
+			{
+				var dbInitializer = scope.ServiceProvider.GetRequiredService<IDbInitializer>();
+				await dbInitializer.Initialize();
+			}
 			// Configure the HTTP request pipeline.
 			if (!app.Environment.IsDevelopment())
 			{
@@ -81,9 +90,9 @@ namespace MyEcommerce.PresentationLayer
 			app.UseHttpsRedirection();
 			app.UseStaticFiles();
 
+			app.UseRouting();
 			app.UseSession();
 
-			app.UseRouting();
 
 
 			StripeConfiguration.ApiKey = builder.Configuration.GetSection("stripe:Secretkey").Get<string>();
