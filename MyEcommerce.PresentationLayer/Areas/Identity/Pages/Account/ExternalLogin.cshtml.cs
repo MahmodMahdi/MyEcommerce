@@ -17,23 +17,24 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
+using MyEcommerce.DomainLayer.Models;
 
 namespace MyEcommerce.PresentationLayer.Areas.Identity.Pages.Account
 {
     [AllowAnonymous]
     public class ExternalLoginModel : PageModel
     {
-        private readonly SignInManager<IdentityUser> _signInManager;
-        private readonly UserManager<IdentityUser> _userManager;
-        private readonly IUserStore<IdentityUser> _userStore;
-        private readonly IUserEmailStore<IdentityUser> _emailStore;
+        private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IUserStore<ApplicationUser> _userStore;
+        private readonly IUserEmailStore<ApplicationUser> _emailStore;
         private readonly IEmailSender _emailSender;
         private readonly ILogger<ExternalLoginModel> _logger;
 
         public ExternalLoginModel(
-            SignInManager<IdentityUser> signInManager,
-            UserManager<IdentityUser> userManager,
-            IUserStore<IdentityUser> userStore,
+            SignInManager<ApplicationUser> signInManager,
+            UserManager<ApplicationUser> userManager,
+            IUserStore<ApplicationUser> userStore,
             ILogger<ExternalLoginModel> logger,
             IEmailSender emailSender)
         {
@@ -81,6 +82,8 @@ namespace MyEcommerce.PresentationLayer.Areas.Identity.Pages.Account
             ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
             ///     directly from your code. This API may change or be removed in future releases.
             /// </summary>
+            [Required(ErrorMessage="Please enter your name.")]
+            public string Name {  get; set; }
             [Required]
             [EmailAddress]
             public string Email { get; set; }
@@ -125,16 +128,30 @@ namespace MyEcommerce.PresentationLayer.Areas.Identity.Pages.Account
             else
             {
                 // If the user does not have an account, then ask the user to create an account.
-                ReturnUrl = returnUrl;
-                ProviderDisplayName = info.ProviderDisplayName;
-                if (info.Principal.HasClaim(c => c.Type == ClaimTypes.Email))
+                var email = info.Principal.FindFirstValue(ClaimTypes.Email);
+                var name = info.Principal.FindFirstValue(ClaimTypes.Name) ?? email;
+                if(email != null)
                 {
-                    Input = new InputModel
+                    var user = await _userManager.FindByEmailAsync(email);
+                    if(user == null)
                     {
-                        Email = info.Principal.FindFirstValue(ClaimTypes.Email)
-                    };
+                        user = new ApplicationUser
+                        {
+                            UserName = email,
+                            Email = email,
+                            Name = name,
+                            EmailConfirmed = true
+                        };
+						await _userManager.CreateAsync(user);
+
+					}
+					await _userManager.AddLoginAsync(user, info);
+                    await _signInManager.SignInAsync(user,isPersistent:false,info.LoginProvider);
+                    await _emailSender.SendEmailAsync(email, "Welcome via Google", "Success");
+                    return LocalRedirect(returnUrl);
                 }
-                return Page();
+                return RedirectToPage("./Login", new {ReturnUrl=returnUrl});
+
             }
         }
 
@@ -152,7 +169,7 @@ namespace MyEcommerce.PresentationLayer.Areas.Identity.Pages.Account
             if (ModelState.IsValid)
             {
                 var user = CreateUser();
-
+                user.Name = Input.Name;
                 await _userStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
                 await _emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
 
@@ -173,17 +190,14 @@ namespace MyEcommerce.PresentationLayer.Areas.Identity.Pages.Account
                             values: new { area = "Identity", userId = userId, code = code },
                             protocol: Request.Scheme);
 
-                        await _emailSender.SendEmailAsync(Input.Email, "Confirm your email",
-                            $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
-
-                        // If account confirmation is required, we need to show the link if we don't have a real email sender
-                        if (_userManager.Options.SignIn.RequireConfirmedAccount)
-                        {
-                            return RedirectToPage("./RegisterConfirmation", new { Email = Input.Email });
-                        }
-
-                        await _signInManager.SignInAsync(user, isPersistent: false, info.LoginProvider);
-                        return LocalRedirect(returnUrl);
+						if (_userManager.Options.SignIn.RequireConfirmedAccount)
+						{
+							// سيوجهك لصفحة تخبرك بمراجعة إيميلك
+							return RedirectToPage("./RegisterConfirmation", new { Email = Input.Email });
+						}
+						await _emailSender.SendEmailAsync(user.Email, "Welcome via Google", "Success");
+						await _signInManager.SignInAsync(user, isPersistent: false, info.LoginProvider);
+						return LocalRedirect(returnUrl);
                     }
                 }
                 foreach (var error in result.Errors)
@@ -197,27 +211,27 @@ namespace MyEcommerce.PresentationLayer.Areas.Identity.Pages.Account
             return Page();
         }
 
-        private IdentityUser CreateUser()
+        private ApplicationUser CreateUser()
         {
             try
             {
-                return Activator.CreateInstance<IdentityUser>();
+                return Activator.CreateInstance<ApplicationUser>();
             }
             catch
             {
-                throw new InvalidOperationException($"Can't create an instance of '{nameof(IdentityUser)}'. " +
-                    $"Ensure that '{nameof(IdentityUser)}' is not an abstract class and has a parameterless constructor, or alternatively " +
+                throw new InvalidOperationException($"Can't create an instance of '{nameof(ApplicationUser)}'. " +
+                    $"Ensure that '{nameof(ApplicationUser)}' is not an abstract class and has a parameterless constructor, or alternatively " +
                     $"override the external login page in /Areas/Identity/Pages/Account/ExternalLogin.cshtml");
             }
         }
 
-        private IUserEmailStore<IdentityUser> GetEmailStore()
+        private IUserEmailStore<ApplicationUser> GetEmailStore()
         {
             if (!_userManager.SupportsUserEmail)
             {
                 throw new NotSupportedException("The default UI requires a user store with email support.");
             }
-            return (IUserEmailStore<IdentityUser>)_userStore;
+            return (IUserEmailStore<ApplicationUser>)_userStore;
         }
     }
 }
