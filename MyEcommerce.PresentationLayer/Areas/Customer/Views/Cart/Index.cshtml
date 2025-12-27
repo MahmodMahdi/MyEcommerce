@@ -1,178 +1,198 @@
-﻿@model ShoppingCartViewModel
+﻿@using MyEcommerce.ApplicationLayer.ViewModels
+@model ShoppingCartViewModel
 @{
     ViewBag.Title = "Shopping Cart";
+    var totalBeforeDiscount = Model.Carts.Sum(c => c.Count * c.Product.Price);
+    var totalSavings = totalBeforeDiscount - Model.TotalCarts;
 }
-<div class="container py-5">
-    <div class="row gx-5">
-        <!-- LEFT SIDE: Cart Items -->
-        <div class="col-lg-8">
-            <div class="card p-4 rounded-5 shadow-lg" style="background: linear-gradient(145deg,#f8f9fa,#e9ecef);">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h2 class="text-gradient fw-bold" style="background: linear-gradient(90deg,#6a11cb,#2575fc); -webkit-background-clip: text; color: transparent;">Shopping Cart</h2>
-                    <a asp-area="Customer" asp-controller="Home" asp-action="Index" class="btn btn-outline-primary btn-sm">
-                        Continue Shopping
-                    </a>
-                </div>
 
-                @if (!Model.Carts.Any())
-                {
-                    <div class="text-center py-5">
-                        <div class="display-1 text-secondary mb-3">&#128722;</div>
-                        <h3 class="fw-bold">Your Cart is Empty!</h3>
-                        <p class="text-muted mb-3">Add some products and spice up your cart!</p>
-                        <a href="/Customer/Home/Index" class="btn btn-lg btn-primary px-5 py-2 rounded-pill shadow">Go Shopping</a>
+<style>
+    :root {
+        --primary-gradient: linear-gradient(90deg, #6a11cb, #2575fc);
+    }
+
+    .cart-card {
+        border-radius: 2rem !important;
+        border: none !important;
+    }
+
+    .btn-pill {
+        border-radius: 50px !important;
+    }
+
+    .item-img {
+        border-radius: 1.2rem;
+        object-fit: cover;
+    }
+
+    /* حاوية السطر لضمان توزيع العناصر على خط واحد */
+    .cart-item-row {
+        display: flex;
+        align-items: center; /* توسيط رأسي لكل العناصر */
+        padding: 1.2rem 0;
+        border-bottom: 1px solid #f1f1f1;
+        width: 100%;
+    }
+
+    /* الاسم والأسعار */
+    .product-info {
+        flex: 1; /* ياخد المساحة المتبقية */
+        padding: 0 15px;
+    }
+
+    .price-stack {
+        display: flex;
+        flex-direction: column;
+        line-height: 1.2;
+    }
+
+    /* الكمية */
+    .qty-wrapper {
+        display: flex;
+        align-items: center;
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 4px;
+        flex-shrink: 0; /* ممنوع ينضغط */
+    }
+
+    .qty-btn {
+        width: 20px;
+        height: 28px;
+        background: white;
+        border: 1px solid #eee;
+        border-radius: 8px !important;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        color: #333;
+    }
+
+    /* عمود الإجمالي - الحل النهائي عشان الكلمة متنزلش */
+    .total-column {
+        text-align: right;
+        min-width: 100px; /* مساحة كافية للرقم والكلمة بجانب بعض أو فوق بعض بانتظام */
+        flex-shrink: 0;
+        margin: 0 15px;
+    }
+
+    /* زرار الحذف */
+    .remove-col {
+        flex-shrink: 0;
+    }
+
+    .savings-badge {
+        background: #ecfdf5;
+        color: #10b981;
+        border: 1px dashed #10b981;
+        border-radius: 12px;
+        padding: 12px;
+    }
+</style>
+
+<div class="container py-5">
+    @if (!Model.Carts.Any())
+    {
+        <div class="text-center py-5">
+            <div class="display-1 text-secondary mb-3">&#128722;</div>
+            <h3 class="fw-bold">Your Cart is Empty!</h3>
+            <p class="text-muted mb-3">Add some products and spice up your cart!</p>
+            <a href="/Customer/Home/Index" class="btn btn-lg btn-primary px-5 py-2 rounded-pill shadow">Go Shopping</a>
+        </div>
+    }
+    else
+    {
+        <div class="row gx-lg-5">
+            <div class="col-lg-8 mb-4">
+                <div class="card cart-card p-4 shadow-sm bg-white">
+                    <div class="d-flex justify-content-between align-items-center mb-5">
+                        <h2 class="fw-bold mb-0">Shopping Cart</h2>
+                        <a asp-area="Customer" asp-controller="Home" asp-action="Index" class="btn btn-outline-primary btn-sm btn-pill px-3">
+                            <i class="bi bi-arrow-left"></i> Continue Shopping
+                        </a>
                     </div>
-                }
-                else
-                {
+
                     @foreach (var item in Model.Carts)
                     {
-                        <div class="d-flex align-items-center justify-content-between border-bottom py-3">
-                            <img src="~/@item.Product.Image" class="rounded shadow-sm" style="width:90px; height:90px; object-fit:cover; transition: transform .3s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'"/>
-                            <div class="flex-grow-1 mx-3">
-                                <h5 class="fw-bold mb-1">@item.Product.Name</h5>
-                                <small class="text-muted">@Html.Raw(item.Product.Description)</small>
+                        <div class="cart-item-row">
+                            <div style="flex: 0 0 90px;">
+                                <img src="~/@item.Product.Image" class="item-img shadow-sm" style="width:80px; height:80px;" />
                             </div>
-                            <div class="d-flex align-items-center">
-                                <a class="btn btn-sm btn-outline-primary me-1" asp-action="Plus" asp-route-cartId="@item.Id"><i class="bi bi-plus"></i></a>
-                                <span class="mx-2 fw-bold">@item.Count</span>
-                                <a class="btn btn-sm btn-outline-primary ms-1" asp-action="Minus" asp-route-cartId="@item.Id"><i class="bi bi-dash"></i></a>
-                            </div>
-                            <div class="fw-bold mx-3 text-gradient" style="background: linear-gradient(90deg,#ff512f,#dd2476); -webkit-background-clip: text; color: black;">@item.Product.Price.ToString("c")</div>
-                            <a class="btn btn-sm btn-danger ms-2 shadow" asp-action="Remove" asp-route-cartid="@item.Id"><i class="bi bi-trash-fill"></i></a>
-                        </div>
-                    }
-                }
-            </div>
-        </div>
 
-        <!-- RIGHT SIDE: Summary -->
-        @if (Model.Carts.Any())
-        {
-            <div class="col-lg-4">
-                <div class="card p-4 rounded-5 shadow-lg" style="background: linear-gradient(145deg,#f1f1f1,#e3e3e3);">
-                    <h3 class="fw-bold text-primary mb-4">Order Summary</h3>
-                    <div class="d-flex justify-content-between mb-3">
-                        <span class="fw-semibold">Total Price</span>
-                        <span class="fw-bold text-gradient" style="background: linear-gradient(90deg,#ff512f,#dd2476); -webkit-background-clip: text; color: transparent;">@Model.TotalCarts.ToString("c")</span>
-                    </div>
-                    <a asp-action="Summary" class="btn btn-primary btn-lg w-100 rounded-pill shadow">Checkout</a>
-                </div>
-            </div>
-        }
-    </div>
-</div>
+                            <div class="product-info">
+                                <h6 class="fw-bold mb-1">@item.Product.Name</h6>
+                                <div class="price-stack">
+                                    <div>
+                                        <span class="fw-bold text-dark">@item.Product.AcualPrice.ToString("N0") <small>EGP</small></span>
 
-@section Scripts
-{
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-}
-
-@* Old Code Before Enhancement *@
-@*
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Shopping Cart</title>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-
-    <!-- Bootstrap & Google Font -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
-    <link href="https://fonts.googleapis.com/css?family=Poppins:400,500,600" rel="stylesheet">
-
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="~/shoppingcart/style.css">
-</head>
-
-<body>
-    <form method="post">
-
-        <main class="page">
-            <section class="shopping-cart">
-                <div class="container">
-
-                    <div class="block-heading">
-                        <h2>Shopping Cart</h2>
-                    </div>
-
-                    <div class="row">
-
-                        <!-- LEFT SIDE -->
-                        <div class="col-md-12 col-lg-8">
-                            <div class="items">
-                                @if (Model.Carts.Count() < 1)
-                                {
-                                    <h4>There is no Items in Your Cart</h4>
-                                }
-                                else
-                                {
-                                    @foreach (var item in Model.Carts)
-                                    {
-                                        <div class="product row align-items-center py-3">
-
-                                            <!-- Image -->
-                                            <div class="col-md-2 text-center">
-                                                <img class="img-fluid image" src="~/@item.Product.Image" alt="Product Image">
-                                            </div>
-
-                                            <!-- Name + Description -->
-                                            <div class="col-md-4">
-                                                <a href="#" class="product-name">@item.Product.Name</a>
-                                                <div class="product-info">@Html.Raw(item.Product.Description)</div>
-                                            </div>
-
-                                            <!-- Quantity -->
-                                            <div class="col-md-2 text-center">
-                                                <label>Quantity:</label>
-                                                <div class="btn-group" role="group">
-                                                    <a class="btn btn-outline-primary" asp-action="Plus" asp-route-cartId="@item.Id">+</a>
-                                                    <span style="margin:6px">@item.Count</span>
-                                                    <a class="btn btn-outline-primary" asp-action="Minus" asp-route-CartId="@item.Id">-</a>
-                                                </div>
-                                            </div>
-
-                                            <!-- Price -->
-                                            <div class="col-md-2 text-center">
-                                                <span class="item-price">@item.Product.Price.ToString("c")</span>
-                                            </div>
-
-                                            <!-- Remove -->
-                                            <div class="col-md-2 text-center">
-                                                <a class="btn btn-danger btn-sm remove-btn" asp-action="Remove" asp-route-cartid="@item.Id">X</a>
-                                            </div>
-
-                                        </div>
-                                    }
-                                }
-                            </div>
-                        </div>
-                        @if (Model.Carts.Count() != 0)
-                        {
-                            <!-- RIGHT SIDE -->
-                            <div class="col-md-12 col-lg-4">
-                                <div class="summary">
-                                    <h3>Summary</h3>
-                                    <div class="summary-item">
-                                        <span>Total Price</span>
-                                        <span>@Model.TotalCarts.ToString("c")</span>
                                     </div>
-                                    <a class="btn btn-dark btn-lg btn-block mt-3" asp-action="Summary">Checkout</a>
+                                    @if (item.Product.Discount > 0)
+                                    {
+                                        <span>
+                                            <del class="text-muted small ms-1" style="font-size: 0.75rem;">@item.Product.Price.ToString("N0")</del>
+                                            <span class="text-danger fw-bold" style="font-size: 0.7rem;">SAVE @((int)item.Product.Discount)%</span>
+                                        </span>
+
+
+                                    }
                                 </div>
                             </div>
-                        }
-                        else
-                        {
-                            <a class="btn btn-dark btn-lg btn-block mt-3" asp-action="Index" asp-controller="Home">Return to Home</a>
-                        }
+
+                            <div class="qty-wrapper">
+                                <a class="qty-btn shadow-sm" asp-action="Minus" asp-route-cartId="@item.Id"><i class="bi bi-dash"></i></a>
+                                <span class="mx-3 fw-bold">@item.Count</span>
+                                <a class="qty-btn shadow-sm" asp-action="Plus" asp-route-cartId="@item.Id"><i class="bi bi-plus"></i></a>
+                            </div>
+
+                            <div class="total-column">
+                                <div class="fw-bold h6 mb-0">@((item.Count * item.Product.AcualPrice).ToString("N0"))</div>
+                                <small class="text-muted" style="display: block; margin-top: -3px;">Total</small>
+                            </div>
+
+                            <div class="remove-col">
+                                <a class="btn btn-sm btn-outline-danger  p-2" asp-action="Remove" asp-route-cartid="@item.Id">
+                                    <i class="bi bi-trash-fill"></i>
+                                </a>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="card cart-card p-4 shadow-lg border-0 bg-white">
+                    <h4 class="fw-bold mb-4">Order Summary</h4>
+                    <div class="d-flex justify-content-between mb-3">
+                        <span class="text-muted">Subtotal</span>
+                        <span class="fw-bold">@totalBeforeDiscount.ToString("N2") EGP</span>
                     </div>
 
+                    @if (totalSavings > 0)
+                    {
+                        <div class="savings-badge mb-4">
+                            <div class="d-flex justify-content-between">
+                                <span class="small fw-bold">Discount Savings</span>
+                                <span class="small fw-bold">- @totalSavings.ToString("N2") EGP</span>
+                            </div>
+                        </div>
+                    }
+
+                    <div class="d-flex justify-content-between align-items-center border-top pt-4 mb-4">
+                        <span class="h5 fw-bold mb-0">Total</span>
+                        <div class="text-end">
+                            <span class="h3 fw-bold text-primary mb-0">@Model.TotalCarts.ToString("N2")</span>
+                            <small class="text-primary fw-bold">EGP</small>
+                        </div>
+                    </div>
+
+                    <a asp-action="Summary" class="btn btn-primary btn-lg w-100 btn-pill shadow py-3 fw-bold">
+                        Checkout Now <i class="bi bi-arrow-right ms-2"></i>
+                    </a>
+
                 </div>
-            </section>
-        </main>
-    </form>
-</body>
-</html>
-<script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
-*@
+
+            </div>
+        </div>
+    }
+</div>
