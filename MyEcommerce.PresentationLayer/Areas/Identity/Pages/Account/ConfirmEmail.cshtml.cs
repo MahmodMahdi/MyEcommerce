@@ -49,9 +49,10 @@ namespace MyEcommerce.PresentationLayer.Areas.Identity.Pages.Account
             var result = await _userManager.ConfirmEmailAsync(user, code);
             if (result.Succeeded) {
              await _signInManager.SignInAsync(user, isPersistent: false);
-                return RedirectToPage("/Index", new { area = "" });
+				TempData["StatusMessage"] = "تم تأكيد الحساب وتسجيل الدخول بنجاح!";
+				return RedirectToPage("/Index", new { area = "" });
             }
-			StatusMessage = result.Succeeded ? "Thank you for confirming your email." : "Error confirming your email.";
+			StatusMessage = "Error confirming your email.";
 			return Page();
 		}
     }

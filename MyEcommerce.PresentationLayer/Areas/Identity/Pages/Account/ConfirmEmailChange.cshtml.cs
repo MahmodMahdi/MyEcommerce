@@ -63,8 +63,8 @@ namespace MyEcommerce.PresentationLayer.Areas.Identity.Pages.Account
             }
 
             await _signInManager.RefreshSignInAsync(user);
-            StatusMessage = "Thank you for confirming your email change.";
-            return Page();
+            StatusMessage = "تم تأكيد تغيير البريد الإلكترونى بنجاح";
+            return RedirectToPage("/Index", new { area = "" });
         }
     }
 }
