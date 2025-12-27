@@ -8,17 +8,14 @@ namespace MyEcommerce.DomainLayer.Models
 	{
 		[Key]
 		public int Id { get; set; }
-		[Range(1, 100, ErrorMessage = "you must enter value between 1 to 100")]
 		public int Count { get; set; }
 		public int ProductId { get; set; }
 		
 		[ValidateNever]
-		[ForeignKey("ProductId")]
 		public Product Product { get; set; }
 		public string ApplicationUserId { get; set; }
 
 		[ValidateNever]
-		[ForeignKey("ApplicationUserId")]
 		public ApplicationUser ApplicationUser { get; set; }
 
 	}
