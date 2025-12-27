@@ -1,29 +1,28 @@
-﻿@model ShoppingCart
+﻿@model CartItemViewModel
 <form method="post">
     <section class="py-5">
         <div class="container px-4 px-lg-5 my-5">
-            <input hidden asp-for="ProductId" value="@Model.ProductId" />
-            <input hidden asp-for="Id" value="@Model.Id" />
-            <div class="row gx-4 gx-lg-5 align-items-center">
-
-                <!-- صورة المنتج -->
-                <div class="col-md-4 text-center">
-                    <div class="product-image-wrapper">
-                        <img class="card-img-top" src="~/@Model.Product.Image" alt="@Model.Product.Name" />
+            <input hidden asp-for="@Model.ProductId" value="@Model.ProductId" />
+            <div class="row gx-4 gx-lg-5 align-items-start">
+                <div class="col-md-6 mb-5">
+                    <div class="product-image-wrapper position-relative shadow-sm border rounded-4 overflow-hidden" style="background-color: #f8f9fa;">
+                        @if (Model.Product.Discount > 0)
+                        {
+                            <div class="badge position-absolute"
+                                 style="top: 20px; right: 20px; background-color: #e63946; color: white; padding: 8px 20px; border-radius: 50px; font-weight: bold; font-size: 1.2rem; z-index: 10;">
+                                -@Model.Product.Discount.ToString("0")%
+                            </div>
+                        }
+                        <img class="card-img-top w-100" src="~/@Model.Product.Image" alt="@Model.Product.Name"
+                             style="object-fit: contain; min-height: 450px; max-height: 600px;" />
                     </div>
                 </div>
 
-                <!-- تفاصيل المنتج -->
                 <div class="col-md-6">
-                    <div class="text-uppercase fw-semibold mb-1" style="font-size: 0.9rem; color: #555;">
-                        <span class="badge bg-secondary text-uppercase">@Model.Product.Category.Name</span>
-
-                    </div>                   
-                    <h3 class="display-4 fw-bold">@Model.Product.Name</h3>
-                    <div class="fs-4 mb-4">
-                        <span class="text-muted text-decoration-line-through me-2">$50.00</span>
-                        <span class="text-danger fw-bold fs-3">$@Model.Product.Price</span>
+                    <div class="mb-1">
+                        <span class="badge bg-secondary text-uppercase px-3 py-2" style="border-radius: 5px;">@Model.Product.CategoryName</span>
                     </div>
+<<<<<<< Updated upstream
                     <p class="lead mb-4">@Html.Raw(Model.Product.Description)</p>
                     <div class="d-flex align-items-center mb-4">
                         <!-- زرار زيادة/نقص الكمية -->
@@ -55,36 +54,81 @@
                             <i class="bi-house-door-fill me-1"></i>
                             Return Home
                         </a>
+=======
+
+                    <h1 class="display-5 fw-bold mb-2" style="color: #212529;">@Model.Product.Name</h1>
+
+                    <div class="mb-4">
+                        @if (Model.Product.Discount > 0)
+                        {
+                            <div class="d-flex align-items-center flex-wrap gap-2">
+                                <span class="text-muted text-decoration-line-through" style="font-size: 1.8rem;">
+                                    @Model.Product.Price.ToString("c")
+                                </span>
+                                <span class="fw-bold" style="color: #d0021b; font-size: 2.5rem;">
+                                    @Model.Product.AcualPrice.ToString("c")
+                                </span>
+                            </div>
+
+                            <div class="mt-2">
+                                <span class="badge" style="background-color: #1f8a55; color: white; padding: 10px 20px; border-radius: 8px; font-size: 1.3rem;">
+                                    @if (System.Globalization.CultureInfo.CurrentCulture.TwoLetterISOLanguageName == "ar")
+                                    {
+                                        <span>وفرت @Model.Product.Discount.ToString("0")%</span>
+                                    }
+                                    else
+                                    {
+                                        <span>You Saved @Model.Product.Discount.ToString("0")%</span>
+                                    }
+                                </span>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="fw-bold" style="font-size: 2.5rem; color: #212529;">
+                                @Model.Product.Price.ToString("c")
+                            </div>
+                        }
                     </div>
+
+                    <div class="lead mb-4 fs-5 text-secondary">
+                        @Html.Raw(Model.Product.Description)
+                    </div>
+
+                    <div class="d-flex align-items-center gap-3 mb-4 flex-wrap">
+                        @if (Model.Product.StockQuantity > 0)
+                        {
+                            <div class="input-group" style="max-width: 160px; border: 1px solid #ced4da; border-radius: 12px; overflow: hidden; height: 55px;">
+                                <button class="btn btn-light border-0" type="button" onclick="document.getElementById('inputQuantity').stepDown()" style="width: 50px;">-</button>
+                                <input class="form-control text-center border-0 fw-bold fs-5" id="inputQuantity" asp-for="Count" min="1" type="number" max="@Model.Product.StockQuantity" value="1" />
+                                <button class="btn btn-light border-0" type="button" onclick="document.getElementById('inputQuantity').stepUp()" style="width: 50px;">+</button>
+                            </div>
+
+                            @if (!User.IsInRole("Admin"))
+                            {
+                                <button class="btn btn-dark px-5 py-3 shadow-sm flex-grow-1 flex-md-grow-0" type="submit" style="border-radius: 50px; font-weight: bold; height: 55px;">
+                                    <i class="bi-cart-fill me-2"></i> Add to Cart
+                                </button>
+                            }
+                        }
+                        else
+                        {
+                            <button class="btn btn-danger px-5 py-3 shadow-sm" disabled style="border-radius: 50px; font-weight: bold; height: 55px;">Out of Stock</button>
+                        }
+>>>>>>> Stashed changes
+                    </div>
+
+                    <div class="row">
+                        <div class="col-10">
+                            <a class="btn btn-primary w-100 py-3 shadow-sm d-flex align-items-center justify-content-center" href="/" role="button"
+                               style="background-color: #007bff; border: none; border-radius: 50px; font-weight: bold; height: 55px;">
+                                <i class="bi bi-house-door-fill me-2"></i> Return Home
+                            </a>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </div>
     </section>
-
-    <style>
-        .btn-dark, .btn-primary {
-            border-radius: 50px; /* الشكل المستدير */
-            padding: 6px 15px; /* تصغير المسافة الداخلية */
-            font-size: 0.95rem; /* حجم الخط مناسب */
-            line-height: 1.2; /* ارتفاع السطر مضبوط */
-        }
-
-        .product-image-wrapper {
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-        }
-
-            .product-image-wrapper img {
-                width: 100%;
-                max-height: 500px;
-                object-fit: cover;
-                transition: transform 0.3s;
-            }
-
-                .product-image-wrapper img:hover {
-                    transform: scale(1.05);
-                }
-    </style>
-
 </form>
