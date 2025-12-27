@@ -11,12 +11,11 @@
 
             <!-- FORM CARD -->
             <div class="col-md-6 col-lg-5 d-flex">
-                <div class="register-card p-5 shadow-lg w-100 d-flex flex-column justify-content-center" style="border-radius: 2rem; height: 780px;">
+                <div class="register-card p-5 shadow-lg w-100 d-flex flex-column justify-content-center" style="border-radius: 2rem; height: 820px;">
                     <h2 class="text-center mb-4">Create a new account</h2>
 
                     <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post">
                         <div asp-validation-summary="ModelOnly" class="text-danger mb-3" role="alert"></div>
-
                         <div class="form-floating mb-3">
                             <input asp-for="Input.Name" class="form-control form-control-lg" autocomplete="username" aria-required="true" />
                             <label asp-for="Input.Name">UserName</label>
@@ -130,8 +129,55 @@
     i {
         vertical-align: middle;
     }
-</style>
 
+    .field-validation-error {
+        font-size: 0.8rem;
+        font-weight: 500;
+        display: block;
+        margin-top: 5px;
+        color: #dc3545;
+        animation: fadeIn 0.5s;
+    }
+
+    .keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-5px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* جعل حدود الحقل حمراء عند الخطأ */
+    .input-validation-error {
+        border-color: #dc3545 !important;
+    }
+</style>
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        $(document).ready(function () {
+            // جلب الأخطاء من الـ Validation Summary المخفي
+            var errorMessages = [];
+            $(".text-danger.mb-3 ul li").each(function() {
+                errorMessages.push($(this).text());
+            });
+
+            if (errorMessages.length > 0) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'عذراً.. هناك خطأ',
+                    html: errorMessages.join('<br>'), // عرض الأخطاء تحت بعضها
+                    confirmButtonColor: '#0d6efd',
+                    confirmButtonText: 'حسناً',
+                    timer: 5000
+                });
+            }
+        });
+    </script>
 }

@@ -14,16 +14,23 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
+using MyEcommerce.DomainLayer.Models;
 
 namespace MyEcommerce.PresentationLayer.Areas.Identity.Pages.Account
 {
     public class LoginModel : PageModel
     {
-        private readonly SignInManager<IdentityUser> _signInManager;
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly ILogger<LoginModel> _logger;
-
-        public LoginModel(SignInManager<IdentityUser> signInManager, ILogger<LoginModel> logger)
+        private readonly IEmailSender _emailSender;
+        public LoginModel(SignInManager<ApplicationUser> signInManager,
+            ILogger<LoginModel> logger,
+            UserManager<ApplicationUser> userManager,
+            IEmailSender emailSender)
         {
+            _emailSender = emailSender;
+            _userManager = userManager;
             _signInManager = signInManager;
             _logger = logger;
         }
@@ -124,7 +131,17 @@ namespace MyEcommerce.PresentationLayer.Areas.Identity.Pages.Account
                 if (result.IsLockedOut)
                 {
                     _logger.LogWarning("User account locked out.");
-                    return RedirectToPage("./Lockout");
+					var user = await _userManager.FindByEmailAsync(Input.Email);
+					if (user != null)
+					{
+						// إرسال الإيميل باستخدام الـ Service اللي عملناها
+						// لاحظ إننا بنستخدم IEmailSender اللي إحنا معرفينه في الـ Constructor
+						await _emailSender.SendEmailAsync(
+							Input.Email,
+							"Account Locked",
+							"Your account has been locked by the administrator. Please contact support for more details at support@shopshpere.com or click the button to reset your password.");
+					}
+					return RedirectToPage("./Lockout");
                 }
                 else
                 {

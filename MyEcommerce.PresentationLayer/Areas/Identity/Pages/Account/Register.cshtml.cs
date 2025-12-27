@@ -25,19 +25,19 @@ namespace MyEcommerce.PresentationLayer.Areas.Identity.Pages.Account
 {
     public class RegisterModel : PageModel
     {
-        private readonly SignInManager<IdentityUser> _signInManager;
-        private readonly UserManager<IdentityUser> _userManager;
+        private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
-        private readonly IUserStore<IdentityUser> _userStore;
-        private readonly IUserEmailStore<IdentityUser> _emailStore;
+        private readonly IUserStore<ApplicationUser> _userStore;
+        private readonly IUserEmailStore<ApplicationUser> _emailStore;
         private readonly ILogger<RegisterModel> _logger;
         private readonly IEmailSender _emailSender;
 
         public RegisterModel(
-            UserManager<IdentityUser> userManager,
+            UserManager<ApplicationUser> userManager,
             RoleManager<IdentityRole> roleManager,
-            IUserStore<IdentityUser> userStore,
-            SignInManager<IdentityUser> signInManager,
+            IUserStore<ApplicationUser> userStore,
+            SignInManager<ApplicationUser> signInManager,
             ILogger<RegisterModel> logger,
             IEmailSender emailSender)
         {
@@ -131,33 +131,29 @@ namespace MyEcommerce.PresentationLayer.Areas.Identity.Pages.Account
             if (ModelState.IsValid)
             {
                 var user = CreateUser();
-                await _userStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
-                await _emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
-                var result = await _userManager.CreateAsync(user, Input.Password);
+               
 
                 // I added the missed fields in register that exist in ApplicationUser
                 user.Name = Input.Name;
                 user.Address = Input.Address;
                 user.City = Input.City;
                 user.PhoneNumber = Input.PhoneNumber;
-            
-                if (result.Succeeded)
+
+				await _userStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
+				await _emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
+				var result = await _userManager.CreateAsync(user, Input.Password);
+				if (result.Succeeded)
                 {
                     // here i made this when any one register => customer or when admin don't choose => customer else it talk the value of radio input
                     string role = HttpContext.Request.Form["RoleRadio"].ToString();
                     if (string.IsNullOrEmpty(role)) {
                         await _userManager.AddToRoleAsync(user, Helper.CustomerRole);
-						await _signInManager.SignInAsync(user, isPersistent: false);
-						return LocalRedirect(returnUrl);
 					}
                     else
                     {
                         await _userManager.AddToRoleAsync(user, role);
                     }
-                    RedirectToAction("Index", "Users", new {area="Admin"});
-                    _logger.LogInformation("User created a new account with password.");
-
-                    await _userManager.AddToRoleAsync(user, Helper.CustomerRole);
+                 
 
                     var userId = await _userManager.GetUserIdAsync(user);
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
@@ -168,16 +164,23 @@ namespace MyEcommerce.PresentationLayer.Areas.Identity.Pages.Account
                         values: new { area = "Identity", userId = userId, code = code, returnUrl = returnUrl },
                         protocol: Request.Scheme);
 
-                    await _emailSender.SendEmailAsync(Input.Email, "Confirm your email",
-                        $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
-
-                    if (_userManager.Options.SignIn.RequireConfirmedAccount)
+					try
+					{
+						await _emailSender.SendEmailAsync(Input.Email, "Confirm your account", callbackUrl);
+					}
+					catch (Exception ex)
+					{
+						ModelState.AddModelError(string.Empty, "حدث خطأ أثناء إرسال إيميل التأكيد: " + ex.Message);
+						return Page(); // سيعرض لك الخطأ بوضوح في الصفحة
+					}
+					if (_userManager.Options.SignIn.RequireConfirmedAccount)
                     {
                         return RedirectToPage("RegisterConfirmation", new { email = Input.Email, returnUrl = returnUrl });
                     }
                     else
                     {
-                        
+                        await _signInManager.SignInAsync(user,isPersistent: false);
+                        return LocalRedirect(returnUrl);
                     }
                 }
                 foreach (var error in result.Errors)
@@ -198,19 +201,19 @@ namespace MyEcommerce.PresentationLayer.Areas.Identity.Pages.Account
             }
             catch
             {
-                throw new InvalidOperationException($"Can't create an instance of '{nameof(IdentityUser)}'. " +
-                    $"Ensure that '{nameof(IdentityUser)}' is not an abstract class and has a parameterless constructor, or alternatively " +
+                throw new InvalidOperationException($"Can't create an instance of '{nameof(ApplicationUser)}'. " +
+                    $"Ensure that '{nameof(ApplicationUser)}' is not an abstract class and has a parameterless constructor, or alternatively " +
                     $"override the register page in /Areas/Identity/Pages/Account/Register.cshtml");
             }
         }
 
-        private IUserEmailStore<IdentityUser> GetEmailStore()
+        private IUserEmailStore<ApplicationUser> GetEmailStore()
         {
             if (!_userManager.SupportsUserEmail)
             {
                 throw new NotSupportedException("The default UI requires a user store with email support.");
             }
-            return (IUserEmailStore<IdentityUser>)_userStore;
+            return (IUserEmailStore<ApplicationUser>)_userStore;
         }
     }
 }

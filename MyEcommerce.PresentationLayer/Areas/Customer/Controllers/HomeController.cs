@@ -2,8 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using MyEcommerce.ApplicationLayer.Interfaces.Services;
 using MyEcommerce.ApplicationLayer.ViewModels;
-using MyEcommerce.DomainLayer.Interfaces.Repositories;
-using MyEcommerce.DomainLayer.Models;
 using System.Security.Claims;
 using Utilities;
 namespace MyEcommerce.PresentationLayer.Areas.Customer.Controllers

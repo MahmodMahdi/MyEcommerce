@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using MyEcommerce.DomainLayer.Interfaces;
+using MyEcommerce.DomainLayer.Interfaces.Repositories;
 using System.Security.Claims;
 using Utilities;
 
