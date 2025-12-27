@@ -34,7 +34,7 @@ namespace MyEcommerce.ApplicationLayer.Services
 			{
 				Carts = Carts,
 				OrderHeader = new OrderHeader(),
-				TotalCarts = Carts.Sum(c => c.Count * c.Product.Price)
+				TotalCarts = Carts.Sum(c => c.Count * c.Product.AcualPrice)
 			};
 			return shoppingCartViewModel;
 		}
@@ -88,82 +88,158 @@ namespace MyEcommerce.ApplicationLayer.Services
 					Address = user?.Address,
 					City = user?.City,
 					PhoneNumber = user?.PhoneNumber,
-					TotalPrice = Carts.Sum(c => c.Count * c.Product.Price)
+					TotalPrice = Carts.Sum(c => c.Count * c.Product.AcualPrice)
 				}
 
 			};
 			return shoppingCartViewModel;
 		}
-		public async Task<ShoppingCartViewModel> CreateOrderAsync(ShoppingCartViewModel shoppingCartViewModel, string userId, string domain)
+
+		public async Task<ShoppingCartViewModel> CreateOrderAsync(ShoppingCartViewModel shoppingCartViewModel,string userId,string domain)
 		{
-			// get the carts of that user assigned
-			var Carts = (await _unitOfWork.ShoppingCartRepository.GetAllAsync(u => u.ApplicationUserId == userId, IncludeProperties: "Product")).ToList();
-			// التحقق النهائي قبل الدفع
-			foreach (var item in Carts)
+			await _unitOfWork.BeginTransactionAsync();
+			try
 			{
-				if (item.Count > item.Product.StockQuantity)
+				// check the carts 
+					var carts = await _unitOfWork.ShoppingCartRepository
+	                 .GetAllAsync(u => u.ApplicationUserId == userId, IncludeProperties: "Product");
+					shoppingCartViewModel.Carts = carts;
+				if (!carts.Any())
 				{
-					throw new InvalidOperationException($"The item '{item.Product.Name}' is out of stock.");
+					throw new InvalidOperationException("Cart is empty");
 				}
+				// check if item exsit or become out of stock
+				foreach (var item in carts)
+					if (item.Count > item.Product.StockQuantity)
+						throw new InvalidOperationException($"Product '{item.Product.Name}' is out of stock.");
+				// get the existing order
+				var existingOrder = await _unitOfWork.OrderHeaderRepository.GetFirstOrDefaultAsync(
+					o => o.ApplicationUserId == userId && o.OrderStatus == Helper.Pending);
+				OrderHeader orderHeader;
+				List<OrderDetail> existingDetails = new();
+				decimal currentTotal = carts.Sum(c => c.Count * c.Product.AcualPrice);
+				// if there is already order taken before
+				if (existingOrder != null)
+				{
+					// get details of this order
+					existingDetails = (await _unitOfWork.OrderDetailRepository
+						.GetAllAsync(d => d.OrderId == existingOrder.Id)).ToList();
+
+					int existingCount = existingDetails?.Count ?? 0;
+					int currentCount = carts?.Count() ?? 0;
+					// ckeck of the cart details is changed or same order
+					bool cartChanged =
+						existingOrder.TotalPrice != currentTotal ||
+						existingCount != currentCount ||
+						(existingDetails.Any() && carts.Any() &&
+						 existingDetails.OrderBy(d => d.ProductId).First().ProductId !=
+						 carts.OrderBy(c => c.ProductId).First().ProductId);
+					// if not chaged it deal with old and get the same Url and order
+					if (!cartChanged)
+					{
+						orderHeader = existingOrder;
+						// نستخدم SessionId الموجود فقط
+						shoppingCartViewModel.Url =await _paymentService.GetStripeSessionUrlAsync(existingOrder.SessionId);
+					}
+					else
+					{
+						// if change it will remove old and set a new data and add details into db and create stripeSession
+						existingOrder.TotalPrice = currentTotal;
+						existingOrder.OrderDate = DateTime.UtcNow;
+
+						_unitOfWork.OrderDetailRepository.RemoveRange(existingDetails);
+
+						var newDetails = carts.Select(c => new OrderDetail
+						{
+							OrderId = existingOrder.Id,
+							ProductId = c.ProductId,
+							Price = c.Product.AcualPrice,
+							Count = c.Count,
+							Discount = c.Product.Discount
+						}).ToList();
+
+						await _unitOfWork.OrderDetailRepository.AddRangeAsync(newDetails);
+
+						var paymentResult = await _paymentService.CreateStripeSessionAsync(new ShoppingCartViewModel
+						{
+							OrderHeader = existingOrder,
+							Carts = carts
+						}, domain);
+
+						existingOrder.SessionId = paymentResult.SessionId;
+						shoppingCartViewModel.Url = paymentResult.Url;
+						orderHeader = existingOrder;
+					}
+				}
+				else
+				{
+					// if this is first creation of order 
+					orderHeader = new OrderHeader
+					{
+						ApplicationUserId = userId,
+						OrderStatus = Helper.Pending,
+						PaymentStatus = Helper.Pending,
+						OrderDate = DateTime.UtcNow,
+						TotalPrice = currentTotal,
+						Name = shoppingCartViewModel.OrderHeader.Name,
+						Address = shoppingCartViewModel.OrderHeader.Address,
+						City =shoppingCartViewModel.OrderHeader.City,
+						PhoneNumber = shoppingCartViewModel.OrderHeader.PhoneNumber
+					};
+
+					await _unitOfWork.OrderHeaderRepository.AddAsync(orderHeader);
+					await _unitOfWork.CompleteAsync();
+
+					var orderDetails = carts.Select(c => new OrderDetail
+					{
+						OrderId = orderHeader.Id,
+						ProductId = c.ProductId,
+						Price = c.Product.AcualPrice,
+						Count = c.Count,
+						Discount = c.Product.Discount
+					}).ToList();
+
+					await _unitOfWork.OrderDetailRepository.AddRangeAsync(orderDetails);
+
+					var paymentResult = await _paymentService.CreateStripeSessionAsync(new ShoppingCartViewModel
+					{
+						OrderHeader = orderHeader,
+						Carts = carts
+					}, domain);
+
+					orderHeader.SessionId = paymentResult.SessionId;
+					shoppingCartViewModel.Url = paymentResult.Url;
+				}
+
+				await _unitOfWork.CompleteAsync();
+				await _unitOfWork.CommitTransactionAsync();
+
+				shoppingCartViewModel.OrderHeader = orderHeader;
+				return shoppingCartViewModel;
 			}
-			#region Order Header Info 
-			// set a status data info for user
-			shoppingCartViewModel.OrderHeader.OrderStatus = Helper.Pending;
-			shoppingCartViewModel.OrderHeader.PaymentStatus = Helper.Pending;
-			shoppingCartViewModel.OrderHeader.OrderDate = DateTime.Now;
-			shoppingCartViewModel.OrderHeader.ApplicationUserId = userId;
-
-			// sum count of cart total price
-			shoppingCartViewModel.OrderHeader.TotalPrice = Carts.Sum(c => c.Count * c.Product.Price);
-
-			// add this data in OrderHeader in DB
-			await _unitOfWork.OrderHeaderRepository.AddAsync(shoppingCartViewModel.OrderHeader);
-			await _unitOfWork.CompleteAsync();
-			#endregion
-			#region Order Detail Info
-			// here it will loop in Carts and get the details of order and set it into Order Detail Model
-			var orderDetailsList = Carts.Select(Carts => new OrderDetail
+			catch (Exception ex)
 			{
-				ProductId = Carts.ProductId,
-				OrderId = shoppingCartViewModel.OrderHeader.Id,
-				Price = Carts.Product.Price,
-				Count = Carts.Count
-			}).ToList();
-
-			await _unitOfWork.OrderDetailRepository.AddRangeAsync(orderDetailsList);
-			await _unitOfWork.CompleteAsync();
-			#endregion
-			shoppingCartViewModel.Carts = Carts;
-			// here code of stripe method (from stripe site) but i set my value 
-			var PaymentResult = await _paymentService.CreateStripeSessionAsync(shoppingCartViewModel, domain);
-			// لازم تخزن الـ SessionId عشان تقدر تعمل Confirmation بعدين
-			shoppingCartViewModel.OrderHeader.SessionId = PaymentResult.SessionId;
-			// ونخزن الـ URL في الـ ViewModel عشان الـ Controller يوجه اليوزر
-			shoppingCartViewModel.Url = PaymentResult.Url;
-			await _unitOfWork.CompleteAsync();
-			return shoppingCartViewModel;
+				await _unitOfWork.RollbackTransactionAsync();
+				_logger.LogError(ex, "Failed to create/update order for user {UserId}", userId);
+				throw;
+			}
 		}
+
 		public async Task<bool> OrderConfirmation(int orderId)
 		{
 			var orderHeader = await _unitOfWork.OrderHeaderRepository
 				.GetFirstOrDefaultAsync(x => x.Id == orderId, IncludeProperties: "ApplicationUser");
+			if (orderHeader == null) return false;
 
-			if (orderHeader == null)
-			{
-				_logger.LogError("OrderConfirmation Failed: OrderId {OrderId} not found in database.", orderId);
-				return false;
-			}
-
-			// 1️- Guard: لو الطلب اتأكد قبل كدة
-			if (orderHeader.OrderStatus == Helper.Approve)
+			if (orderHeader.OrderStatus != Helper.Pending)
 			{
 				_logger.LogInformation("Order {OrderId} is already approved. Skipping confirmation.", orderId);
 				return true;
 			}
-				
+
 
 			// 2️- التحقق من حالة الدفع في Stripe
-			var session = await GetStripeSession(orderHeader.SessionId);
+			var session = await _paymentService.GetStripeSession(orderHeader.SessionId);
 			if (!string.Equals(session.PaymentStatus, "paid", StringComparison.OrdinalIgnoreCase))
 			{
 				_logger.LogWarning("Payment not verified for Order {OrderId}. Stripe Status: {Status}", orderId, session.PaymentStatus);
@@ -175,6 +251,7 @@ namespace MyEcommerce.ApplicationLayer.Services
 			try
 			{
 				orderHeader.PaymentIntentId = session.PaymentIntentId;
+				orderHeader.PaymentDate = DateTime.UtcNow;
 				// 3- جلب تفاصيل الطلب
 				var orderDetails = (await _unitOfWork.OrderDetailRepository
 					.GetAllAsync(x => x.OrderId == orderId, IncludeProperties: "Product")).ToList();
@@ -224,7 +301,7 @@ namespace MyEcommerce.ApplicationLayer.Services
 			else
 			{
 				_logger.LogWarning("User {UserId} tried to exceed stock for Product {ProductId}. Available: {StockQuantity}",
-		         shoppingCart.ApplicationUserId, shoppingCart.ProductId, shoppingCart.Product.StockQuantity);
+				 shoppingCart.ApplicationUserId, shoppingCart.ProductId, shoppingCart.Product.StockQuantity);
 				throw new InvalidOperationException("you can't add any more, you reach the available max in inventory ");
 			}
 			return await _unitOfWork.ShoppingCartRepository.CountAsync(u => u.ApplicationUserId == shoppingCart.ApplicationUserId);
@@ -262,11 +339,7 @@ namespace MyEcommerce.ApplicationLayer.Services
 			return await _unitOfWork.ShoppingCartRepository.CountAsync(u => u.ApplicationUserId == userId);
 		}
 		#region Private Helper Methods
-		private async Task<Session> GetStripeSession(string sessionId)
-		{
-			var service = new SessionService();
-			return await service.GetAsync(sessionId);
-		}
+		
 
 
 		private bool IsStockAvailable(List<OrderDetail> details)
@@ -274,26 +347,27 @@ namespace MyEcommerce.ApplicationLayer.Services
 			return details.All(item => item.Product != null && item.Product.StockQuantity >= item.Count);
 		}
 
-	
+
 		private async Task ClearCart(string userId)
 		{
 			var carts = await _unitOfWork.ShoppingCartRepository
 				.GetAllAsync(x => x.ApplicationUserId == userId);
-			
-				_unitOfWork.ShoppingCartRepository.RemoveRange(carts);
+
+			_unitOfWork.ShoppingCartRepository.RemoveRange(carts);
 		}
 
 		private async Task SendConfirmationEmail(OrderHeader order)
 		{
 			try
 			{
-				await _emailService.SendOrderConfirmationEmail(new OrderEmailDto
+				var OrderDto =new OrderEmailDto
 				{
 					Email = order.ApplicationUser.Email,
 					Name = order.ApplicationUser.Name,
 					OrderId = order.Id,
 					Total = order.TotalPrice
-				});
+				};
+				await _emailService.SendOrderConfirmationEmailAsync(OrderDto);
 			}
 			catch (Exception ex)
 			{

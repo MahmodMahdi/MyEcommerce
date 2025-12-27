@@ -8,7 +8,9 @@ namespace MyEcommerce.DomainLayer.Models.Order
 		public int Id { get; set; }
 		public decimal Price { get; set; }
 		public int Count { get; set; }
-
+		public decimal Discount { get; set; }
+		public decimal AcualPrice => Price - ( Price * (Discount / 100m));
+		public decimal TotolLinePrice => AcualPrice * Count;
 		public int ProductId { get; set; }
 		[ForeignKey(nameof(ProductId))]
 		[ValidateNever]
