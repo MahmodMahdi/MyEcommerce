@@ -1,6 +1,7 @@
 ﻿@using Microsoft.AspNetCore.Http
 @using Utilities
 @inject IHttpContextAccessor httpContextAccessor
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,16 +10,18 @@
     <meta name="description" content="" />
     <meta name="author" content="" />
     <title>ShopSphere</title>
-    <!-- Favicon -->
+
     <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
-    <!-- Bootstrap icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css" rel="stylesheet" />
-    <!-- Core theme CSS (includes Bootstrap) -->
     <link href="~/customer/css/styles.css" rel="stylesheet" />
     <link rel="stylesheet" href="~/shopingcart/style.css" />
 
     <style>
-        /* تحسين الnavbar */
+        /* ========= BASE ========= */
+        body, .navbar, .card, main, footer {
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
         .navbar {
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
@@ -36,7 +39,7 @@
                 color: #0d6efd !important;
             }
 
-        /* Header */
+        /* ========= HEADER ========= */
         header.bg-dark {
             background: linear-gradient(135deg, #0d6efd, #6610f2);
             color: #fff;
@@ -50,47 +53,123 @@
             font-size: 1.2rem;
         }
 
-        /* Footer */
+        /* ========= FOOTER ========= */
         footer {
-            background-color: #111;
+            background-color: #f8f9fa;
         }
 
             footer p {
-                color: #ccc;
+                color: #333;
             }
+
+        /* ========= DARK MODE ========= */
+        body.dark-mode {
+            background-color: #121212;
+            color: #f1f1f1;
+        }
+
+            body.dark-mode .navbar.bg-light {
+                background-color: #1f1f1f !important;
+                border-bottom: 1px solid #333;
+            }
+
+            body.dark-mode .navbar .nav-link,
+            body.dark-mode .navbar .navbar-brand {
+                color: #fff !important;
+            }
+
+            body.dark-mode header.bg-dark {
+                background: linear-gradient(135deg, #1a1a1a, #2c2c2c);
+            }
+
+            body.dark-mode main {
+                background-color: #121212;
+            }
+
+            body.dark-mode .card {
+                background-color: #1e1e1e;
+                color: #fff;
+                border: 1px solid #333;
+            }
+
+            body.dark-mode footer {
+                background-color: #0d0d0d;
+            }
+
+                body.dark-mode footer p {
+                    color: #aaa;
+                }
+
+            body.dark-mode .badge.bg-danger {
+                background-color: #b02a37 !important;
+            }
+
+            body.dark-mode .form-control {
+                background-color: #1e1e1e;
+                color: #fff;
+                border: 1px solid #444;
+            }
+
+                body.dark-mode .form-control::placeholder {
+                    color: #aaa;
+                }
+
+        #themeToggle {
+            cursor: pointer;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+        }
     </style>
 </head>
+
 <body>
-    <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-light bg-light sticky-top">
         <div class="container px-4 px-lg-5">
             <a class="navbar-brand" href="/Customer/Home/Index">ShopSphere</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
-                    aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#navbarSupportedContent"
+                    aria-controls="navbarSupportedContent"
+                    aria-expanded="false"
+                    aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
+
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-4">
-                    <li class="nav-item"><a class="nav-link active" aria-current="page" href="/Customer/Home/Index">Home</a></li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/Customer/Home/Index">Home</a>
+                    </li>
+
                     @if (User.Identity.IsAuthenticated)
                     {
-                        @if (User.IsInRole("Admin"))
+                        if (User.IsInRole("Admin"))
                         {
-                            <li class="nav-item"><a class="nav-link active" aria-current="page" href="/Admin/Dashboard/Index">Dashboard</a></li>
+                            <li class="nav-item">
+                                <a class="nav-link active" href="/Admin/Dashboard/Index">Dashboard</a>
+                            </li>
                         }
                         else
                         {
-                            <li class="nav-item"><a class="nav-link active" aria-current="page" href="/Identity/Account/Manage">My Profile</a></li>
+                            <li class="nav-item">
+                                <a class="nav-link active" href="/Identity/Account/Manage">My Profile</a>
+                            </li>
                         }
                     }
                 </ul>
 
+                <div id="themeToggle" class="me-3">
+                    <i id="themeIcon" class="bi bi-moon-stars-fill"></i>
+                </div>
+
                 <partial name="_LoginPartial" />
 
-                @if (User.Identity.IsAuthenticated&& !User.IsInRole("Admin"))
+                @if (User.Identity.IsAuthenticated && !User.IsInRole("Admin"))
                 {
                     <form class="d-flex ms-3">
-                        <a href="/Customer/Cart/Index" class="btn btn-outline-dark position-relative">
+                        <a href="/Customer/Cart/Index" id="cartBtn"
+                           class="btn btn-outline-dark position-relative">
                             <i class="bi-cart-fill me-1"></i>
                             Cart
                             <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
@@ -102,17 +181,16 @@
             </div>
         </div>
     </nav>
-    <!-- Header -->
-    <header class="bg-dark py-5">
-        <div class="container px-4 px-lg-5 my-5 text-center">
-            <h1 class="display-4 fw-bolder">Welcome to ShopSphere</h1>
-            <p class="lead fw-normal text-white-50 mb-0">
+
+    <header class="bg-dark py-3 py-md-5">
+        <div class="container px-4 px-lg-5 my-2 my-md-5 text-center">
+            <h1 class="display-5 display-md-4 fw-bolder">Welcome to ShopSphere</h1>
+            <p class="lead fw-normal text-white-50 mb-0 fs-6 fs-md-4">
                 Shop for the best products at the most suitable prices
             </p>
         </div>
     </header>
 
-    <!-- Main Content -->
     <main class="py-5">
         <div class="container px-4 px-lg-5">
             <partial name="_Notifications" />
@@ -120,16 +198,46 @@
         </div>
     </main>
 
-    <!-- Footer -->
     <footer class="py-5">
         <div class="container text-center">
             <p class="m-0">&copy; 2026 ShopSphere. All Rights Reserved.</p>
         </div>
     </footer>
 
-    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/customer/js/scripts.js"></script>
+
+    <script>
+        const themeToggle = document.getElementById('themeToggle');
+        const themeIcon = document.getElementById('themeIcon');
+        const body = document.body;
+        const cartBtn = document.getElementById('cartBtn');
+
+        function applyTheme(theme) {
+            if (theme === 'dark') {
+                body.classList.add('dark-mode');
+                themeIcon.classList.replace('bi-moon-stars-fill', 'bi-sun-fill');
+                themeIcon.style.color = '#ffca28';
+                if (cartBtn) cartBtn.classList.replace('btn-outline-dark', 'btn-outline-light');
+            } else {
+                body.classList.remove('dark-mode');
+                themeIcon.classList.replace('bi-sun-fill', 'bi-moon-stars-fill');
+                themeIcon.style.color = 'inherit';
+                if (cartBtn) cartBtn.classList.replace('btn-outline-light', 'btn-outline-dark');
+            }
+        }
+
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        applyTheme(savedTheme);
+
+        themeToggle.addEventListener('click', () => {
+            const isDark = body.classList.contains('dark-mode');
+            const newTheme = isDark ? 'light' : 'dark';
+            localStorage.setItem('theme', newTheme);
+            applyTheme(newTheme);
+        });
+    </script>
+
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

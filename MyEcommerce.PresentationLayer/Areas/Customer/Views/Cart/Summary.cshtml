@@ -1,147 +1,225 @@
 ﻿@model ShoppingCartViewModel
 @using Microsoft.Extensions.Options
+@using MyEcommerce.ApplicationLayer.ViewModels
 @inject IOptions<StripeInfo> stripe
+
+@{
+    var isArabic = System.Globalization.CultureInfo.CurrentCulture.TwoLetterISOLanguageName == "ar";
+    var currency = isArabic ? "ج.م" : "EGP";
+
+    // حسابات الخصم الإجمالية للطلبية لبيان التوفير
+    var totalBeforeDiscount = Model.Carts.Sum(c => c.Count * c.Product.Price);
+    var totalSavings = totalBeforeDiscount - Model.OrderHeader.TotalPrice;
+}
+
 <!doctype html>
 <html>
 <head>
     <meta charset='utf-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1'>
-    <title>Snippet - BBBootstrap</title>
+    <title>@(isArabic ? "تأكيد الطلب" : "Order Summary")</title>
     <link href='https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css' rel='stylesheet'>
     <link href='https://use.fontawesome.com/releases/v5.7.2/css/all.css' rel='stylesheet'>
-    <script type='text/javascript' src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js'></script>
-    <link href="~/shoppingcart/Summary.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+
+    <style>
+        body {
+            background-color: #f4f7f6;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .wrapper {
+            padding: 40px 0;
+        }
+
+        /* الكارد الرئيسي المستوحى من تصميم السلة */
+        .summary-card {
+            border: none;
+            border-radius: 25px;
+            background: #fff;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            padding: 30px;
+        }
+
+        /* ضبط خانات الإدخال لتكون رقيقة (Standard Size) */
+        .form-control {
+            border-radius: 12px;
+            border: 1px solid #e0e0e0;
+            padding: 10px 15px; /* تم تقليلها لضبط الحجم */
+            height: auto;
+            font-size: 0.9rem;
+            background-color: #fcfcfc;
+            transition: all 0.3s;
+        }
+
+            .form-control:focus {
+                border-color: #2575fc;
+                box-shadow: 0 0 0 0.2rem rgba(37, 117, 252, 0.1);
+                background-color: #fff;
+            }
+
+        label {
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 8px;
+            font-size: 0.85rem;
+            display: block;
+        }
+
+        /* تنسيق قائمة المنتجات */
+        .product-item {
+            border-bottom: 1px solid #f8f9fa;
+            padding: 15px 0;
+        }
+
+        .product-img {
+            border-radius: 12px;
+            object-fit: cover;
+            border: 1px solid #f0f0f0;
+        }
+
+        /* صندوق التوفير الأخضر (Match Cart Design) */
+        .savings-box {
+            background-color: #f0fff4;
+            color: #28a745;
+            padding: 12px;
+            border-radius: 12px;
+            font-weight: 600;
+            border: 1px dashed #28a745;
+            font-size: 0.9rem;
+        }
+
+        /* الزر الرئيسي باللون الأزرق المتدرج */
+        .btn-checkout {
+            background: linear-gradient(90deg, #1572e8, #0056b3);
+            border: none;
+            border-radius: 50px;
+            padding: 15px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: white;
+            transition: all 0.3s;
+        }
+
+            .btn-checkout:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 5px 15px rgba(21, 114, 232, 0.4);
+                color: white;
+            }
+
+        .text-primary-custom {
+            color: #1572e8;
+        }
+    </style>
 </head>
-<body className='snippet-body'>
+<body>
 
-    <div class="wrapper">
-        <div class="h5 large">Billing Address</div>
+    <div class="container wrapper">
         <form method="post" asp-action="PostSummary">
-            <div class="row">
-                <div class="col-lg-6 col-md-8 col-sm-10 offset-lg-0 offset-md-2 offset-sm-1">
-                    <div class="mobile h5">Billing Address</div>
-                    <div id="details" class="bg-white rounded pb-5">
+            <div class="row gx-lg-5">
 
-                        <div class="form-group">
-                            <label class="text-muted">Name</label>
-                            <input asp-for="OrderHeader.Name" type="text" required class="form-control">
-                            <span asp-validation-for="OrderHeader.Name"></span>
+                <div class="col-lg-7 mb-4">
+                    <div class="summary-card h-100">
+                        <h4 class="fw-bold mb-4">
+                            <i class="fas fa-map-marker-alt text-primary-custom mr-2"></i>
+                            @(isArabic ? "عنوان التوصيل" : "Shipping Address")
+                        </h4>
+
+                        <div class="form-group mb-3">
+                            <label>@(isArabic ? "الاسم بالكامل" : "Full Name")</label>
+                            <input asp-for="OrderHeader.Name" class="form-control" placeholder="Ahmed Ali...">
+                            <span asp-validation-for="OrderHeader.Name" class="text-danger small"></span>
                         </div>
+
                         <div class="row">
-                            <div class="col-lg-6">
-                                <div class="form-group">
-                                    <label>City</label>
-                                    <div class="d-flex jusify-content-start align-items-center rounded p-2">
-                                        <input asp-for="OrderHeader.City" required type="text">
-                                        <span class="fas fa-check text-success pr-2"></span>
-                                        <span asp-validation-for="OrderHeader.City"></span>
-                                    </div>
-                                </div>
+                            <div class="form-group mb-3">
+                                <label>@(isArabic ? "رقم الهاتف" : "Phone Number")</label>
+                                <input asp-for="OrderHeader.PhoneNumber" class="form-control" placeholder="01xxxxxxxxx">
+                                <span asp-validation-for="OrderHeader.PhoneNumber" class="text-danger small"></span>
                             </div>
-                            <div class="col-lg-6">
-                                <div class="form-group">
-                                    <label>Phone Number</label>
-                                    <div class="d-flex jusify-content-start align-items-center rounded p-2">
-                                        <input asp-for="OrderHeader.PhoneNumber" required type="text">
-                                        <span class="fas fa-check text-success pr-2"></span>
-                                        <span asp-validation-for="OrderHeader.PhoneNumber"></span>
-                                    </div>
-                                </div>
+                            <div class="form-group mb-3">
+                                <label>@(isArabic ? "المدينة" : "City")</label>
+                                <input asp-for="OrderHeader.City" class="form-control" placeholder="Cairo">
+                                <span asp-validation-for="OrderHeader.City" class="text-danger small"></span>
                             </div>
                         </div>
-                        <div class="row">
-                            <div class="col-lg-12">
-                                <div class="form-group">
-                                    <label>Address</label>
-                                    <div class="d-flex jusify-content-start align-items-center rounded p-2">
-                                        <input type="text" required asp-for="OrderHeader.Address" />
-                                        <span class="fas fa-check text-success pr-2"></span>
-                                        <span asp-validation-for="OrderHeader.Address"></span>
-                                    </div>
-                                </div>
-                            </div>
+
+                        <div class="form-group mb-0">
+                            <label>@(isArabic ? "العنوان بالتفصيل" : "Address")</label>
+                            <textarea asp-for="OrderHeader.Address" class="form-control" rows="2" placeholder="@(isArabic ? "رقم المبنى، اسم الشارع..." : "Bld No, Street Name...")"></textarea>
+                            <span asp-validation-for="OrderHeader.Address" class="text-danger small"></span>
                         </div>
-                    </div>
-
-                </div>
-                <div class="col-lg-6 col-md-8 col-sm-10 offset-lg-0 offset-md-2 offset-sm-1 pt-lg-0 pt-3">
-                    <div id="cart" class="bg-white rounded">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div class="h6">Cart Summary</div>
-                            <div class="h6">
-                                <a asp-action="Index">Edit</a>
-                            </div>
-                        </div>
-                        @foreach (var item in Model.Carts)
-                        {
-                            <div class="d-flex jusitfy-content-between align-items-center pt-3 pb-2 border-bottom">
-                                <div class="item pr-2">
-                                    <img src="/@item.Product.Image"
-                                         alt="" width="80" height="80">
-                                    <div class="number">@item.Count</div>
-                                </div>
-                                <div class="d-flex flex-column px-3">
-                                    <b class="h5">@item.Product.Name</b>
-                                </div>
-                                <div class="ml-auto">
-                                    <b class="h5">$@item.Product.Price</b>
-                                </div>
-                            </div>
-                        }
-
-
-
-                        <div class="d-flex align-items-center py-2">
-                            <div class="display-5">Total</div>
-                            <div class="ml-auto d-flex">
-                                <div class="text-primary text-uppercase px-3">egp</div>
-                                <div class="font-weight-bold">$@Model.OrderHeader.TotalPrice</div>
-                            </div>
-                        </div>
-                    </div>
-
-
-
-                    <div class="row pt-lg-3 pt-2 buttons mb-sm-0 mb-2">
-                        <div class="col-md-6">
-                            <div class="btn text-uppercase">
-                                <a href="/Customer/Home">Back to Shopping</a>
-                            </div>
-                        </div>
-                        <div class="col-md-6 pt-md-0 pt-1" style="padding-inline: 0px;">
-                            <button type="submit" class="btn btn-primary">Place Order</button>
-                        </div>
-                    </div>
-                    <div class="text-muted pt-3" id="mobile">
-                        <span class="fas fa-lock"></span>
-                        Your information is save
                     </div>
                 </div>
+
+                <div class="col-lg-5">
+                    <div class="summary-card">
+                        <h5 class="fw-bold mb-4">@(isArabic ? "ملخص الطلب" : "Order Summary")</h5>
+
+                        <div class="product-list mb-4" style="max-height: 280px; overflow-y: auto;">
+                            @foreach (var item in Model.Carts)
+                            {
+                                <div class="product-item d-flex align-items-center">
+                                    <div class="position-relative">
+                                        <img src="/@item.Product.Image" width="55" height="55" class="product-img mr-3">
+                                        <span class="badge badge-dark position-absolute" style="top:-5px; right:5px; border-radius:50%">@item.Count</span>
+                                    </div>
+                                    <div class="flex-grow-1 ml-2">
+                                        <h6 class="mb-0 fw-bold small">@item.Product.Name</h6>
+                                        <small class="text-muted">@item.Product.AcualPrice.ToString("N2") @currency</small>
+                                    </div>
+                                    <div class="fw-bold small text-dark">
+                                        @((item.Count * item.Product.AcualPrice).ToString("N2"))
+                                    </div>
+                                </div>
+                            }
+                        </div>
+
+                        <div class="price-details mt-3">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">@(isArabic ? "الإجمالي" : "Subtotal")</span>
+                                <span class="fw-bold text-dark">@totalBeforeDiscount.ToString("N2") @currency</span>
+                            </div>
+
+                            @if (totalSavings > 0)
+                            {
+                                <div class="d-flex justify-content-between mb-3 savings-box">
+                                    <span><i class="fas fa-tag mr-1"></i> @(isArabic ? "لقد وفرت" : "Discount Savings")</span>
+                                    <span>- @totalSavings.ToString("N2") @currency</span>
+                                </div>
+                            }
+
+                            <hr class="my-3">
+
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <span class="h5 fw-bold text-dark mb-0">@(isArabic ? "المبلغ الكلي" : "Total")</span>
+                                <div class="text-right">
+                                    <span class="h4 fw-bold text-primary-custom mb-0">@Model.OrderHeader.TotalPrice.ToString("N2")</span>
+                                    <small class="text-primary-custom fw-bold">@currency</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-checkout w-100 shadow-sm mb-3">
+                            @(isArabic ? "إتمام الطلب والدفع" : "Place Order Now") <i class="fas fa-chevron-right ml-2 small"></i>
+                        </button>
+
+                        <div class="text-center">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/b/ba/Stripe_Logo%2C_revised_2016.svg" width="55" class="mb-2">
+                            <p class="text-muted" style="font-size: 0.7rem;">
+                                <i class="fas fa-lock text-success mr-1"></i>
+                                @(isArabic ? "دفع آمن ومشفر 100%" : "Secure SSL Encrypted Payment")
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </form>
-        <div class="text-muted">
-            <span class="fas fa-lock"></span>
-            Your information is save
-        </div>
     </div>
-    <script type='text/javascript' src='https://stackpath.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.bundle.min.js'></script>
-    <script type='text/javascript' src='#'></script>
-    <script type='text/javascript' src='#'></script>
-    <script type='text/javascript' src='#'></script>
-    <script type='text/javascript'>#</script>
-    <script type='text/javascript'>
-        var myLink = document.querySelector('a[href="#"]');
-        myLink.addEventListener('click', function (e) {
-            e.preventDefault();
-        });</script>
 
-    @section scripts {
-        <partial name="_ValidationScriptsPartial" />
-        @* <script> *@
-        // tinymce.init({
-        //     selector: '#textarea'
-        // });
-    }
-
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js'></script>
+    <script src='https://stackpath.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.bundle.min.js'></script>
+    <partial name="_ValidationScriptsPartial" />
 </body>
 </html>

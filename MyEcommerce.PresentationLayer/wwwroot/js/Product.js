@@ -5,6 +5,7 @@ $(document).ready(function () {
 
 function loaddata() {
     dtable = $("#table").DataTable({
+        "responsive":true,
         "ajax": {
             "url": "/Admin/Product/GetData"
         },
@@ -13,7 +14,15 @@ function loaddata() {
             { "data": "description" },
             { "data": "price" },
             {
+                "data": "discount",
+                "className": "text-center",
+                "render": function (data) {
+                    return data + '%';
+                }, "width": "10%"
+            },
+            {
                 "data": "stockQuantity",
+                "className": "text-center",
                 "render": function (data) {
                     // لو المخزن أقل من 5 يظهر باللون الأحمر وعريض، وإلا يظهر عادي
                     if (data < 5) {
@@ -28,12 +37,20 @@ function loaddata() {
                 "data": "id",
                 "render": function (data) {
                     return `
-                    <a href="/Admin/Product/Edit/${data}" class="btn btn-success">Edit</a>
-                    <a onClick=DeleteItem("/Admin/Product/Delete/${data}") class="btn btn-danger">Delete</a>
-                    `
-                }
+        <div class="d-flex justify-content-center gap-2">
+            <a href="/Admin/Product/Edit/${data}" class="btn btn-success btn-sm" style="width:80px">
+                <i class="bi bi-pencil-square"></i> Edit
+            </a>
+            <a onClick=DeleteItem("/Admin/Product/Delete/${data}") class="btn btn-danger btn-sm" style="width:80px">
+                <i class="bi bi-trash-fill"></i> Delete
+            </a>
+        </div>
+        `;
+                },
+                "width": "15%"
             }
         ]
+
     });
 }
 

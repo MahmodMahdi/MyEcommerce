@@ -1,15 +1,17 @@
-﻿@model IEnumerable<Category>
+﻿@model IEnumerable<CategoryViewModel>
 @{
 	ViewBag.PageTitle = "Category Management";
 	ViewBag.CardTitle = "Categories";
 	// Layout = "~/Views/Shared/_Dashboard.cshtml";
 }
-
-<div>
-	<a href="/Admin/Category/Create" class="btn btn-primary">Create</a>
+<div class="d-flex mb-3">
+	<a href="/Admin/Category/Create" class="btn btn-primary" style="margin:10px 0px 0px 10px">
+		<i class="bi bi-plus-circle me-1"></i>
+		Create Category
+	</a>
 </div>
 <br />
-<table  class="table table-hover" width="100%">
+<table  class="table table-hover mb-3" width="100%">
 	<thead class="text-bold">
 	<tr>
 		<td>Name</td>

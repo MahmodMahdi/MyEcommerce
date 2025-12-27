@@ -1,36 +1,56 @@
-﻿@model Category
+﻿@model CategoryViewModel
 @{
     ViewBag.PageTitle = "Category Management";
     ViewBag.CardTitle = "Delete Category";
     // Layout = "~/Views/Shared/_Dashboard.cshtml";
 }
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="DeleteCategory" method="post">
-            <input hidden asp-for="Id" />
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="Name"></label> 
-                <input asp-for="Name" disabled class="form-control" />
-                <span asp-validation-for="Name" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Description"></label>
-                <div class="form-control" style="height:auto; background-color:#e9ecef;border:1px solid #ced4da; padding: .375rem  .75rem;">
-                    @Html.Raw(Model.Description)
+
+<div class="container-fluid px-4">
+    <div class="row">
+        <div class="col-lg-6 col-md-8">
+
+            <div class="card shadow-sm border-danger">
+                <div class="card-body">
+
+                    <form asp-action="DeleteCategory" method="post">
+                        <input type="hidden" asp-for="Id" />
+
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                        <div class="mb-3">
+                            <label asp-for="Name" class="form-label fw-semibold"></label>
+                            <input asp-for="Name" class="form-control" disabled />
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="Description" class="form-label fw-semibold"></label>
+                            <div class="form-control bg-light"
+                                 style="height:auto; min-height:120px;">
+                                @Html.Raw(Model.Description)
+                            </div>
+                        </div>
+
+                        <!-- BUTTONS -->
+                        <div class="d-flex gap-3">
+                            <input type="submit"
+                                   value="Delete"
+                                   class="btn btn-danger px-4" />
+
+                            <a asp-action="Index"
+                               asp-controller="Category"
+                               class="btn btn-outline-secondary">
+                                Back To List
+                            </a>
+                        </div>
+                    </form>
+
                 </div>
             </div>
-            <div class="form-group">
-                <input type="submit" value="Delete" class="btn btn-danger" />
-            </div>
-        </form>
+
+        </div>
     </div>
-</div>
-<div>
-    <a asp-action="Index" asp-controller="Category">Back To List</a>
 </div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
 }
-

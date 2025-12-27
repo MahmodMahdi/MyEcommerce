@@ -11,6 +11,7 @@ namespace MyEcommerce.ApplicationLayer.Mapping
 			CreateMap<Category, CategoryViewModel>().ReverseMap();
 
 			CreateMap<Product, ProductViewModel>().ReverseMap()
+				.ForMember(dest=>dest.AcualPrice,opt=>opt.MapFrom(src=>src.AcualPrice))
 				.ForMember(dest => dest.Category, opt => opt.Ignore());
 
 			CreateMap<Product, ProductViewModel>()
@@ -18,6 +19,10 @@ namespace MyEcommerce.ApplicationLayer.Mapping
 				.ForMember(dest => dest.Categories, opt => opt.Ignore())
 				.ReverseMap()
 				.ForMember(dest => dest.Category, opt => opt.Ignore());
+
+			CreateMap<ApplicationUser, UserViewModel>().ReverseMap();
+
+			CreateMap<ShoppingCart,CartItemViewModel>().ReverseMap();
 
 			CreateMap<ApplicationUser, UserViewModel>().ReverseMap();
 
