@@ -1,5 +1,7 @@
-﻿@using System.Security.Claims
-@using Microsoft.AspNetCore.Identity
+﻿@using Microsoft.AspNetCore.Identity
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -17,7 +19,7 @@
     @* <link rel="stylesheet" href="//cdn.datatables.net/2.3.5/css/dataTables.dataTables.min.css"/>  *@@* here to make a perfect Table *@
     <link rel="stylesheet" href="//cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css" />
     <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css" />
-
+    <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.4.1/css/responsive.dataTables.min.css" />
     @*  ده بيجيب شكل كويس فى textArea علشان description of category or product (TinyMce)*@
     <script src="https://cdn.tiny.cloud/1/9tu81lwfmtpla765d0qupnf3uac6v1ex1sx10uih8degb0nc/tinymce/8/tinymce.min.js" referrerpolicy="origin" crossorigin="anonymous"></script>
     <!-- Custom Styles for a modern look -->
@@ -131,13 +133,14 @@
             <div class="sidebar">
                 <div class="user-panel mt-3 pb-3 mb-3 d-flex">
                     <div class="image">
-                        <img src="/img/IMG-20251201-WA0374.jpg" class="img-circle elevation-2" alt="User Image">
+                        <a href="/img/IMG-20251201-WA0374.jpg"> <img src="/img/IMG-20251201-WA0374.jpg" class="img-circle elevation-2" alt="User Image"></a>
                     </div>
                     <div class="info">
                         @{
-                            var user =User.FindFirstValue(ClaimTypes.Name);
+                            var user = UserManager.GetUserAsync(User).Result?.Name ?? UserManager.GetUserName(User);
+
                         }
-                        <a href="#" class="d-block">@user</a> 
+                        <span style="color:ghostwhite">@user</span>
                     </div>
                 </div>
                 <nav class="mt-2">
@@ -196,6 +199,7 @@
  *@    <script src="//cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.datatables.net/responsive/2.4.1/js/dataTables.responsive.min.js"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

@@ -26,7 +26,7 @@
                                 <!-- Product name-->
                                 <h5 class="fw-bolder">@item.Name</h5>
                                 <div>
-                                    @if(item.Discount > 0)
+                                    @if (item.Discount > 0)
                                     {
                                         <div class="text-muted text-decoration-line-through mb-1" style="font-size: 1.1rem;">
                                             @item.Price.ToString("N2") ج.م
@@ -41,7 +41,7 @@
                                     }
                                 </div>
                                 <!-- Product price-->
-@*                                 @item.AcualPrice.ToString("c")
+                                @*                                 @item.AcualPrice.ToString("c")
  *@                            </div>
                         </div>
                         <!-- Product actions-->
@@ -53,7 +53,7 @@
             }
             @* Pagination *@
         </div>
-     
+
         @if (@Model.Items.Any())
         {
             <ul class="pagination justify-content-center">

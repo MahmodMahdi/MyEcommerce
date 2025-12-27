@@ -1,7 +1,7 @@
 ﻿@model ProductViewModel
 @{
-	ViewBag.PageTitle = "Product Management";
-	ViewBag.CardTitle = "Products";
+    ViewBag.PageTitle = "Product Management";
+    ViewBag.CardTitle = "Products";
 }
 
 <div>
@@ -17,10 +17,11 @@
             <th>Discount</th>
             <th>Stock Quantity</th>
             <th>Category</th>
-            <th>Action</th>
+            <th class="text-center">Action</th>
         </tr>
-        </thead></table>
+    </thead>
+</table>
 
-@section Scripts{
-    <script src ="~/js/Products.js"></script>
+@section Scripts {
+    <script src="~/js/Product.js"></script>
 }

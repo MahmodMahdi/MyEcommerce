@@ -22,39 +22,6 @@
                     <div class="mb-1">
                         <span class="badge bg-secondary text-uppercase px-3 py-2" style="border-radius: 5px;">@Model.Product.CategoryName</span>
                     </div>
-<<<<<<< Updated upstream
-                    <p class="lead mb-4">@Html.Raw(Model.Product.Description)</p>
-                    <div class="d-flex align-items-center mb-4">
-                        <!-- زرار زيادة/نقص الكمية -->
-                        @if (Model.Product.StockQuantity > 0)
-                            {
-                                <div class="input-group me-3" style="max-width: 120px;">
-                                    <button class="btn btn-outline-secondary" type="button" onclick="document.getElementById('inputQuantity').stepDown()">-</button>
-                                    <input class="form-control text-center" id="inputQuantity" asp-for="Count" min="1"  type="number" max="@Model.Product.StockQuantity"/>
-                                    <button class="btn btn-outline-secondary" type="button" onclick="document.getElementById('inputQuantity').stepUp()">+</button>
-                                </div>
-                            }
-                            @if (!User.IsInRole("Admin") )
-                            {
-                            if (Model.Product.StockQuantity > 0)
-                            {
-                                <!-- أزرار الأفعال -->
-                                <button class="btn btn-dark me-3" type="submit">
-                                    <i class="bi-cart-fill me-1"></i>
-                                    Add to Cart
-                                </button>
-                            }
-                                   else
-                            {
-                            <button class="btn btn-danger me-3" disabled>Out of Stock</button>
-                            }
-                            }
-                         
-                            <a class="btn btn-primary" href="/" role="button">
-                            <i class="bi-house-door-fill me-1"></i>
-                            Return Home
-                        </a>
-=======
 
                     <h1 class="display-5 fw-bold mb-2" style="color: #212529;">@Model.Product.Name</h1>
 
@@ -115,7 +82,6 @@
                         {
                             <button class="btn btn-danger px-5 py-3 shadow-sm" disabled style="border-radius: 50px; font-weight: bold; height: 55px;">Out of Stock</button>
                         }
->>>>>>> Stashed changes
                     </div>
 
                     <div class="row">
