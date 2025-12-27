@@ -72,7 +72,11 @@ namespace MyEcommerce.PresentationLayer.Areas.Identity.Pages.Account.Manage
             [EmailAddress]
             [Display(Name = "New email")]
             public string NewEmail { get; set; }
-        }
+			[Required]
+			[DataType(DataType.Password)]
+			[Display(Name = "Current Password")]
+			public string CurrentPassword { get; set; }
+		}
 
         private async Task LoadAsync(ApplicationUser user)
         {
@@ -112,8 +116,14 @@ namespace MyEcommerce.PresentationLayer.Areas.Identity.Pages.Account.Manage
                 await LoadAsync(user);
                 return Page();
             }
-
-            var email = await _userManager.GetEmailAsync(user);
+			var isPasswordValid = await _userManager.CheckPasswordAsync(user, Input.CurrentPassword);
+			if (!isPasswordValid)
+			{
+				ModelState.AddModelError(string.Empty, "كلمة المرور الحالية غير صحيحة، لا يمكنك تغيير البريد الإلكتروني.");
+				await LoadAsync(user);
+				return Page();
+			}
+			var email = await _userManager.GetEmailAsync(user);
             if (Input.NewEmail != email)
             {
                 var userId = await _userManager.GetUserIdAsync(user);
@@ -150,8 +160,8 @@ namespace MyEcommerce.PresentationLayer.Areas.Identity.Pages.Account.Manage
                 await LoadAsync(user);
                 return Page();
             }
-
-            var userId = await _userManager.GetUserIdAsync(user);
+			
+			var userId = await _userManager.GetUserIdAsync(user);
             var email = await _userManager.GetEmailAsync(user);
             var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
             code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
@@ -162,10 +172,9 @@ namespace MyEcommerce.PresentationLayer.Areas.Identity.Pages.Account.Manage
                 protocol: Request.Scheme);
             await _emailSender.SendEmailAsync(
                 email,
-                "Confirm your email",
-                $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+                "Confirm your email",callbackUrl);
 
-            StatusMessage = "Verification email sent. Please check your email.";
+			StatusMessage = "تم إرسال رابط تأكيد الايميل. يرجى مراجعة بريدك الجديد.";
             return RedirectToPage();
         }
     }
