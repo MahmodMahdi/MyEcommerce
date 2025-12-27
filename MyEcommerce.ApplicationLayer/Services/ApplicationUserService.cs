@@ -20,25 +20,27 @@ namespace MyEcommerce.ApplicationLayer.Services
 			_mapper = mapper;
 			_emailSender = emailSender;
 		}
-		public async Task<(IEnumerable<UserViewModel> Users,int totalPages)> GetPaginatedUsersAsync (string userId, int pageNumber ,int pageSize)
+		public async Task<PaginatedResultViewModel<UserViewModel>> GetPaginatedUsersAsync (string userId, int pageNumber ,int pageSize)
 		{
-			int totalUsers = await _context.ApplicationUsers
+			var query = _context.ApplicationUsers
 				.AsNoTracking()
-				.Where(u => u.Id != userId)
-				.CountAsync();
-
+				.Where(u => u.Id != userId);
+			int totalUsers = await query.CountAsync();
 			int totalPages = (int)Math.Ceiling((double)totalUsers / pageSize);
 			int numberOfItemToSkip = (pageNumber - 1) * pageSize;
 
-			var users = await _context.ApplicationUsers
-				.AsNoTracking()
-				.Where(u => u.Id != userId)
-				.OrderBy(u => u.UserName)
+			var users =await query.OrderBy(u => u.UserName)
 				.Skip(numberOfItemToSkip)
 				.Take(pageSize)
 				.ToListAsync();
-			var usersViewMode = _mapper.Map<IEnumerable<UserViewModel>>(users);
-			return (usersViewMode,totalPages);
+			var MappedUser = _mapper.Map<IEnumerable<UserViewModel>>(users);
+			var result = new PaginatedResultViewModel<UserViewModel>
+			{
+				Items = MappedUser,
+				CurrentPage = pageNumber,
+				TotalPages = totalPages
+			};
+			return result;
 		}
 
 		public async Task<UserViewModel> LockUnlock(string userId)
@@ -49,8 +51,8 @@ namespace MyEcommerce.ApplicationLayer.Services
 			{
 				user.LockoutEnd = DateTime.Now.AddYears(1);
 				// إرسال الإيميل
-				string reasonMessage = $@"Your account has been disabled by the administrator. 
-                             <br/><br/>If you think this is a mistake, please contact us on : support@shopspere.com";
+				string reasonMessage = $@"تم قفل حسابك بواسطة الأدمن 
+                             <br/><br/>لو تعتقد أن هذا خطأ , أرجوك تواصل مع الدعم الفنى. : support@shopspere.com";
 
 				await _emailSender.SendEmailAsync(user.Email, "Administrative Action", reasonMessage);
 			}
