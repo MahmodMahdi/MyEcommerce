@@ -1,12 +1,8 @@
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
-using MyEcommerce.ApplicationLayer.Interfaces.Services;
+using MyEcommerce.ApplicationLayer.Extensions;
 using MyEcommerce.ApplicationLayer.Mapping;
-using MyEcommerce.ApplicationLayer.Services;
 using MyEcommerce.DataAccessLayer.Data;
-using MyEcommerce.DataAccessLayer.Repositories;
-using MyEcommerce.DomainLayer.Interfaces.Repositories;
 using MyEcommerce.DomainLayer.Models;
 using Serilog;
 using Serilog.Events;
@@ -44,7 +40,8 @@ namespace MyEcommerce.PresentationLayer
 			builder.Services.AddSingleton(emailSettings);
 			builder.Services.Configure<StripeInfo>(builder.Configuration.GetSection("stripe"));
 			builder.Services.AddIdentity<ApplicationUser, IdentityRole>(
-				options => {
+				options =>
+				{
 					options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromDays(1);
 					options.Lockout.MaxFailedAccessAttempts = 5;
 					options.Lockout.AllowedForNewUsers = true;
@@ -53,17 +50,13 @@ namespace MyEcommerce.PresentationLayer
 				.AddDefaultUI()
 				.AddDefaultTokenProviders()
 				.AddEntityFrameworkStores<ApplicationDbContext>();
-			builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-			builder.Services.AddScoped<ICategoryService, CategoryService>();
-			builder.Services.AddScoped<IProductService,ProductServices>();
-			builder.Services.AddScoped<IShoppingCartService, ShoppingCartService>();
-			builder.Services.AddScoped<IOrderServices, OrderServices>();
-			builder.Services.AddScoped<IDashboardService, DashboardService>();
-			builder.Services.AddScoped<IApplicationUserService,ApplicationUserService>();
-			builder.Services.AddScoped<IPaymentService,PaymentService>();
-			builder.Services.AddScoped<IEmailService,EmailService>();
-			builder.Services.AddScoped<IImageService,ImageService>();
-			builder.Services.AddTransient<IEmailSender, EmailService>();
+			builder.Services.AddAuthentication();
+			builder.Services.AddAuthentication().AddGoogle(options =>
+			{
+				options.ClientId = builder.Configuration["Authentication:Google:ClientId"]!;
+				options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"]!;
+			});
+			builder.Services.AddApplicationProject();
 			builder.Services.AddSession();
 			builder.Services.AddDistributedMemoryCache();
 
