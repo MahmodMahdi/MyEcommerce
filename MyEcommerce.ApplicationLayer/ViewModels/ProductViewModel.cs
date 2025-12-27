@@ -19,6 +19,10 @@ namespace MyEcommerce.ApplicationLayer.ViewModels
 		[Required(ErrorMessage = "*")]
 		[Range(1, 100000, ErrorMessage = "Price must be between 1 to 100000")]
 		public decimal Price { get; set; }
+		[Range(0, 100, ErrorMessage = "Discount must be between 1 to 100")]
+		public decimal Discount { get; set; }
+		public decimal AcualPrice { get; set; }
+
 		[DisplayName("Category")]
 		[Required(ErrorMessage = "*")]
 		public int CategoryId { get; set; }
