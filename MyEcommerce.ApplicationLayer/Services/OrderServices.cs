@@ -69,7 +69,7 @@ namespace MyEcommerce.ApplicationLayer.Services
 							TrackingNumber = orderFromDb.TrackingNumber,
 							Carrier = orderFromDb.Carrior,
 						};
-						await _emailService.SendShippingEmail(sendingEmailDetails);
+						await _emailService.SendShippingEmailAsync(sendingEmailDetails);
 					}
 				}
 				catch (Exception ex)
@@ -168,7 +168,7 @@ namespace MyEcommerce.ApplicationLayer.Services
 					TrackingNumber = orderViewModel.OrderHeader.TrackingNumber,
 					Carrier = orderFromDb.Carrior
 				};
-				await _emailService.SendShippingEmail(SendingEmaildetails);
+				await _emailService.SendShippingEmailAsync(SendingEmaildetails);
 			}
 			catch (Exception ex)
 			{
