@@ -30,7 +30,7 @@ namespace MyEcommerce.ApplicationLayer.Services
 					{
 						PriceData = new SessionLineItemPriceDataOptions
 						{
-							UnitAmount = (long)(item.Product.Price * 100), // تحويل للقروش
+							UnitAmount = (long)(item.Product.AcualPrice * 100), // تحويل للقروش
 							Currency = "egp",
 							ProductData = new SessionLineItemPriceDataProductDataOptions
 							{
@@ -64,6 +64,17 @@ namespace MyEcommerce.ApplicationLayer.Services
 				throw new Exception("An unexpected error occurred while processing your payment. Please try again later.");
 			}
 		}
-		
+		public async Task<Session> GetStripeSession(string sessionId)
+		{
+			var service = new SessionService();
+			return await service.GetAsync(sessionId);
+		}
+		public async Task<string> GetStripeSessionUrlAsync(string sessionId)
+		{
+			var service = new SessionService();
+			var session = await service.GetAsync(sessionId);
+			return session.Url;
+		}
+
 	}
 }

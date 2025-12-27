@@ -1,4 +1,5 @@
 ﻿using MyEcommerce.ApplicationLayer.ViewModels;
+using Stripe.Checkout;
 
 namespace MyEcommerce.ApplicationLayer.Interfaces.Services
 {
@@ -6,5 +7,9 @@ namespace MyEcommerce.ApplicationLayer.Interfaces.Services
 	{
 		// > means it will return tuple
 		Task<(string Url, string SessionId)> CreateStripeSessionAsync(ShoppingCartViewModel model, string domain);
+		Task<Session> GetStripeSession(string sessionId);
+
+		Task<string> GetStripeSessionUrlAsync(string sessionId);
+
 	}
 }
