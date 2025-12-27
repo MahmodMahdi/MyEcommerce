@@ -1,5 +1,6 @@
 ﻿using MailKit.Net.Smtp;
 using Microsoft.AspNetCore.Identity.UI.Services;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using MimeKit;
 using MyEcommerce.ApplicationLayer.Interfaces.Services;
@@ -12,10 +13,14 @@ namespace MyEcommerce.ApplicationLayer.Services
 	{
 		private readonly EmailSettings _emailSettings;
 		private readonly ILogger<EmailService> _logger;
-		public EmailService(EmailSettings emailSettings,ILogger<EmailService> logger)
+		private readonly IConfiguration _config;
+		public EmailService(EmailSettings emailSettings,
+			ILogger<EmailService> logger,
+			IConfiguration config)
 		{
 			_emailSettings = emailSettings;
 			_logger = logger;
+			_config = config;
 		}
 		public async Task<string> SendEmailAsync(string email, string Message, string title)
 		{
@@ -46,34 +51,37 @@ namespace MyEcommerce.ApplicationLayer.Services
 			catch (Exception ex)
 			{
 				Console.WriteLine($"Email Service Error: {ex.Message}");
-				_logger.LogError(ex,"Failed: Sending email to {email} with subject '{title}'",email,title);
+				_logger.LogError(ex, "Failed: Sending email to {email} with subject '{title}'", email, title);
 
 				return "Failed";
 			}
 		}
-		public async Task SendOrderConfirmationEmail(OrderEmailDto orderEmailDto)
+		public async Task SendOrderConfirmationEmailAsync(OrderEmailDto orderEmailDto)
 		{
 			string emailBody = $@"
         <div style='text-align:center; font-family:sans-serif;'>
-            <h1 style='color:#007bff;'>Order Confirmed!</h1>
-            <p>Thank you <b>{orderEmailDto.Name}</b>, your order has been placed successfully.</p>
+            <h1 style='color:#007bff;'>تم تأكيد طلبك! 🎉</h1>
+            <p>شكراً لك يا <b>{orderEmailDto.Name}</b>,لقد استلمنا طلبك بنجاح وهو الآن قيد التجهيز.</p>
             <div style='background:#f8f9fa; padding:15px; border-radius:10px; display:inline-block;'>
-                <p>Order Number: <b>#{orderEmailDto.OrderId}</b></p>
-                <p>Total Amount: <b>{orderEmailDto.Total:C}</b></p>
+                <p>رقم الطلب: <b>#{orderEmailDto.OrderId}</b></p>
+                <p>إجمالى المبلغ: <b>{orderEmailDto.Total:C}</b></p>
             </div>
-        </div>";
+                <p style='color: #666; font-size: 14px;'>سنقوم بإرسال بريد إلكتروني آخر لك بمجرد شحن المنتجات وتزويدك برقم التتبع.</p>
+                <hr style='border: 0; border-top: 1px solid #eee; margin: 20px 0;'>
+                <p style='font-size: 12px; color: #aaa;'>شكراً لتسوقك مع ShopSphere</p>
+            </div>";
 
 			await SendEmailAsync(orderEmailDto.Email, emailBody, "Order Confirmation #" + orderEmailDto.OrderId);
 		}
-		public async Task SendShippingEmail(OrderEmailDto orderEmailDto)
+		public async Task SendShippingEmailAsync(OrderEmailDto orderEmailDto)
 		{
-			string carrierPart = !string.IsNullOrEmpty(orderEmailDto.Carrier) ? $"<p>Carrier: <b>{orderEmailDto.Carrier}</b></p>" : "";
+			string carrierPart = !string.IsNullOrEmpty(orderEmailDto.Carrier) ? $"<p>شركة الشحن: <b>{orderEmailDto.Carrier}</b></p>" : "";
 			string trackingPart = !string.IsNullOrEmpty(orderEmailDto.TrackingNumber)
-			? $"<p>Tracking Number: <b>{orderEmailDto.TrackingNumber}</b></p>" : "";
+			? $"<p>رقم التتبع: <b>{orderEmailDto.TrackingNumber}</b></p>" : "";
 			string emailBody = $@"
         <div style='font-family:sans-serif; border:1px solid #ddd; padding:20px; border-radius:10px;'>
-            <h2 style='color:#28a745;'>Your Order is on the way! 🚚</h2>
-            <p>Hi <b>{orderEmailDto.Name}</b>, your order <b>#{orderEmailDto.OrderId}</b> has been shipped.</p>
+            <h2 style='color:#28a745;'>طلبك فى الطريق اليك 🚚</h2>
+            <p> مرحبا <b>{orderEmailDto.Name}</b>,تم شحن طلبك رقم <b>#{orderEmailDto.OrderId}</b> بنجاح.</p>
                <div style='background:#f8f9fa; padding:15px; border-radius:10px;'>
                 {trackingPart}
                 {carrierPart} 
@@ -86,57 +94,61 @@ namespace MyEcommerce.ApplicationLayer.Services
 
 		async Task IEmailSender.SendEmailAsync(string email, string subject, string htmlMessage)
 		{
+			string baseUrl = _config["BaseUrl"];
 			string title = "ShopSphere Security";
-			string actionText = "Click the button below";
+			string actionText = "Click the button below to proceed:";
 			string buttonText = "Confirm Action";
-			// تخصيص النص بناءً على العنوان (Subject) القادم من Identity
-			if (subject.Contains("Confirm your email", StringComparison.OrdinalIgnoreCase))
+
+			if (subject.Contains("Welcome via Google", StringComparison.OrdinalIgnoreCase))
 			{
-				// هذه الحالة عند التسجيل لأول مرة (Register)
-				title = "Welcome to ShopSphere!";
-				actionText = "We're excited to have you! Please confirm your account to start shopping:";
-				buttonText = "Confirm Account";
+				title = "Welcome to ShopSphere Family!";
+				actionText = "تم إنشاء حسابك بنجاح عبر جوجل. يمكنك الآن البدء بالتسوق أو إكمال بيانات ملفك الشخصي لتسهيل عمليات الشحن مستقبلاً";
+				htmlMessage = $"{baseUrl}/Identity/Account/Manage";
+				buttonText = "إكمال بيانات حسابي";
 			}
-			if (subject.Contains("Reset Password", StringComparison.OrdinalIgnoreCase))
+			else if (subject.Contains("Confirm your account", StringComparison.OrdinalIgnoreCase))
 			{
-				title = "Reset Your Password";
-				actionText = "You requested to reset your password. Click below to proceed:";
-				buttonText = "Reset Password";
+				title = "تأكيد بريدك الإلكتروني";
+				actionText = "سعداء بانضمامك إلينا! يرجى الضغط على الزر أدناه لتفعيل حسابك:";
+				buttonText = "تأكيد الحساب";
+			}
+			else if (subject.Contains("Reset Password", StringComparison.OrdinalIgnoreCase))
+			{
+				title = "استعادة كلمة المرور";
+				actionText = "لقد تلقينا طلباً لإعادة تعيين كلمة المرور الخاصة بك. إذا كنت أنت من قام بذلك، اضغط أدناه:";
+				buttonText = "تغيير كلمة المرور";
 			}
 			else if (subject.Contains("Confirm", StringComparison.OrdinalIgnoreCase))
 			{
-				title = "Confirm Your New Email";
-				actionText = "You requested to change your email. Please confirm it by clicking the button:";
-				buttonText = "Confirm Email";
+				title = "تأكيد حسابك الجديد";
+				actionText = "هل تريد تغيير ايميلك؟ لو سمحت اضغط على الرابط للتأكيد.";
+				buttonText = "تأكيد الحساب";
 			}
 			else if (subject.Contains("Account Locked", StringComparison.OrdinalIgnoreCase))
 			{
-				title = "Security Alert: Account Locked";
-				actionText = "Your account has been temporarily locked for 24 hours due to multiple failed login attempts. If this wasn't you, please reset your password immediately:";
-				buttonText = "Reset My Password";
-				var domain = "https://localhost:7148";
-				htmlMessage = $"{domain}/Identity/Account/ForgotPassword";
+				title = "تنبيه أمني: تم قفل الحساب";
+				actionText = "تم قفل حسابك مؤقتاً لمدة 24 ساعة بسبب محاولات تسجيل دخول خاطئة متكررة. إذا لم تكن أنت من قام بذلك، يرجى إعادة تعيين كلمة المرور فوراً لتأمين حسابك:";
+				buttonText = "إعادة تعيين كلمة المرور";
+				htmlMessage = $"{baseUrl}/Identity/Account/ForgotPassword";
 			}
 			else if (subject.Contains("Administrative Action", StringComparison.OrdinalIgnoreCase))
 			{
-				title = "Account Status Notice";
-				// هنا نجعل الـ actionText هو السبب الذي سيرسله الأدمن
-				actionText = htmlMessage;
-				buttonText = "Contact Support";
+				title = "إشعار بخصوص حالة الحساب";
+				actionText = $"نود إعلامك بالتالي بخصوص حسابك: <br/> <b>{htmlMessage}</b>"; ;
+				buttonText = "التواصل مع الدعم الفني";
 
 				// رابط الدعم (يمكنك تغييره لصفحة اتصل بنا في موقعك)
 				htmlMessage = "mailto:support@shopsphere.com";
 			}
 
 			string emailBody = $@"
-    <div style='font-family: sans-serif; text-align: center; border: 1px solid #ddd; padding: 20px; border-radius: 10px; max-width: 500px; margin: auto;'>
-        <h2 style='color: #007bff;'>{title}</h2>
-        <p>{actionText}</p>
+            <div dir='rtl' style='font-family: sans-serif; text-align: center; border: 1px solid #ddd; padding: 20px; border-radius: 10px; max-width: 500px; margin: auto;'>
+                <h2 style='color: #007bff;'>{title}</h2>
+                <p style='color: #555;'>{actionText}</p>        
+                <a href='{htmlMessage}' style='background-color: #007bff; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 20px 0;'>{buttonText}</a>
         
-        <a href='{htmlMessage}' style='background-color: #007bff; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 20px 0;'>{buttonText}</a>
-        
-        <p style='color: #777; font-size: 12px;'>If you didn't request this, please ignore this email or contact support.</p>
-    </div>";
+                <p style='color: #777; font-size: 12px;'>If you didn't request this, please ignore this email or contact support.</p>
+            </div>";
 
 			await SendEmailAsync(email, emailBody, subject);
 		}
