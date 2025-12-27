@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using MyEcommerce.ApplicationLayer.Extensions;
 using MyEcommerce.ApplicationLayer.Mapping;
@@ -19,11 +19,12 @@ namespace MyEcommerce.PresentationLayer
 
 			// Serilog
 			Log.Logger = new LoggerConfiguration()
-				.MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
-				.MinimumLevel.Override("System", LogEventLevel.Warning)
-				.WriteTo.Console(restrictedToMinimumLevel: LogEventLevel.Warning)
-				.WriteTo.File("Logs/ShopSphere.txt", rollingInterval: RollingInterval.Day)
-				.CreateLogger();
+         	.MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+	        .MinimumLevel.Override("Microsoft.EntityFrameworkCore.Model.Validation", LogEventLevel.Error) // أضف هذا السطر هنا
+	        .MinimumLevel.Override("System", LogEventLevel.Warning)
+	        .WriteTo.Console()
+	        .WriteTo.File("Logs/ShopSphere.txt", rollingInterval: RollingInterval.Day)
+	        .CreateLogger();
 
 			// Add services to the container.
 			builder.Services.AddControllersWithViews();
@@ -50,8 +51,13 @@ namespace MyEcommerce.PresentationLayer
 				.AddDefaultUI()
 				.AddDefaultTokenProviders()
 				.AddEntityFrameworkStores<ApplicationDbContext>();
-			builder.Services.AddAuthentication();
-			builder.Services.AddAuthentication().AddGoogle(options =>
+			builder.Services.ConfigureApplicationCookie(options =>
+			{
+				options.ExpireTimeSpan = TimeSpan.FromDays(14);
+				options.SlidingExpiration = true; // تجديد المدة تلقائياً طالما يستخدم الموقع
+			});
+			builder.Services.AddAuthentication()
+				.AddGoogle(options =>
 			{
 				options.ClientId = builder.Configuration["Authentication:Google:ClientId"]!;
 				options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"]!;
