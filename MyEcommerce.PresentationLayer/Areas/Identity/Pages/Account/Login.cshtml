@@ -11,7 +11,7 @@
 
             <!-- FORM CARD -->
             <div class="col-md-6 col-lg-6 d-flex">
-                <div class="login-card p-5 shadow-lg w-100 d-flex flex-column justify-content-between" style="height: 550px; border-radius: 2rem;">
+                <div class="login-card p-5 shadow-lg w-100 d-flex flex-column justify-content-between" style="height: 700px; border-radius: 2rem;">
                     <div>
                         <h2 class="text-center mb-5">Welcome Back!</h2>
 
@@ -19,13 +19,13 @@
                             <div asp-validation-summary="ModelOnly" class="text-danger mb-4" role="alert"></div>
 
                             <div class="form-floating mb-4">
-                                <input asp-for="Input.Email" class="form-control form-control-lg" autocomplete="username" placeholder="name@example.com" />
+                                <input asp-for="Input.Email" class="form-control form-control-lg" autocomplete="username" />
                                 <label asp-for="Input.Email">Email</label>
                                 <span asp-validation-for="Input.Email" class="text-danger"></span>
                             </div>
 
                             <div class="form-floating mb-4">
-                                <input asp-for="Input.Password" class="form-control form-control-lg" autocomplete="current-password" placeholder="password" />
+                                <input asp-for="Input.Password" class="form-control form-control-lg" autocomplete="current-password" />
                                 <label asp-for="Input.Password">Password</label>
                                 <span asp-validation-for="Input.Password" class="text-danger"></span>
                             </div>
@@ -39,11 +39,55 @@
 
                             <!-- LINKS BELOW BUTTON (MODERN STYLING) -->
                             <div class="d-flex flex-column align-items-center mt-3">
-@*                                 <a asp-page="./ForgotPassword" class="link-modern mb-2"><i class="bi bi-key-fill me-1"></i> Forgot your password?</a>
- *@                                <a asp-page="./Register" asp-route-returnUrl="@Model.ReturnUrl" class="link-modern mb-2"><i class="bi bi-person-plus-fill me-1"></i> Register as a new user</a>
-@*                                 <a asp-page="./ResendEmailConfirmation" class="link-modern"><i class="bi bi-envelope-fill me-1"></i> Resend email confirmation</a>
- *@                            </div>
+                                <a asp-page="./forgotpassword" class="link-modern mb-2"><i class="bi bi-key-fill me-1"></i> forgot your password?</a>
+@*                                 <a asp-page="./Register" asp-route-returnUrl="@Model.ReturnUrl" class="link-modern mb-2"><i class="bi bi-person-plus-fill me-1"></i> Register as a new user</a>
+ *@                                <p class="mb-4">
+                                    <span class="text-muted">Don't have an account?</span>
+                                    <a asp-page="./Register" asp-route-returnUrl="@Model.ReturnUrl" class="fw-bold text-primary text-decoration-none">Register</a>
+                                </p>
+                                @*     <a asp-page="./ResendEmailConfirmation" class="link-modern"><i class="bi bi-envelope-fill me-1"></i> Resend email confirmation</a>                                <hr />
+ *@                                <div class="d-flex align-items-center w-100 mb-4">
+                                    <div style="flex: 1; height: 1px; background-color: #eee;"></div>
+                                    <span class="mx-3 text-muted" style="font-size: 0.8rem;">OR</span>
+                                    <div style="flex: 1; height: 1px; background-color: #eee;"></div>
+                                </div>
+                            </div>
                         </form>
+                        @{
+                            if ((Model.ExternalLogins?.Count ?? 0) == 0)
+                            {
+                                <div>
+                                    <p>
+                                        There are no external authentication services configured. See this <a href="https://go.microsoft.com/fwlink/?LinkID=532715">
+                                            article
+                                            about setting up this ASP.NET application to support logging in via external services
+                                        </a>.
+                                    </p>
+                                </div>
+                            }
+                            else
+                            {
+                                <form id="external-account" asp-page="./ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" method="post" class="form-horizontal">
+                                    <div>
+                                        <p>
+                                            @foreach (var provider in Model.ExternalLogins!)
+                                            {
+                                                @if (provider.Name == "Google")
+                                                {
+                                                    <button type="submit" class="btn btn-google w-100 mb-3" name="provider" value="@provider.Name" title="Log in using your @provider.DisplayName account">
+                                                        <img src="https://developers.google.com/static/identity/images/g-logo.png" alt="Google" style="width:20px; margin-right:10px;">Continue with Google
+                                                    </button>
+                                                }
+                                                else
+                                                {
+                                                    <button type="submit" class="btn btn-primary w-100 mb-3" name="provider" value="@provider.Name" title="Log in using your @provider.DisplayName account">@provider.DisplayName</button>
+                                                }
+                                            }
+                                        </p>
+                                    </div>
+                                </form>
+                            }
+                        }
                     </div>
                 </div>
             </div>
@@ -100,6 +144,25 @@
     i {
         vertical-align: middle;
     }
+    /* Google Button Styling */
+    .btn-google {
+        background-color: #ffffff;
+        color: #757575;
+        border: 1px solid #dadce0;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.3s, box-shadow 0.3s;
+        height: 50px; /* ليتناسب مع حجم الـ Input */
+    }
+
+        .btn-google:hover {
+            background-color: #f8f9fa;
+            box-shadow: 0 1px 3px rgba(60,64,67,0.3);
+            color: #3c4043;
+            border-color: #d2e3fc;
+        }
 </style>
 
 @section Scripts {

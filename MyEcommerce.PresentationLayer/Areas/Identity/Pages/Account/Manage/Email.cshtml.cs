@@ -12,18 +12,19 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
+using MyEcommerce.DomainLayer.Models;
 
 namespace MyEcommerce.PresentationLayer.Areas.Identity.Pages.Account.Manage
 {
     public class EmailModel : PageModel
     {
-        private readonly UserManager<IdentityUser> _userManager;
-        private readonly SignInManager<IdentityUser> _signInManager;
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly IEmailSender _emailSender;
 
         public EmailModel(
-            UserManager<IdentityUser> userManager,
-            SignInManager<IdentityUser> signInManager,
+            UserManager<ApplicationUser> userManager,
+            SignInManager<ApplicationUser> signInManager,
             IEmailSender emailSender)
         {
             _userManager = userManager;
@@ -71,9 +72,13 @@ namespace MyEcommerce.PresentationLayer.Areas.Identity.Pages.Account.Manage
             [EmailAddress]
             [Display(Name = "New email")]
             public string NewEmail { get; set; }
-        }
+			[Required]
+			[DataType(DataType.Password)]
+			[Display(Name = "Current Password")]
+			public string CurrentPassword { get; set; }
+		}
 
-        private async Task LoadAsync(IdentityUser user)
+        private async Task LoadAsync(ApplicationUser user)
         {
             var email = await _userManager.GetEmailAsync(user);
             Email = email;
@@ -111,8 +116,14 @@ namespace MyEcommerce.PresentationLayer.Areas.Identity.Pages.Account.Manage
                 await LoadAsync(user);
                 return Page();
             }
-
-            var email = await _userManager.GetEmailAsync(user);
+			var isPasswordValid = await _userManager.CheckPasswordAsync(user, Input.CurrentPassword);
+			if (!isPasswordValid)
+			{
+				ModelState.AddModelError(string.Empty, "كلمة المرور الحالية غير صحيحة، لا يمكنك تغيير البريد الإلكتروني.");
+				await LoadAsync(user);
+				return Page();
+			}
+			var email = await _userManager.GetEmailAsync(user);
             if (Input.NewEmail != email)
             {
                 var userId = await _userManager.GetUserIdAsync(user);
@@ -125,8 +136,8 @@ namespace MyEcommerce.PresentationLayer.Areas.Identity.Pages.Account.Manage
                     protocol: Request.Scheme);
                 await _emailSender.SendEmailAsync(
                     Input.NewEmail,
-                    "Confirm your email",
-                    $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+                    "Confirm",
+                   callbackUrl);
 
                 StatusMessage = "Confirmation link to change email sent. Please check your email.";
                 return RedirectToPage();
@@ -149,8 +160,8 @@ namespace MyEcommerce.PresentationLayer.Areas.Identity.Pages.Account.Manage
                 await LoadAsync(user);
                 return Page();
             }
-
-            var userId = await _userManager.GetUserIdAsync(user);
+			
+			var userId = await _userManager.GetUserIdAsync(user);
             var email = await _userManager.GetEmailAsync(user);
             var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
             code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
@@ -161,10 +172,9 @@ namespace MyEcommerce.PresentationLayer.Areas.Identity.Pages.Account.Manage
                 protocol: Request.Scheme);
             await _emailSender.SendEmailAsync(
                 email,
-                "Confirm your email",
-                $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+                "Confirm your email",callbackUrl);
 
-            StatusMessage = "Verification email sent. Please check your email.";
+			StatusMessage = "تم إرسال رابط تأكيد الايميل. يرجى مراجعة بريدك الجديد.";
             return RedirectToPage();
         }
     }
