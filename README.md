@@ -110,7 +110,7 @@ Utilities
 ---
 🔄 Order Processing Flow
 The platform implements a robust two-phase order processing system:
-Show Image <img width="1536" height="1024" alt="d520c872-9e10-486a-a825-93e9676ab99c" src="https://github.com/user-attachments/assets/0512f69b-cc79-4288-8afe-d3ccca2b4153" />
+<img width="1536" height="1024" alt="d520c872-9e10-486a-a825-93e9676ab99c" src="https://github.com/user-attachments/assets/0512f69b-cc79-4288-8afe-d3ccca2b4153" />
 Checkout Process
 
 User Clicks "Checkout"
