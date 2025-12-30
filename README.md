@@ -108,8 +108,64 @@ Utilities
 - EmailSettings, StripeInfo, Helpers for static content   
 
 ---
+🔄 Order Processing Flow
+The platform implements a robust two-phase order processing system:
+Show Image <img width="1536" height="1024" alt="d520c872-9e10-486a-a825-93e9676ab99c" src="https://github.com/user-attachments/assets/0512f69b-cc79-4288-8afe-d3ccca2b4153" />
+Checkout Process
 
-## 🚀 Quick Start
+User Clicks "Checkout"
+
+System calls CreateOrderAsync() to initialize order
+
+
+Pending Order Check
+
+Yes: Reuses existing session and returns old Stripe URL
+No: Creates new order with order details
+
+
+Stripe Session Creation
+
+Creates or updates Stripe checkout session
+Saves and commits order to database
+Redirects user to Stripe checkout page
+
+
+
+Order Confirmation
+
+User Returns from Stripe
+
+System calls OrderConfirmation(id) to verify payment
+
+
+Payment Verification
+
+Checks if order has been paid via Stripe API
+
+
+Transaction Processing
+
+Begin Transaction: Ensures atomic operations
+Stock Availability Check:
+
+Yes: Updates stock levels and approves order
+No: Marks order as "Approved Stock Issue"
+
+
+Clear User Cart: Removes items from shopping cart
+Commit & Save: Persists all changes to database
+
+
+
+Color Coding Legend
+
+🟩 Green: VM & Order Handling operations
+🟦 Blue: Stripe integration checks
+🟧 Orange: Transaction and database operations
+🟥 Red: Stock handling and error states
+
+ 🚀 Quick Start
 
  Prerequisites
 - .NET MVC 8.0 SDK  
@@ -118,7 +174,7 @@ Utilities
 - Stripe Account  
 - Google Cloud Console (OAuth)  
 
-### Installation
+Installation
 ```bash
 git clone <your-repo-url>
 cd MyEcommerce
