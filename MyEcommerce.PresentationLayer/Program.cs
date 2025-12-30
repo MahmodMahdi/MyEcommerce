@@ -46,6 +46,7 @@ namespace MyEcommerce.PresentationLayer
 				options =>
 				{
 					options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromDays(1);
+					options.Password.RequireNonAlphanumeric = false;
 					options.Lockout.MaxFailedAccessAttempts = 5;
 					options.Lockout.AllowedForNewUsers = true;
 					options.SignIn.RequireConfirmedAccount = true;
@@ -58,8 +59,6 @@ namespace MyEcommerce.PresentationLayer
 				options.ExpireTimeSpan = TimeSpan.FromDays(14);
 				options.SlidingExpiration = true; // تجديد المدة تلقائياً طالما يستخدم الموقع
 			});
-			builder.Services.AddAuthentication()
-				.AddGoogle(options =>
 			builder.Services.AddAuthentication();
 			builder.Services.AddAuthentication().AddGoogle(options =>
 			{

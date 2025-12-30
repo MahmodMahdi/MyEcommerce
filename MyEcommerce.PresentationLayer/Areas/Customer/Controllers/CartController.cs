@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using MyEcommerce.ApplicationLayer.Interfaces.Services;
 using MyEcommerce.ApplicationLayer.ViewModels;
 using System.Security.Claims;
 using Utilities;
-using MyEcommerce.ApplicationLayer.Interfaces.Services;
 
 namespace MyEcommerce.PresentationLayer.Areas.Customer.Controllers
 {
@@ -48,8 +48,7 @@ namespace MyEcommerce.PresentationLayer.Areas.Customer.Controllers
 		public async Task<IActionResult> PostSummary(ShoppingCartViewModel shoppingCartViewModel)
 		{
 			var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-			var domain = $"{Request.Scheme}://{Request.Host.Value}/";
-			//var domain = "https://localhost:7148/"; // manual
+			var domain = $"{Request.Scheme}://{Request.Host.Value}/";			
 			try
 			{
 				var result = await _shoppingCartService.CreateOrderAsync(shoppingCartViewModel, userId, domain);
@@ -58,7 +57,7 @@ namespace MyEcommerce.PresentationLayer.Areas.Customer.Controllers
 			}
 			catch (Exception ex)
 			{
-				TempData["Error"] =ex.Message;
+				TempData["Error"] = ex.Message;
 				return RedirectToAction(nameof(Index));
 			}
 		}
@@ -89,20 +88,21 @@ namespace MyEcommerce.PresentationLayer.Areas.Customer.Controllers
 				HttpContext.Session.SetInt32(Helper.SessionKey, totalCart);
 				return RedirectToAction(nameof(Index));
 			}
-			catch(InvalidOperationException ex)
+			catch (InvalidOperationException ex)
 			{
-					TempData["Error"] = $"Sorry, only {ex.Message} items available in stock.";
-					return RedirectToAction(nameof(Index));
+				TempData["Error"] = $"Sorry, only {ex.Message} items available in stock.";
+				return RedirectToAction(nameof(Index));
 			}
 			catch (Exception ex)
 			{
-			TempData["Error"] = "Something went wrong. Please try again";
-				return RedirectToAction(nameof (Index));
+				TempData["Error"] = "Something went wrong. Please try again";
+				return RedirectToAction(nameof(Index));
 			}
 		}
 		public async Task<IActionResult> Minus(int cartId)
 		{
-			try {
+			try
+			{
 				var remainingItem = await _shoppingCartService.DecrementCountAsync(cartId);
 				HttpContext.Session.SetInt32(Helper.SessionKey, remainingItem);
 				return RedirectToAction(nameof(Index));
@@ -116,7 +116,7 @@ namespace MyEcommerce.PresentationLayer.Areas.Customer.Controllers
 		[Authorize]
 		public async Task<IActionResult> Remove(int cartId)
 		{
-			var totalCarts =  await _shoppingCartService.DeleteAsync(cartId);
+			var totalCarts = await _shoppingCartService.DeleteAsync(cartId);
 			HttpContext.Session.SetInt32(Helper.SessionKey, totalCarts);
 			return RedirectToAction(nameof(Index));
 		}

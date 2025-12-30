@@ -72,11 +72,9 @@
                 </li>
             }
         }
-        <li class="page-item">
-            <a class="page-link @(Model.HasNextPage ? "" : "disabled")"
-               href="/Admin/Users/index?PageNumber=@(Model.CurrentPage + 1)">
-                Next
-            </a>
+        <li class="page-item @(Model.HasNextPage ? "" : "disabled")">
+            <a class="page-link"
+               href="/Admin/Users/index?PageNumber=@(Model.CurrentPage + 1)">Next</a>
         </li>
     </ul>
 }
