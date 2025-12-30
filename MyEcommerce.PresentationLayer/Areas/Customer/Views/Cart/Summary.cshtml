@@ -127,7 +127,7 @@
 
                         <div class="form-group mb-3">
                             <label>@(isArabic ? "الاسم بالكامل" : "Full Name")</label>
-                            <input asp-for="OrderHeader.Name" class="form-control" placeholder="Ahmed Ali...">
+                            <input asp-for="OrderHeader.Name" class="form-control">
                             <span asp-validation-for="OrderHeader.Name" class="text-danger small"></span>
                         </div>
 
@@ -139,7 +139,7 @@
                             </div>
                             <div class="form-group mb-3">
                                 <label>@(isArabic ? "المدينة" : "City")</label>
-                                <input asp-for="OrderHeader.City" class="form-control" placeholder="Cairo">
+                                <input asp-for="OrderHeader.City" class="form-control" >
                                 <span asp-validation-for="OrderHeader.City" class="text-danger small"></span>
                             </div>
                         </div>

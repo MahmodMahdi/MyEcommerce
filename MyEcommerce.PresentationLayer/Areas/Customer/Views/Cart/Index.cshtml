@@ -1,7 +1,12 @@
 ﻿@using MyEcommerce.ApplicationLayer.ViewModels
 @model ShoppingCartViewModel
 @{
-    ViewBag.Title = "Shopping Cart";
+    // فحص اللغة الحالية
+    var isArabic = System.Globalization.CultureInfo.CurrentCulture.TwoLetterISOLanguageName == "ar";
+    var currency = isArabic ? "ج.م" : "EGP";
+    
+    ViewBag.Title = isArabic ? "عربة التسوق" : "Shopping Cart";
+    
     var totalBeforeDiscount = Model.Carts.Sum(c => c.Count * c.Product.Price);
     var totalSavings = totalBeforeDiscount - Model.TotalCarts;
 }
@@ -21,22 +26,19 @@
     }
 
     .item-img {
-        border-radius: 1.2rem;
         object-fit: cover;
     }
 
-    /* حاوية السطر لضمان توزيع العناصر على خط واحد */
     .cart-item-row {
         display: flex;
-        align-items: center; /* توسيط رأسي لكل العناصر */
+        align-items: center;
         padding: 1.2rem 0;
         border-bottom: 1px solid #f1f1f1;
         width: 100%;
     }
 
-    /* الاسم والأسعار */
     .product-info {
-        flex: 1; /* ياخد المساحة المتبقية */
+        flex: 1;
         padding: 0 15px;
     }
 
@@ -46,14 +48,13 @@
         line-height: 1.2;
     }
 
-    /* الكمية */
     .qty-wrapper {
         display: flex;
         align-items: center;
         background: #f8f9fa;
         border-radius: 12px;
         padding: 4px;
-        flex-shrink: 0; /* ممنوع ينضغط */
+        flex-shrink: 0;
     }
 
     .qty-btn {
@@ -69,15 +70,13 @@
         color: #333;
     }
 
-    /* عمود الإجمالي - الحل النهائي عشان الكلمة متنزلش */
     .total-column {
-        text-align: right;
-        min-width: 100px; /* مساحة كافية للرقم والكلمة بجانب بعض أو فوق بعض بانتظام */
+        text-align: @(isArabic ? "left" : "right");
+        min-width: 100px;
         flex-shrink: 0;
         margin: 0 15px;
     }
 
-    /* زرار الحذف */
     .remove-col {
         flex-shrink: 0;
     }
@@ -90,15 +89,16 @@
         padding: 12px;
     }
 </style>
-
-<div class="container py-5">
+<div class="container py-5 cart-container notranslate">
     @if (!Model.Carts.Any())
     {
         <div class="text-center py-5">
             <div class="display-1 text-secondary mb-3">&#128722;</div>
-            <h3 class="fw-bold">Your Cart is Empty!</h3>
-            <p class="text-muted mb-3">Add some products and spice up your cart!</p>
-            <a href="/Customer/Home/Index" class="btn btn-lg btn-primary px-5 py-2 rounded-pill shadow">Go Shopping</a>
+            <h3 class="fw-bold">@(isArabic ? "عربة التسوق فارغة!" : "Your Cart is Empty!")</h3>
+            <p class="text-muted mb-3">@(isArabic ? "أضف بعض المنتجات لتبدأ التسوق" : "Add some products and spice up your cart!")</p>
+            <a href="/Customer/Home/Index" class="btn btn-lg btn-primary px-5 py-2 rounded-pill shadow">
+                @(isArabic ? "اذهب للتسوق" : "Go Shopping")
+            </a>
         </div>
     }
     else
@@ -107,34 +107,33 @@
             <div class="col-lg-8 mb-4">
                 <div class="card cart-card p-4 shadow-sm bg-white">
                     <div class="d-flex justify-content-between align-items-center mb-5">
-                        <h2 class="fw-bold mb-0">Shopping Cart</h2>
+                        <h2 class="fw-bold mb-0">@(isArabic ? "عربة التسوق" : "Shopping Cart")</h2>
                         <a asp-area="Customer" asp-controller="Home" asp-action="Index" class="btn btn-outline-primary btn-sm btn-pill px-3">
-                            <i class="bi bi-arrow-left"></i> Continue Shopping
+                            <i class="bi bi-arrow-@(isArabic ? "right" : "left")"></i> 
+                            @(isArabic ? "متابعة التسوق" : "Continue Shopping")
                         </a>
                     </div>
-
                     @foreach (var item in Model.Carts)
                     {
                         <div class="cart-item-row">
                             <div style="flex: 0 0 90px;">
-                                <img src="~/@item.Product.Image" class="item-img shadow-sm" style="width:80px; height:80px;" />
+                                <img src="~/@item.Product.Image" class="item-img shadow-sm" style="width:90px; height:60px;" />
                             </div>
 
                             <div class="product-info">
                                 <h6 class="fw-bold mb-1">@item.Product.Name</h6>
                                 <div class="price-stack">
                                     <div>
-                                        <span class="fw-bold text-dark">@item.Product.AcualPrice.ToString("N0") <small>EGP</small></span>
-
+                                        <span class="fw-bold text-dark">@item.Product.AcualPrice.ToString("N0") <small>@currency</small></span>
                                     </div>
                                     @if (item.Product.Discount > 0)
                                     {
                                         <span>
                                             <del class="text-muted small ms-1" style="font-size: 0.75rem;">@item.Product.Price.ToString("N0")</del>
-                                            <span class="text-danger fw-bold" style="font-size: 0.7rem;">SAVE @((int)item.Product.Discount)%</span>
+                                            <span class="text-danger fw-bold" style="font-size: 0.7rem;">
+                                                @(isArabic ? "وفر " : "SAVE ") @((int)item.Product.Discount)%
+                                            </span>
                                         </span>
-
-
                                     }
                                 </div>
                             </div>
@@ -147,11 +146,11 @@
 
                             <div class="total-column">
                                 <div class="fw-bold h6 mb-0">@((item.Count * item.Product.AcualPrice).ToString("N0"))</div>
-                                <small class="text-muted" style="display: block; margin-top: -3px;">Total</small>
+                                <small class="text-muted" style="display: block; margin-top: -3px;">@(isArabic ? "الإجمالي" : "Total")</small>
                             </div>
 
                             <div class="remove-col">
-                                <a class="btn btn-sm btn-outline-danger  p-2" asp-action="Remove" asp-route-cartid="@item.Id">
+                                <a class="btn btn-sm btn-outline-danger p-2" asp-action="Remove" asp-route-cartid="@item.Id">
                                     <i class="bi bi-trash-fill"></i>
                                 </a>
                             </div>
@@ -162,36 +161,35 @@
 
             <div class="col-lg-4">
                 <div class="card cart-card p-4 shadow-lg border-0 bg-white">
-                    <h4 class="fw-bold mb-4">Order Summary</h4>
+                    <h4 class="fw-bold mb-4">@(isArabic ? "ملخص الطلب" : "Order Summary")</h4>
                     <div class="d-flex justify-content-between mb-3">
-                        <span class="text-muted">Subtotal</span>
-                        <span class="fw-bold">@totalBeforeDiscount.ToString("N2") EGP</span>
+                        <span class="text-muted">@(isArabic ? "المجموع" : "Subtotal")</span>
+                        <span class="fw-bold">@totalBeforeDiscount.ToString("N2") @currency</span>
                     </div>
 
                     @if (totalSavings > 0)
                     {
                         <div class="savings-badge mb-4">
                             <div class="d-flex justify-content-between">
-                                <span class="small fw-bold">Discount Savings</span>
-                                <span class="small fw-bold">- @totalSavings.ToString("N2") EGP</span>
+                                <span class="small fw-bold">@(isArabic ? "إجمالي التوفير" : "Discount Savings")</span>
+                                <span class="small fw-bold">- @totalSavings.ToString("N2") @currency</span>
                             </div>
                         </div>
                     }
 
                     <div class="d-flex justify-content-between align-items-center border-top pt-4 mb-4">
-                        <span class="h5 fw-bold mb-0">Total</span>
+                        <span class="h5 fw-bold mb-0">@(isArabic ? "الإجمالي الكلي" : "Total")</span>
                         <div class="text-end">
                             <span class="h3 fw-bold text-primary mb-0">@Model.TotalCarts.ToString("N2")</span>
-                            <small class="text-primary fw-bold">EGP</small>
+                            <small class="text-primary fw-bold">@currency</small>
                         </div>
                     </div>
 
-                    <a asp-action="Summary" class="btn btn-primary btn-lg w-100 btn-pill shadow py-3 fw-bold">
-                        Checkout Now <i class="bi bi-arrow-right ms-2"></i>
+                    <a asp-action="Summary" class="btn btn-primary btn-lg w-70 btn-pill shadow py-3 fw-bold">
+                        @(isArabic ? "إتمام الشراء" : "Checkout Now") 
+                        <i class="bi bi-arrow-@(isArabic ? "left" : "right") ms-4"></i>
                     </a>
-
                 </div>
-
             </div>
         </div>
     }
