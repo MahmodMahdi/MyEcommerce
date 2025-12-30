@@ -16,5 +16,10 @@
     <ProjectReference Include="..\MyEcommerce.DataAccessLayer\MyEcommerce.DataAccessLayer.csproj" />
     <ProjectReference Include="..\MyEcommerce.DomainLayer\MyEcommerce.DomainLayer.csproj" />
     <ProjectReference Include="..\Utilities\Utilities.csproj" />
+	  <PackageReference Include="System.Runtime.InteropServices" Version="4.3.0" />
+	  <PackageReference Include="System.IO.FileSystem.Primitives" Version="4.3.0" />
+	  <PackageReference Include="System.IO" Version="4.3.0" />
+	  <PackageReference Include="System.Threading.Tasks" Version="4.3.0" />
+	  <PackageReference Include="System.Diagnostics.Debug" Version="4.3.0" />
   </ItemGroup>
 </Project>

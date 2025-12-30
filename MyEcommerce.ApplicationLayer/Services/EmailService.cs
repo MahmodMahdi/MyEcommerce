@@ -88,7 +88,7 @@ namespace MyEcommerce.ApplicationLayer.Services
             <p>شكراً لك يا <b>{orderEmailDto.Name}</b>,لقد استلمنا طلبك بنجاح وهو الآن قيد التجهيز.</p>
             <div style='background:#f8f9fa; padding:15px; border-radius:10px; display:inline-block;'>
                 <p>رقم الطلب: <b>#{orderEmailDto.OrderId}</b></p>
-                <p>إجمالى المبلغ: <b>{orderEmailDto.Total:C}</b></p>
+                <p>إجمالى المبلغ: <b>{orderEmailDto.Total.ToString("N2"):C}</b></p>
             </div>
                 <p style='color: #666; font-size: 14px;'>سنقوم بإرسال بريد إلكتروني آخر لك بمجرد شحن المنتجات وتزويدك برقم التتبع.</p>
                 <hr style='border: 0; border-top: 1px solid #eee; margin: 20px 0;'>
