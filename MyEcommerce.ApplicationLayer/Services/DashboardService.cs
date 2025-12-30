@@ -1,12 +1,12 @@
 ﻿using MyEcommerce.ApplicationLayer.Interfaces.Services;
 using MyEcommerce.ApplicationLayer.ViewModels;
 using MyEcommerce.DomainLayer.Interfaces.Repositories;
-
+using MyEcommerce.DomainLayer.Models;
 using Utilities;
 
 namespace MyEcommerce.ApplicationLayer.Services
 {
-	public class DashboardService:IDashboardService
+	public class DashboardService : IDashboardService
 	{
 		private readonly IUnitOfWork _unitOfWork;
 		public DashboardService(IUnitOfWork unitOfWork)
@@ -17,7 +17,7 @@ namespace MyEcommerce.ApplicationLayer.Services
 		public async Task<DashboardViewModel> GetDashboardDataAsync()
 		{
 			var MostExistProduct = await _unitOfWork.ProductRepository.GetMostExistItem();
-			var	MostPurchasedProduct = await _unitOfWork.OrderDetailRepository.MostPurchasedProductAsync();
+			var MostPurchasedProduct = await _unitOfWork.OrderDetailRepository.MostPurchasedProductAsync();
 			var MostPurchasedBuyer = await _unitOfWork.OrderHeaderRepository.TopPurchasedBuyerAsync();
 			var allOrders = await _unitOfWork.OrderHeaderRepository.CountAsync();
 
@@ -32,7 +32,7 @@ namespace MyEcommerce.ApplicationLayer.Services
 				PendingOrders = await _unitOfWork.OrderHeaderRepository.CountAsync(A => A.OrderStatus == Helper.Pending),
 				TotalOrders = allOrders,
 
-				TotalUsers = await _unitOfWork.ApplicationUserRepository.CountAsync(),
+				TotalUsers = await _unitOfWork.ApplicationUserRepository.CountAsync(u=>u.Email != "admin@ShopSphere.com"),
 				TotalProducts = await _unitOfWork.ProductRepository.CountAsync(),
 				TotalCategories = await _unitOfWork.CategoryRepository.CountAsync(),
 				UsersLockedAccount = await _unitOfWork.ApplicationUserRepository.LockedUserAcccount()
