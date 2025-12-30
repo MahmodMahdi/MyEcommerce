@@ -2,13 +2,14 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
 using MyEcommerce.DataAccessLayer.Data;
 using MyEcommerce.DomainLayer.Models;
 using Utilities;
 
 namespace MyEcommerce.DataAccessLayer.DataSeeding
 {
-	public class DbInitializer:IDbInitializer
+	public class DbInitializer : IDbInitializer
 	{
 		private readonly UserManager<ApplicationUser> _userManager;
 		private readonly RoleManager<IdentityRole> _roleManager;
@@ -52,18 +53,30 @@ namespace MyEcommerce.DataAccessLayer.DataSeeding
 			{
 				if (!await _roleManager.RoleExistsAsync(role))
 				{
-					await _roleManager.CreateAsync(new IdentityRole(role));
+					var roleResult = await _roleManager.CreateAsync(new IdentityRole(role));
+					if (!roleResult.Succeeded)
+					{
+						var errors = string.Join(", ", roleResult.Errors.Select(e => e.Description));
+						_logger.LogError("failed to create {Role}: {Errors}", role, errors);
+						throw new Exception($"failed create Role: {role}");
+					}
 				}
 			}
-
+			
 			//Admin
 			var adminEmail = _config["AdminSettings:Email"];
 			var adminPassword = _config["AdminSettings:Password"];
+			if (string.IsNullOrEmpty(adminEmail) || string.IsNullOrEmpty(adminPassword))
+			{
+				_logger.LogWarning("Configuration of user not found!");
+				return;
+			}
 			var adminUser = await _userManager.FindByEmailAsync(adminEmail);
 			if (adminUser == null)
 			{
 				adminUser = new ApplicationUser
 				{
+					Name = "Admin",
 					UserName = adminEmail,
 					Email = adminEmail,
 					PhoneNumber = "01212345678",
@@ -76,6 +89,7 @@ namespace MyEcommerce.DataAccessLayer.DataSeeding
 				if (result.Succeeded)
 				{
 					await _userManager.AddToRoleAsync(adminUser, Helper.AdminRole);
+			
 				}
 				else
 				{
