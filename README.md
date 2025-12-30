@@ -5,7 +5,7 @@
 ![Build](https://img.shields.io/badge/Build-Passing-brightgreen)
 ![Coverage](https://img.shields.io/badge/Coverage-95%25-yellow)
 
-Enterprise-Grade E-Commerce Web Application built with ASP.NET MVC 8.0, following Clean Architecture, SOLID principles, and modern .NET development practices.  
+Enterprise-Grade E-Commerce Web Application built with ASP.NET MVC 8.0, following Clean code by Onion Architeture, SOLID principles, and modern .NET development practices.  
 
 The platform includes a robust admin dashboard, customer-facing web pages, secure authentication, payment integration, email notifications, advanced logging & monitoring, and enhanced user experience.
 
@@ -233,7 +233,7 @@ Backend: ASP.NET Core 8.0, EF Core
 
 Authentication: ASP.NET Core Identity, Google OAuth
 
-Database & Caching: SQL Server, Redis
+Database: SQL Server
 
 Payment: Stripe API
 
