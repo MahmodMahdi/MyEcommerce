@@ -1,4 +1,5 @@
 ﻿@using Microsoft.AspNetCore.Identity
+@using Utilities
 @inject SignInManager<ApplicationUser> SignInManager
 @inject UserManager<ApplicationUser> UserManager
 
@@ -21,7 +22,7 @@
     <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css" />
     <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.4.1/css/responsive.dataTables.min.css" />
     @*  ده بيجيب شكل كويس فى textArea علشان description of category or product (TinyMce)*@
-    <script src="https://cdn.tiny.cloud/1/9tu81lwfmtpla765d0qupnf3uac6v1ex1sx10uih8degb0nc/tinymce/8/tinymce.min.js" referrerpolicy="origin" crossorigin="anonymous"></script>
+    <script src="https://cdn.tiny.cloud/1/1on42r9t1xjvk18vcbuvhrspe4jlnr8tmyvaiyajbgdmyztc/tinymce/8/tinymce.min.js" referrerpolicy="origin" crossorigin="anonymous"></script> 
     <!-- Custom Styles for a modern look -->
     <style>
 
@@ -146,7 +147,10 @@
                 <nav class="mt-2">
                     <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
                         <li class="nav-item"><a href="/Admin/Dashboard/Index" class="nav-link"><i class="nav-icon fas fa-tachometer-alt"></i><p>Dashboard</p></a></li>
-                        <li class="nav-item"><a href="/Admin/Users/Index" class="nav-link"><i class="nav-icon fas fa-users"></i><p>Users</p></a></li>
+                        @if (User.IsInRole(Helper.AdminRole))
+                        {
+                            <li class="nav-item"><a href="/Admin/Users/Index" class="nav-link"><i class="nav-icon fas fa-users"></i><p>Users</p></a></li>
+                        }
                         <li class="nav-item"><a href="/Admin/Category/Index" class="nav-link"><i class="nav-icon fas fa-th"></i><p>Categories</p></a></li>
                         <li class="nav-item"><a href="/Admin/Product/Index" class="nav-link"><i class="nav-icon fas fa-box"></i><p>Products</p></a></li>
                         <li class="nav-item"><a href="/Admin/Order/Index" class="nav-link"><i class="nav-icon fas fa-shopping-cart"></i><p>Orders</p></a></li>
