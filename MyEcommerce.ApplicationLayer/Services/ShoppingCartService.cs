@@ -4,7 +4,6 @@ using MyEcommerce.ApplicationLayer.ViewModels;
 using MyEcommerce.DomainLayer.Interfaces.Repositories;
 using MyEcommerce.DomainLayer.Models;
 using MyEcommerce.DomainLayer.Models.Order;
-using Stripe.Checkout;
 
 using Utilities;
 
@@ -75,7 +74,6 @@ namespace MyEcommerce.ApplicationLayer.Services
 				await _unitOfWork.CompleteAsync();
 
 			}
-			// --- نهاية منطق التطهير ---
 			// this data that appear when opening the page (Customer info)
 			var user = await _unitOfWork.ApplicationUserRepository.GetFirstOrDefaultAsync(u => u.Id == userId);
 			var shoppingCartViewModel = new ShoppingCartViewModel()
@@ -95,15 +93,15 @@ namespace MyEcommerce.ApplicationLayer.Services
 			return shoppingCartViewModel;
 		}
 
-		public async Task<ShoppingCartViewModel> CreateOrderAsync(ShoppingCartViewModel shoppingCartViewModel,string userId,string domain)
+		public async Task<ShoppingCartViewModel> CreateOrderAsync(ShoppingCartViewModel shoppingCartViewModel, string userId, string domain)
 		{
 			await _unitOfWork.BeginTransactionAsync();
 			try
 			{
 				// check the carts 
-					var carts = await _unitOfWork.ShoppingCartRepository
-	                 .GetAllAsync(u => u.ApplicationUserId == userId, IncludeProperties: "Product");
-					shoppingCartViewModel.Carts = carts;
+				var carts = await _unitOfWork.ShoppingCartRepository
+				 .GetAllAsync(u => u.ApplicationUserId == userId, IncludeProperties: "Product");
+				shoppingCartViewModel.Carts = carts;
 				if (!carts.Any())
 				{
 					throw new InvalidOperationException("Cart is empty");
@@ -139,7 +137,7 @@ namespace MyEcommerce.ApplicationLayer.Services
 					{
 						orderHeader = existingOrder;
 						// نستخدم SessionId الموجود فقط
-						shoppingCartViewModel.Url =await _paymentService.GetStripeSessionUrlAsync(existingOrder.SessionId);
+						shoppingCartViewModel.Url = await _paymentService.GetStripeSessionUrlAsync(existingOrder.SessionId);
 					}
 					else
 					{
@@ -183,7 +181,7 @@ namespace MyEcommerce.ApplicationLayer.Services
 						TotalPrice = currentTotal,
 						Name = shoppingCartViewModel.OrderHeader.Name,
 						Address = shoppingCartViewModel.OrderHeader.Address,
-						City =shoppingCartViewModel.OrderHeader.City,
+						City = shoppingCartViewModel.OrderHeader.City,
 						PhoneNumber = shoppingCartViewModel.OrderHeader.PhoneNumber
 					};
 
@@ -266,7 +264,7 @@ namespace MyEcommerce.ApplicationLayer.Services
 				}
 				else
 				{
-					// 5- المعالجة الطبيعية (خصم مخزن + اعتماد)
+					
 					foreach (var item in orderDetails)
 					{
 						item.Product.StockQuantity -= item.Count;
@@ -277,7 +275,6 @@ namespace MyEcommerce.ApplicationLayer.Services
 				await _unitOfWork.CompleteAsync();
 				await _unitOfWork.CommitTransactionAsync();
 
-				// 7️- إرسال الإيميل خارج الترانزكشن
 				await SendConfirmationEmail(orderHeader);
 
 				return true;
@@ -339,15 +336,10 @@ namespace MyEcommerce.ApplicationLayer.Services
 			return await _unitOfWork.ShoppingCartRepository.CountAsync(u => u.ApplicationUserId == userId);
 		}
 		#region Private Helper Methods
-		
-
-
 		private bool IsStockAvailable(List<OrderDetail> details)
 		{
 			return details.All(item => item.Product != null && item.Product.StockQuantity >= item.Count);
 		}
-
-
 		private async Task ClearCart(string userId)
 		{
 			var carts = await _unitOfWork.ShoppingCartRepository
@@ -360,7 +352,7 @@ namespace MyEcommerce.ApplicationLayer.Services
 		{
 			try
 			{
-				var OrderDto =new OrderEmailDto
+				var OrderDto = new OrderEmailDto
 				{
 					Email = order.ApplicationUser.Email,
 					Name = order.ApplicationUser.Name,

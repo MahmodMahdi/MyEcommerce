@@ -6,7 +6,7 @@ using Utilities;
 namespace MyEcommerce.PresentationLayer.Areas.Admin.Controllers
 {
 	[Area("Admin")]
-	[Authorize(Roles =Helper.AdminRole)]
+	[Authorize(Roles = Helper.AdminRole + "," + Helper.EditorRole)]
 	public class DashboardController : Controller
 	{
 		private readonly IDashboardService _dashboardService;
@@ -18,8 +18,9 @@ namespace MyEcommerce.PresentationLayer.Areas.Admin.Controllers
 		public async Task<IActionResult> Index()
 		{
 			var dashboard = await _dashboardService.GetDashboardDataAsync();
-
+			if(dashboard != null)
 			return View(dashboard);
+			else return View();
 		}
 	}
 }

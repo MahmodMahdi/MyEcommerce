@@ -5,7 +5,7 @@ using MyEcommerce.DomainLayer.Models;
 
 namespace MyEcommerce.DataAccessLayer.Repositories
 {
-	public class ProductRepository:GenericRepository<Product>, IProductRepository
+	public class ProductRepository : GenericRepository<Product>, IProductRepository
 	{
 		private readonly ApplicationDbContext _context;
 
@@ -17,7 +17,7 @@ namespace MyEcommerce.DataAccessLayer.Repositories
 		{
 			return await _context.Products
 				.AsNoTracking()
-				.OrderBy(o=>o.Id)
+				.OrderBy(o => o.Id)
 				.Skip(skip)
 				.Take(take)
 				.ToListAsync();
@@ -30,8 +30,12 @@ namespace MyEcommerce.DataAccessLayer.Repositories
 
 		public async Task<string> GetMostExistItem()
 		{
-			var mostExistProduct =  await _context.Products.AsNoTracking().OrderByDescending(p => p.StockQuantity).FirstOrDefaultAsync();
-			return mostExistProduct.Name ?? "No Products in Stock";
+			var mostExistProduct = await _context.Products
+				.AsNoTracking()
+				.OrderByDescending(p => p.StockQuantity)
+				.ThenBy(x=>x.Name)
+				.FirstOrDefaultAsync();
+			return mostExistProduct?.Name ?? "No Products in Stock";
 		}
 	}
 }

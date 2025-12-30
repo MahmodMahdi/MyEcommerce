@@ -1,4 +1,5 @@
-﻿@model DashboardViewModel
+@using Utilities
+@model DashboardViewModel
 @{
     ViewBag.PageTitle = "Admin Area";
     ViewBag.CardTitle = "Dashboard";
@@ -235,18 +236,21 @@
                 <a href="/Admin/Order/Index" class="small-box-footer text-white">More info →</a>
             </div>
         </div>
-        <div class="col-lg-3 col-md-6">
-            <div class="kpi-card bg-users">
-                <div>
-                    <div class="kpi-value">@Model.TotalUsers</div>
-                    <div class="kpi-label">Users</div>
+        @if (User.IsInRole(Helper.AdminRole))
+        {
+            <div class="col-lg-3 col-md-6">
+                <div class="kpi-card bg-users">
+                    <div>
+                        <div class="kpi-value">@Model.TotalUsers</div>
+                        <div class="kpi-label">Users</div>
+                    </div>
+                    <i class="ion ion-person kpi-icon"></i>
+                    <a href="/Admin/Users/Index" class="small-box-footer text-white">More info →</a>
                 </div>
-                <i class="ion ion-person kpi-icon"></i>
-                <a href="/Admin/Users/Index" class="small-box-footer text-white">More info →</a>
             </div>
-        </div>
+        }
     </div>
-
+    @if(User.IsInRole(Helper.AdminRole)){
     <div class="row g-4 mt-2">
         @foreach (var stat in new[] {
                 (Title: "Approved", Value: Model.ApprovedOrders, Color: "approved", Icon: "ion-checkmark text-success"),
@@ -255,8 +259,8 @@
                 (Title: "Locked", Value: Model.UsersLockedAccount, Color: "locked", Icon: "ion-locked text-danger")
                 })
         {
-            var percent = (stat.Title == "Locked" ? Model.TotalUsers : Model.TotalOrders) > 0
-            ? (stat.Value * 100 / (stat.Title == "Locked" ? Model.TotalUsers : Model.TotalOrders))
+                var percent = (stat.Title == "Locked" ? Model.TotalUsers : Model.TotalOrders) > 0
+            ? (stat.Value * 100.0 / (stat.Title == "Locked" ? Model.TotalUsers : Model.TotalOrders))
             : 0;
 
             <div class="col-lg-3 col-md-6">
@@ -276,14 +280,14 @@
             </div>
         }
     </div>
-
+    }
     <div class="row g-4 mt-2">
         <div class="col-lg-4 col-md-6">
             <div class="info-card">
                 <div>
                     <i class="ion ion-trophy text-warning info-icon"></i>
                     <div class="info-title">Best Selling Product</div>
-                    <div class="info-value text-truncate">@Model.MostPurchasedProduct</div>
+                    <div class="info-value text-truncate">@(Model.MostPurchasedProduct?? "لا يوجد منجات")</div>
                 </div>
                 <a href="/Admin/Product/Index" class="small-box-footer">More info →</a>
             </div>
@@ -293,21 +297,23 @@
                 <div>
                     <i class="ion ion-cube text-success info-icon"></i>
                     <div class="info-title">Most Available Product</div>
-                    <div class="info-value text-truncate">@Model.MostExistProduct</div>
+                    <div class="info-value text-truncate">@(Model.MostExistProduct?? "لا يوجد منتجات")</div>
                 </div>
                 <a href="/Admin/Product/Index" class="small-box-footer">More info →</a>
             </div>
         </div>
+        @if(User.IsInRole(Helper.AdminRole)){
         <div class="col-lg-4 col-md-6">
             <div class="info-card">
                 <div>
                     <i class="ion ion-person text-primary info-icon"></i>
                     <div class="info-title">Top Buyer</div>
-                    <div class="info-value text-truncate">@Model.MostPurchasedBuyer</div>
+                    <div class="info-value text-truncate">@(Model.MostPurchasedBuyer ?? "لا يوجد مستخدمين حاليا")</div>
                 </div>
                 <a href="/Admin/Order/Index" class="small-box-footer">More info →</a>
             </div>
         </div>
+        }
     </div>
 </div>
 

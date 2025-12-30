@@ -10,9 +10,9 @@
 		public int ShippedOrders { get; set; }
 		public int PendingOrders { get; set; }
 		public int UsersLockedAccount { get; set; }
-	    public string MostExistProduct { get; set; }
-		public string LessExistProduct { get; set; }
-		public string MostPurchasedProduct { get; set; }
-		public string MostPurchasedBuyer { get; set; }
+		public string? MostExistProduct { get; set; }
+		public string? LessExistProduct { get; set; }
+		public string? MostPurchasedProduct { get; set; }
+		public string? MostPurchasedBuyer { get; set; }
 	}
 }

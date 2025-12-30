@@ -1,9 +1,9 @@
-﻿@using Microsoft.AspNetCore.Http
+@using Microsoft.AspNetCore.Http
 @using Utilities
 @inject IHttpContextAccessor httpContextAccessor
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" translate="no">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
@@ -14,7 +14,7 @@
     <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css" rel="stylesheet" />
     <link href="~/customer/css/styles.css" rel="stylesheet" />
-    <link rel="stylesheet" href="~/shopingcart/style.css" />
+    <meta name="google" content="notranslate" />
 
     <style>
         /* ========= BASE ========= */
@@ -144,7 +144,7 @@
 
                     @if (User.Identity.IsAuthenticated)
                     {
-                        if (User.IsInRole("Admin"))
+                        if (User.IsInRole(Helper.AdminRole) || User.IsInRole(Helper.EditorRole))
                         {
                             <li class="nav-item">
                                 <a class="nav-link active" href="/Admin/Dashboard/Index">Dashboard</a>
@@ -158,14 +158,36 @@
                         }
                     }
                 </ul>
-
+                @{
+                    // تعريف المتغير ليعمل في كل صفحات الموقع
+                    var isArabic = System.Globalization.CultureInfo.CurrentCulture.TwoLetterISOLanguageName == "ar";
+                    var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
+                    var currentArea = ViewContext.RouteData.Values["area"]?.ToString();
+                }
+                <div class="d-flex align-items-center">
+                    <div class="me-3">
+                        <div class="me-3">
+                            @if (currentAction != "Details"&&currentArea != "Identity")
+                            {
+                                @if (isArabic)
+                                {
+                                    <a href="@Context.Request.Path?culture=en" class="btn btn-sm btn-outline-primary rounded-pill fw-bold">English</a>
+                                }
+                                else
+                                {
+                                    <a href="@Context.Request.Path?culture=ar" class="btn btn-sm btn-outline-primary rounded-pill fw-bold">العربية</a>
+                                }
+                            }
+                        </div>
+                    </div>
+                </div>
                 <div id="themeToggle" class="me-3">
                     <i id="themeIcon" class="bi bi-moon-stars-fill"></i>
                 </div>
 
                 <partial name="_LoginPartial" />
 
-                @if (User.Identity.IsAuthenticated && !User.IsInRole("Admin"))
+                @if (User.Identity.IsAuthenticated && !User.IsInRole(Helper.AdminRole) && !User.IsInRole(Helper.EditorRole))
                 {
                     <form class="d-flex ms-3">
                         <a href="/Customer/Cart/Index" id="cartBtn"
@@ -181,7 +203,7 @@
             </div>
         </div>
     </nav>
-
+      @if (currentAction != "Details"){
     <header class="bg-dark py-3 py-md-5">
         <div class="container px-4 px-lg-5 my-2 my-md-5 text-center">
             <h1 class="display-5 display-md-4 fw-bolder">Welcome to ShopSphere</h1>
@@ -190,7 +212,7 @@
             </p>
         </div>
     </header>
-
+      }
     <main class="py-5">
         <div class="container px-4 px-lg-5">
             <partial name="_Notifications" />

@@ -1,52 +1,55 @@
-﻿@model PaginatedResultViewModel<UserViewModel>
+@model PaginatedResultViewModel<UserViewModel>
 @{
-	ViewBag.PageTitle = "User Management";
-	ViewBag.CardTitle = "View Users";
+    ViewBag.PageTitle = "User Management";
+    ViewBag.CardTitle = "View Users";
 }
 
 <div>
     <br />
-	<a href="/Identity/Account/Register" class="btn btn-primary">Create new User</a>
+    <a href="/Identity/Account/Register" class="btn btn-primary">Create new User</a>
 </div>
 <br />
-<table  class="table table-hover" width="100%">
-	<tr>
-		<td>Name</td>
-		<td>Email</td>
-		<td>PhoneNumber</td>
-		<td>Action</td>
-	</tr>
-	@foreach (var item in Model.Items)
-	{
-		<tr>
-			<td>@item.Name</td>
-			<td>@item.Email</td>
-			<td>@item.PhoneNumber</td>
-			<td>
-				@if(item.LockoutEnd == null | item.LockoutEnd < DateTime.Now)
-				{
-					<a class="btn btn-success" asp-action="LockUnlock" asp-route-id="@item.Id">
-						<i class="fas fa-lock-open"></i>
-					</a>
-				}
-				else
-				{
-					<a class="btn btn-danger" asp-action="LockUnlock" asp-route-id ="@item.Id">
-						<i class="fas fa-lock"></i>
-					</a>
-				}
-			</td>
-		</tr>
-	}
+<table class="table table-hover" width="100%">
+    <tr>
+        <td>Name</td>
+        <td>Email</td>
+        <td>PhoneNumber</td>
+        <td>Action</td>
+    </tr>
+    @foreach (var item in Model.Items)
+    {
+        <tr>
+            <td>@item.Name</td>
+            <td>@item.Email</td>
+            <td>@item.PhoneNumber</td>
+            <td>
+                @if (User.IsInRole("Admin"))
+                {
+                    @if (item.LockoutEnd == null | item.LockoutEnd < DateTime.Now)
+                    {
+                        <a class="btn btn-success" asp-action="LockUnlock" asp-route-id="@item.Id">
+                            <i class="fas fa-lock-open"></i>
+                        </a>
+                    }
+                    else
+                    {
+                        <a class="btn btn-danger" asp-action="LockUnlock" asp-route-id="@item.Id">
+                            <i class="fas fa-lock"></i>
+                        </a>
+                    }
+                }
+            </td>
+        </tr>
+    }
 </table>
 @* Pagination *@
 
 @if (@Model.Items.Any())
 {
     <ul class="pagination justify-content-center">
-        <li class="page-item @(Model.HasPreviousPage? "" : "disabled")">
+        <li class="page-item @(Model.HasPreviousPage ? "" : "disabled")">
             <a class="page-link"
-            href="/Admin/Users/index?PageNumber=@(Model.CurrentPage - 1)">Previous</a>
+               href="/Admin/Users/index?PageNumber=@(Model.CurrentPage - 1)">Previous</a>
         </li>
         @for (int j = 0; j < Model.TotalPages; j++)
         {
@@ -54,7 +57,7 @@
             {
                 <li class="page-item active">
                     <a class="page-link"
-                    href="/Admin/Users/index?PageNumber=@(j + 1)">
+                       href="/Admin/Users/index?PageNumber=@(j + 1)">
                         @(j + 1)
                     </a>
                 </li>
@@ -63,17 +66,15 @@
             {
                 <li class="page-item ">
                     <a class="page-link"
-                    href="/Admin/Users/index?PageNumber=@(j + 1)">
+                       href="/Admin/Users/index?PageNumber=@(j + 1)">
                         @(j + 1)
                     </a>
                 </li>
             }
         }
-        <li class="page-item">
-            <a class="page-link @(Model.HasNextPage ? "" : "disabled")"
-            href="/Admin/Users/index?PageNumber=@(Model.CurrentPage + 1)">
-                Next
-            </a>
+        <li class="page-item @(Model.HasNextPage ? "" : "disabled")">
+            <a class="page-link"
+               href="/Admin/Users/index?PageNumber=@(Model.CurrentPage + 1)">Next</a>
         </li>
     </ul>
 }

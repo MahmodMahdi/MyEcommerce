@@ -8,12 +8,12 @@ using Utilities;
 namespace MyEcommerce.PresentationLayer.Areas.Admin.Controllers
 {
 	[Area("Admin")]
-	[Authorize(Roles = Helper.AdminRole)]
+	[Authorize(Roles = Helper.AdminRole + "," + Helper.EditorRole)]
 	public class ProductController : Controller
 	{
 		private readonly IProductService _productService;
 		private readonly ICategoryService _categoryService;
-		public ProductController(IProductService productService,ICategoryService categoryService)
+		public ProductController(IProductService productService, ICategoryService categoryService)
 		{
 			_productService = productService;
 			_categoryService = categoryService;
@@ -97,11 +97,11 @@ namespace MyEcommerce.PresentationLayer.Areas.Admin.Controllers
 				}
 				catch (ArgumentException ex)
 				{
-					ModelState.AddModelError("Image", ex.Message); 
+					ModelState.AddModelError("Image", ex.Message);
 					return View(productVM);
 				}
 			}
-				return View(productVM);
+			return View(productVM);
 		}
 
 		#endregion

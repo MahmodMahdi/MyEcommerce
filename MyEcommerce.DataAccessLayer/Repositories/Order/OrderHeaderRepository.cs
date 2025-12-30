@@ -2,6 +2,7 @@
 using MyEcommerce.DataAccessLayer.Data;
 using MyEcommerce.DomainLayer.Interfaces.Repositories.Order;
 using MyEcommerce.DomainLayer.Models.Order;
+using Utilities;
 
 namespace MyEcommerce.DataAccessLayer.Repositories.Order
 {
@@ -15,12 +16,12 @@ namespace MyEcommerce.DataAccessLayer.Repositories.Order
 
 		public void Update(OrderHeader orderHeader)
 		{
-			 _context.OrderHeaders.Update(orderHeader);
+			_context.OrderHeaders.Update(orderHeader);
 		}
 
 		public async Task UpdateOrderStatusAsync(int id, string? OrderStatus, string? PaymentStatus)
 		{
-			var orderFromDb =await _context.OrderHeaders.FirstOrDefaultAsync(o => o.Id == id);
+			var orderFromDb = await _context.OrderHeaders.FirstOrDefaultAsync(o => o.Id == id);
 			if (orderFromDb != null)
 			{
 				orderFromDb.OrderStatus = OrderStatus;
@@ -34,29 +35,25 @@ namespace MyEcommerce.DataAccessLayer.Repositories.Order
 		public async Task<string> TopPurchasedBuyerAsync()
 		{
 			var topBuyer = await _context.OrderHeaders
+				.Where(o => o.OrderStatus == Helper.Approve)
 				.AsNoTracking()
-				.GroupBy(o => new { o.ApplicationUserId, o.Name })
+				.GroupBy(o => o.ApplicationUserId)
 				.Select(g => new
 				{
-					UserName = g.Key.Name,
-					TotalSpent = g.Sum(o=>o.TotalPrice)
+					UserId = g.Key,
+					TotalSpent = g.Sum(o => o.TotalPrice)
 				})
 				.OrderByDescending(x => x.TotalSpent)
-				.Select(x => x.UserName)
+				.Select(x => x.UserId)
 				.FirstOrDefaultAsync();
-			return topBuyer ?? "No Customers Yet!";
-			// here it is wrong the same of another way
-			//var TopBuyer = await _context.OrderHeaders
-			//	.GroupBy(P => P.ApplicationUser.Name)
-			//	.Select(g => new
-			//	{
-			//		UserName = g.Key,
-			//		count = g.Count()
-			//	})
-			//	.OrderByDescending(x => x.count)
-			//	.Select(x => x.UserName)
-			//	.FirstOrDefaultAsync();
-			//return TopBuyer.ToString();
+
+			if (topBuyer == null)
+				return "No Customers Yet!";
+
+			return (await _context.Users
+				.Where(u => u.Id == topBuyer)
+				.Select(u => u.Name)
+				.FirstOrDefaultAsync())!;
 		}
 	}
 }
