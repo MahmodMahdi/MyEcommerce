@@ -1,13 +1,13 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using MyEcommerce.ApplicationLayer.Interfaces.Services;
 using MyEcommerce.ApplicationLayer.ViewModels;
 using Utilities;
-using MyEcommerce.ApplicationLayer.Interfaces.Services;
 
 namespace MyEcommerce.PresentationLayer.Areas.Admin.Controllers
 {
 	[Area("Admin")]
-	[Authorize(Roles = Helper.AdminRole)]
+	[Authorize(Roles = Helper.AdminRole + "," + Helper.EditorRole)]
 	public class OrderController : Controller
 	{
 		private readonly IOrderServices _orderServices;
@@ -31,7 +31,7 @@ namespace MyEcommerce.PresentationLayer.Areas.Admin.Controllers
 		[HttpGet]
 		public async Task<IActionResult> Details(int OrderId)
 		{
-			var orderViewModel =await _orderServices.GetOrderViewModelAsync(OrderId);
+			var orderViewModel = await _orderServices.GetOrderViewModelAsync(OrderId);
 			return View(orderViewModel);
 		}
 		#endregion
@@ -83,7 +83,7 @@ namespace MyEcommerce.PresentationLayer.Areas.Admin.Controllers
 			var orderVM = await _orderServices.GetOrderViewModelAsync(shippingData.OrderId);
 			orderVM.OrderHeader.Carrior = shippingData.Carrior;
 			orderVM.OrderHeader.TrackingNumber = shippingData.TrackingNumber;
-		
+
 			var success = await _orderServices.StartShipping(orderVM);
 
 			if (success)
@@ -94,14 +94,14 @@ namespace MyEcommerce.PresentationLayer.Areas.Admin.Controllers
 			{
 				TempData["Error"] = "Order not found!";
 			}
-			
+
 			return RedirectToAction(nameof(Details), new { OrderId = shippingData.OrderId });
 		}
 		#endregion
 		[HttpPost]
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> CancelOrder(OrderViewModel orderViewModel)
-		{ 
+		{
 			var success = await _orderServices.CancelOrderAsync(orderViewModel);
 
 			if (success)

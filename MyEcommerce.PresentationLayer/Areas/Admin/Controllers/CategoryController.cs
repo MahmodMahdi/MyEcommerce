@@ -7,7 +7,7 @@ using Utilities;
 namespace MyEcommerce.PresentationLayer.Areas.Admin.Controllers
 {
 	[Area("Admin")]
-	[Authorize(Roles = Helper.AdminRole)]
+	[Authorize(Roles = Helper.AdminRole + "," + Helper.EditorRole)]
 	public class CategoryController : Controller
 	{
 		private readonly ICategoryService _categoryService;
@@ -44,7 +44,7 @@ namespace MyEcommerce.PresentationLayer.Areas.Admin.Controllers
 			{
 				return NotFound();
 			}
-			var category =await _categoryService.GetFirstOrDefaultAsync(id);
+			var category = await _categoryService.GetFirstOrDefaultAsync(id);
 			return View(category);
 		}
 		[HttpPost]
@@ -62,9 +62,9 @@ namespace MyEcommerce.PresentationLayer.Areas.Admin.Controllers
 		[HttpGet]
 		public async Task<IActionResult> Delete(int id)
 		{
-			
-			var category =await _categoryService.GetFirstOrDefaultAsync(id);
-			if(category  == null)
+
+			var category = await _categoryService.GetFirstOrDefaultAsync(id);
+			if (category == null)
 				return NotFound();
 			return View(category);
 		}
