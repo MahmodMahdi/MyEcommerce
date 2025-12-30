@@ -336,12 +336,10 @@ namespace MyEcommerce.ApplicationLayer.Services
 			return await _unitOfWork.ShoppingCartRepository.CountAsync(u => u.ApplicationUserId == userId);
 		}
 		#region Private Helper Methods
-
 		private bool IsStockAvailable(List<OrderDetail> details)
 		{
 			return details.All(item => item.Product != null && item.Product.StockQuantity >= item.Count);
 		}
-
 		private async Task ClearCart(string userId)
 		{
 			var carts = await _unitOfWork.ShoppingCartRepository

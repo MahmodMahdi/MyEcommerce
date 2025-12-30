@@ -1,5 +1,4 @@
 ﻿using MyEcommerce.ApplicationLayer.ViewModels;
-
 namespace MyEcommerce.ApplicationLayer.Interfaces.Services
 {
 	public interface IHomeService

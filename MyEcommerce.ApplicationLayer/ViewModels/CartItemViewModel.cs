@@ -1,4 +1,4 @@
-﻿namespace MyEcommerce.ApplicationLayer.ViewModels
+namespace MyEcommerce.ApplicationLayer.ViewModels
 {
 	public class CartItemViewModel
 	{
