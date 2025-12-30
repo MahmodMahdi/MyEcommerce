@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using MyEcommerce.ApplicationLayer.Extensions;
 using MyEcommerce.ApplicationLayer.Mapping;
 using MyEcommerce.DataAccessLayer.Data;
@@ -8,7 +10,6 @@ using MyEcommerce.DomainLayer.Models;
 using Serilog;
 using Serilog.Events;
 using Stripe;
-using System.Threading.Tasks;
 using Utilities;
 
 namespace MyEcommerce.PresentationLayer
@@ -19,14 +20,12 @@ namespace MyEcommerce.PresentationLayer
 		{
 			var builder = WebApplication.CreateBuilder(args);
 
-			// Serilog
+			var logPath = Path.Combine(builder.Environment.WebRootPath, "Logs", "ShopSphere.txt");
+
 			Log.Logger = new LoggerConfiguration()
-         	.MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
-	        .MinimumLevel.Override("Microsoft.EntityFrameworkCore.Model.Validation", LogEventLevel.Error) // أضف هذا السطر هنا
-	        .MinimumLevel.Override("System", LogEventLevel.Warning)
-	        .WriteTo.Console()
-	        .WriteTo.File("Logs/ShopSphere.txt", rollingInterval: RollingInterval.Day)
-	        .CreateLogger();
+				.MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+				.WriteTo.File(logPath, rollingInterval: RollingInterval.Day)
+				.CreateLogger();
 
 			// Add services to the container.
 			builder.Services.AddControllersWithViews();
@@ -38,9 +37,10 @@ namespace MyEcommerce.PresentationLayer
 				builder.Configuration.GetConnectionString("DB")
 			));
 
-			// configure stripe
-			var emailSettings = builder.Configuration.GetSection("emailSettings").Get<EmailSettings>();
-			builder.Services.AddSingleton(emailSettings);
+			builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("emailSettings"));
+
+			builder.Services.AddSingleton(resolver =>
+				resolver.GetRequiredService<IOptions<EmailSettings>>().Value);
 			builder.Services.Configure<StripeInfo>(builder.Configuration.GetSection("stripe"));
 			builder.Services.AddIdentity<ApplicationUser, IdentityRole>(
 				options =>
@@ -52,7 +52,7 @@ namespace MyEcommerce.PresentationLayer
 				})
 				.AddDefaultUI()
 				.AddDefaultTokenProviders()
-				.AddEntityFrameworkStores<ApplicationDbContext>();
+				.AddEntityFrameworkStores<ApplicationDbContext>(); 
 			builder.Services.ConfigureApplicationCookie(options =>
 			{
 				options.ExpireTimeSpan = TimeSpan.FromDays(14);
@@ -61,8 +61,8 @@ namespace MyEcommerce.PresentationLayer
 			builder.Services.AddAuthentication()
 				.AddGoogle(options =>
 			{
-				options.ClientId = builder.Configuration["Authentication:Google:ClientId"]!;
-				options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"]!;
+				options.ClientId = builder.Configuration["Authentication:Google:ClientId"];
+				options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
 			});
 			builder.Services.AddApplicationProject();
 			builder.Services.AddSession();
@@ -72,20 +72,46 @@ namespace MyEcommerce.PresentationLayer
 
 
 			builder.Host.UseSerilog();
-
+			
 			var app = builder.Build();
 			using (var scope = app.Services.CreateScope())
 			{
-				var dbInitializer = scope.ServiceProvider.GetRequiredService<IDbInitializer>();
-				await dbInitializer.Initialize();
+				try
+				{
+					var dbInitializer = scope.ServiceProvider.GetRequiredService<IDbInitializer>();
+					await dbInitializer.Initialize();
+				}
+				catch(Exception ex)
+				{
+					
+				}
 			}
 			// Configure the HTTP request pipeline.
-			if (!app.Environment.IsDevelopment())
+			if (app.Environment.IsDevelopment())
 			{
-				app.UseExceptionHandler("/Home/Error");
-				// The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+				app.UseDeveloperExceptionPage();
+			}
+			else
+			{
+				app.UseDeveloperExceptionPage();
 				app.UseHsts();
 			}
+			// 1. تعريف اللغات
+			var supportedCultures = new[] { "en", "ar" };
+			var localizationOptions = new RequestLocalizationOptions()
+				.SetDefaultCulture("en")
+				.AddSupportedCultures(supportedCultures)
+				.AddSupportedUICultures(supportedCultures);
+
+			// ترتيب المصادر: يبحث في الرابط أولاً، ثم الكوكي، ثم إعدادات المتصفح
+			localizationOptions.RequestCultureProviders = new List<IRequestCultureProvider>
+			{
+				new QueryStringRequestCultureProvider(), // 1. الرابط (?culture=ar)
+                new CookieRequestCultureProvider(),      // 2. الكوكيز (عشان يفتكر اللغة في الصفحة الجاية)
+                new AcceptLanguageHeaderRequestCultureProvider() // 3. لغة المتصفح (كخيار أخير)
+            };
+			// 3. تفعيل الإعدادات
+			app.UseRequestLocalization(localizationOptions);
 
 			app.UseHttpsRedirection();
 			app.UseStaticFiles();
@@ -93,18 +119,19 @@ namespace MyEcommerce.PresentationLayer
 			app.UseRouting();
 			app.UseSession();
 
-
-
-			StripeConfiguration.ApiKey = builder.Configuration.GetSection("stripe:Secretkey").Get<string>();
-
+			var stripeKey = builder.Configuration["stripe:Secretkey"];
+			if (!string.IsNullOrEmpty(stripeKey))
+			{
+				StripeConfiguration.ApiKey = builder.Configuration.GetSection("stripe:Secretkey").Get<string>();
+			}
 			app.UseAuthentication();
 			app.UseAuthorization();
 			app.MapRazorPages();
 			app.MapControllerRoute(
-				name: "default",
+				name: "Admin",
 				pattern: "{area=Admin}/{controller=Home}/{action=Index}/{id?}");
 			app.MapControllerRoute(
-				name: "Customer",
+				name: "default",
 				pattern: "{area=Customer}/{controller=Home}/{action=Index}/{id?}");
 
 			app.Run();
