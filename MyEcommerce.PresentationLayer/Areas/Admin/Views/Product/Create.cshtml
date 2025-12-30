@@ -60,13 +60,12 @@
     </div>
 
     <!-- Preview Image Section -->
-    <div class="col-lg-6 d-flex justify-content-center align-items-start">
-        <div class="card shadow-lg border-0 rounded-4 overflow-hidden" style="width: 100%; max-width: 420px;">
-            <img id="preview" src="~/images/placeholder.png" class="card-img-top" style="object-fit: cover; height: 450px; transition: transform .3s;" />
+     <div class="col-lg-6 mt-6 mt-lg-0">
+        <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
+            <img id="preview" src="~/images/placeholder.png" class="img-fluid" style="object-fit: cover; max-height: 500px; transition: transform 0.3s;" />
         </div>
     </div>
 </div>
-
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
     <script>
