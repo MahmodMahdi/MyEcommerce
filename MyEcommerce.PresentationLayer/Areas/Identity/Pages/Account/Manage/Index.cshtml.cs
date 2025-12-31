@@ -57,7 +57,8 @@ namespace MyEcommerce.PresentationLayer.Areas.Identity.Pages.Account.Manage
             /// </summary>
             [Phone]
             [Display(Name = "Phone number")]
-            public string PhoneNumber { get; set; }
+			[RegularExpression("01[0125][0-9]{8}", ErrorMessage = "Enter Valid Phone Number.")]
+			public string PhoneNumber { get; set; }
             public string Name { get; set; }
             public string Address { get; set; }
             public string City { get; set; }
