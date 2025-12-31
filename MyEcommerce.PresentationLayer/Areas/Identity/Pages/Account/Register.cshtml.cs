@@ -83,9 +83,11 @@ namespace MyEcommerce.PresentationLayer.Areas.Identity.Pages.Account
 			public string Name { get; set; }
 			public string Address { get; set; }
 			public string City { get; set; }
-            public string PhoneNumber { get; set; }
+			[RegularExpression("01[0125][0-9]{8}", ErrorMessage = "Enter Valid Phone Number.")]
+			public string PhoneNumber { get; set; }
 			[Required]
-            [EmailAddress]
+			[RegularExpression("[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{3}", ErrorMessage = "Enter valid Email")]
+			[EmailAddress]
             [Display(Name = "Email")]
             public string Email { get; set; }
 
